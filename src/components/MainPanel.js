@@ -1,5 +1,15 @@
-import { Box } from "@mui/system";
+import { Box, Stack } from "@mui/material";
+import Table from "./DataTable";
+import Menu from "./UploadMenu";
 
 export default function MainPanel() {
-  return <Box>Main Panel</Box>;
+  return (
+    <>
+      <Stack flexDirection="column">
+        <Menu />
+        <Table />
+      </Stack>
+      <Stack></Stack>
+    </>
+  );
 }
