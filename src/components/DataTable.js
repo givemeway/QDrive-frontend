@@ -7,6 +7,8 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
+import Checkbox from "@mui/material/Checkbox";
+import { Check, CheckBox } from "@mui/icons-material";
 
 const columns = [
   { id: "name", label: "Name", minWidth: 170 },
@@ -76,6 +78,9 @@ export default function StickyHeadTable() {
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
+              <TableCell padding="checkbox">
+                <CheckBox checked={false} />
+              </TableCell>
               {columns.map((column) => (
                 <TableCell
                   key={column.id}
@@ -93,6 +98,9 @@ export default function StickyHeadTable() {
               .map((row) => {
                 return (
                   <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
+                    <TableCell padding="checkbox">
+                      <CheckBox checked={false} />
+                    </TableCell>
                     {columns.map((column) => {
                       const value = row[column.id];
                       return (

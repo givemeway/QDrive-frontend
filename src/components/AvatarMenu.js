@@ -16,7 +16,7 @@ export default function AvatarMenu() {
       flexDirection="row"
       alignItems="center"
       justifyContent="flex-end"
-      sx={{ marginBottom: 2 }}
+      sx={{ marginBottom: 2, height: 40 }}
     >
       <Button
         id="demo-positioned-button"
