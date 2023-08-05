@@ -2,8 +2,14 @@ import { Grid } from "@mui/material";
 import NavigatePanel from "./Panel";
 import Header from "./Header";
 import MainPanel from "./MainPanel";
+import { useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
 
 const Dashboard = () => {
+  const location = useLocation();
+  useEffect(() => {
+    console.log("location changed");
+  }, [location]);
   return (
     <Grid container columns={2} wrap="nowrap">
       <Grid item sx={{ width: 200 }}>
