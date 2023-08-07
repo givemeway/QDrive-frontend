@@ -1,4 +1,12 @@
-import { Box, TextField, Fab, Button, Divider } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Fab,
+  Button,
+  Divider,
+  Stack,
+  Typography,
+} from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
@@ -49,46 +57,85 @@ function InputFileLabel({ children }) {
 
 export default function UploadMenu() {
   return (
-    <Box
-      display="flex"
-      flexDirection="row"
-      alignItems="center"
-      alignContent="center"
-      sx={{ height: 40, background: "#F9F9F9", border: "1px solid #DBDBDB" }}
-    >
-      <CustomButton>
-        <InputFileLabel>
-          <UploadFileIcon
+    <Stack sx={{ marginBottom: 0 }}>
+      <Box
+        display="flex"
+        flexDirection="row"
+        alignItems="center"
+        alignContent="center"
+        sx={{
+          height: "100%",
+          background: "#F9F9F9",
+          border: "1px solid #DBDBDB",
+        }}
+      >
+        <CustomButton>
+          <InputFileLabel>
+            <UploadFileIcon
+              color="primary"
+              sx={{ cursor: "pointer", fontSize: 25 }}
+            />
+          </InputFileLabel>
+        </CustomButton>
+        <Divider orientation="vertical" />
+        <CustomButton>
+          <InputFileLabel>
+            <DriveFolderUploadIcon
+              color="primary"
+              sx={{ cursor: "pointer", fontSize: 25 }}
+            />
+          </InputFileLabel>
+        </CustomButton>
+        <Divider orientation="vertical" />
+        <CustomButton>
+          <CloudDownloadIcon
             color="primary"
             sx={{ cursor: "pointer", fontSize: 25 }}
           />
-        </InputFileLabel>
-      </CustomButton>
-      <Divider orientation="vertical" />
-      <CustomButton>
-        <InputFileLabel>
-          <DriveFolderUploadIcon
+        </CustomButton>
+        <Divider orientation="vertical" />
+        <CustomButton>
+          <ShareIcon color="primary" sx={{ cursor: "pointer", fontSize: 25 }} />
+        </CustomButton>
+        <Divider orientation="vertical" />
+        <CustomButton>
+          <DeleteIcon
             color="primary"
             sx={{ cursor: "pointer", fontSize: 25 }}
           />
-        </InputFileLabel>
-      </CustomButton>
-      <Divider orientation="vertical" />
-      <CustomButton>
-        <CloudDownloadIcon
-          color="primary"
-          sx={{ cursor: "pointer", fontSize: 25 }}
-        />
-      </CustomButton>
-      <Divider orientation="vertical" />
-      <CustomButton>
-        <ShareIcon color="primary" sx={{ cursor: "pointer", fontSize: 25 }} />
-      </CustomButton>
-      <Divider orientation="vertical" />
-      <CustomButton>
-        <DeleteIcon color="primary" sx={{ cursor: "pointer", fontSize: 25 }} />
-      </CustomButton>
-      <Divider orientation="vertical" />
-    </Box>
+        </CustomButton>
+        <Divider orientation="vertical" />
+      </Box>
+      <Box
+        display="flex"
+        flexDirection="row"
+        justifyContent="space-between"
+        sx={{
+          width: "100%",
+          background: "#F9F9F9",
+          border: "1px solid #DBDBDB",
+        }}
+      >
+        <Typography
+          component="span"
+          align="left"
+          sx={{ width: "60%", marginLeft: 2 }}
+        >
+          Name
+        </Typography>
+        <Divider orientation="vertical" />
+        <Typography component="span" align="left" sx={{ width: "10%" }}>
+          Size
+        </Typography>
+        <Divider orientation="vertical" />
+        <Typography component="span" align="left" sx={{ width: "10%" }}>
+          Version
+        </Typography>
+        <Divider orientation="vertical" sx={{ color: "red" }} />
+        <Typography component="span" align="left" sx={{ width: "20%" }}>
+          Modified
+        </Typography>
+      </Box>
+    </Stack>
   );
 }

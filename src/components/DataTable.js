@@ -14,7 +14,6 @@ import { Check, CheckBox } from "@mui/icons-material";
 import { useEffect } from "react";
 import { Button } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
-
 const columns = [
   { id: "name", label: "Name", minWidth: 400 },
   {
@@ -37,16 +36,14 @@ const columns = [
   },
 ];
 
-function createData(name, code, population, size) {
-  const density = population / size;
-  return { name, code, population, size, density };
-}
-
-let rows = [];
+const downloadUrl = `https://localhost:3001/app/downloadFiles`;
 
 export default function StickyHeadTable({ data }) {
+  let rows = [];
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [newRows, setNewRows] = React.useState([]);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -57,12 +54,11 @@ export default function StickyHeadTable({ data }) {
   };
 
   useEffect(() => {
-    rows = [];
     rows = data.files.map((file) => ({
       id: file.id,
       label: file.filename,
       size: file.size,
-      path: file.directory,
+      path: `${downloadUrl}?device=${file.device}&dir=${file.directory}&file=${file.filename}`,
       versions: file.versions,
       modified: file.last_modified,
       item: "file",
@@ -79,52 +75,79 @@ export default function StickyHeadTable({ data }) {
         item: "folder",
       })),
     ];
-    console.log(rows);
+
+    setNewRows(rows);
+    setPage(0);
+    setRowsPerPage(10);
   }, [data]);
   return (
-    <Paper sx={{ width: "100%", overflow: "hidden" }}>
-      <TableContainer sx={{ maxHeight: 500 }}>
-        <Table stickyHeader aria-label="sticky table">
-          <TableHead>
-            <TableRow>
-              {columns.map((column) => (
-                <TableCell
-                  key={column.id}
-                  align={column.align}
-                  style={{ width: column.minWidth }}
-                >
-                  {column.label}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows
+    <Paper sx={{ height: "100%", marginTop: 0, overflow: "hidden" }}>
+      <TableContainer sx={{ maxHeight: 500, minWidth: 600, width: "100%" }}>
+        <Table stickyHeader aria-label="sticky table" size="small">
+          <TableBody sx={{ height: "100%" }}>
+            {newRows
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => {
                 return (
-                  <TableRow hover tabIndex={-1} key={row.id}>
-                    <TableCell style={{ width: 400 }}>
+                  <TableRow
+                    hover
+                    tabIndex={-1}
+                    key={row.id}
+                    sx={{ height: 50 }}
+                  >
+                    <TableCell
+                      align="left"
+                      style={{
+                        width: "60%",
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "flex-start",
+                        alignItems: "center",
+                      }}
+                    >
                       {row.item === "folder" ? (
-                        <Link to={"/dashboard" + row.path}>
-                          <Button>
-                            <FolderOpenIcon color="primary" fontSize="large" />
-                            {row.label}
-                          </Button>
+                        <Link
+                          to={"/dashboard" + row.path}
+                          style={{
+                            textDecoration: "none",
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "flex-start",
+                            alignItems: "center",
+                            fontSize: "1.5rem",
+                            color: "rgb(128, 128, 128)",
+                          }}
+                        >
+                          <FolderOpenIcon color="primary" fontSize="large" />
+                          {row.label}
                         </Link>
                       ) : (
-                        <Button
-                          startIcon={
-                            <FileOpenIcon color="primary" fontSize="large" />
-                          }
+                        <a
+                          href={row.path}
+                          style={{
+                            textDecoration: "none",
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-around",
+                            alignItems: "center",
+                            fontSize: "1.5rem",
+                            color: "rgb(128, 128, 128)",
+                          }}
                         >
+                          <FileOpenIcon color="primary" fontSize="large" />
                           {row.label}
-                        </Button>
+                        </a>
                       )}
                     </TableCell>
-                    <TableCell style={{ width: 50 }}>{row.size}</TableCell>
-                    <TableCell style={{ width: 50 }}>{row.versions}</TableCell>
-                    <TableCell style={{ width: 170 }}>{row.modified}</TableCell>
+                    <TableCell align="left" style={{ width: "10%" }}>
+                      {row.size}
+                    </TableCell>
+                    <TableCell align="left" style={{ width: "10%" }}>
+                      {row.versions}
+                    </TableCell>
+                    <TableCell align="left" style={{ width: "20%" }}>
+                      {row.modified}
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -132,13 +155,14 @@ export default function StickyHeadTable({ data }) {
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[10, 25, 100]}
+        rowsPerPageOptions={[5, 10, 25, 100]}
         component="div"
-        count={rows.length}
+        count={newRows.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{ position: "sticky", bottom: 0, top: 0 }}
       />
     </Paper>
   );

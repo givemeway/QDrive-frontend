@@ -1,7 +1,9 @@
 import * as React from "react";
 import { emphasize, styled } from "@mui/material/styles";
+import { useState } from "react";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Chip from "@mui/material/Chip";
+import { Link } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
@@ -28,9 +30,12 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 function handleClick(event) {
   event.preventDefault();
   console.info("You clicked a breadcrumb.");
+  console.log(event.target);
 }
 
-export default function CustomizedBreadcrumbs() {
+export default function CustomizedBreadcrumbs({ queue }) {
+  let label;
+  let link = "/dashboard";
   return (
     <div
       role="presentation"
@@ -38,18 +43,24 @@ export default function CustomizedBreadcrumbs() {
       style={{ height: 40, margin: 0, padding: 0 }}
     >
       <Breadcrumbs aria-label="breadcrumb">
-        <StyledBreadcrumb
-          component="a"
-          href="#"
-          label="Home"
-          icon={<HomeIcon fontSize="small" />}
-        />
-        <StyledBreadcrumb component="a" href="#" label="Catalog" />
-        <StyledBreadcrumb
-          label="Accessories"
-          deleteIcon={<ExpandMoreIcon />}
-          onDelete={handleClick}
-        />
+        {queue.map((path) => {
+          if (path === "/") {
+            label = "Home";
+          } else {
+            label = path;
+            link += `/${path}`;
+          }
+
+          return (
+            <StyledBreadcrumb
+              component={Link}
+              to={link}
+              label={label}
+              key={link}
+              icon={label === "Home" ? <HomeIcon fontSize="small" /> : <></>}
+            />
+          );
+        })}
       </Breadcrumbs>
     </div>
   );

@@ -3,12 +3,12 @@ import BreadCrumb from "./Breadcrumb";
 import AvatarMenu from "./AvatarMenu";
 import Search from "./SearchFilesFolders";
 
-const Header = () => {
+const Header = ({ queue }) => {
   return (
     <Stack>
       <AvatarMenu />
       <Search />
-      <BreadCrumb />
+      <BreadCrumb queue={queue} />
     </Stack>
   );
 };
