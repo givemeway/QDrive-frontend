@@ -1,3 +1,10 @@
+/* global axios */
+/* global forge */
+/* global writer */
+/* global streamSaver */
+
+import { deriveKey } from "./cryptoutil.js";
+
 const arrayBufferToHex = (buffer) => {
   return [...new Uint8Array(buffer)]
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -45,11 +52,62 @@ const hexToBuffer = (hexString) => {
   return byteArray;
 };
 
-async function streamDownloadDecryptToDisk(url, cipher) {
+async function saveFile(url) {
+  fetch(url)
+    .then(async (response) => {
+      let size = response.headers.get("content-length");
+      const salt = response.headers.get("salt");
+      const iv = response.headers.get("iv");
+      const key = await deriveKey(
+        "sandy86kumar",
+        hexToBuffer(salt),
+        100000,
+        256
+      );
+      const iv_buffer = hexToBuffer(iv);
+      const iv_binaryString = arrayBufferToBinaryString(iv_buffer);
+      const cipher = forge.cipher.createDecipher("AES-CBC", key);
+      cipher.start({ iv: iv_binaryString });
+      const filename = response.headers
+        .get("content-disposition")
+        .split(";")[1]
+        .split(/\"/g)[1]
+        .trim();
+      const fileStream = streamSaver.createWriteStream(filename);
+      let ts_dec = new TransformStream({
+        async transform(chunk, controller) {
+          console.log(size);
+          size = size - chunk.length;
+          cipher.update(forge.util.createBuffer(chunk));
+          if (size === 0) {
+            cipher.finish();
+          }
+          const decryptedChunk = cipher.output.getBytes();
+          const arrBuffer = binaryStringToArrayBuffer(decryptedChunk);
+          controller.enqueue(arrBuffer);
+        },
+      });
+      response.body
+        .pipeThrough(ts_dec)
+        .pipeTo(fileStream)
+        .then((done) => console.log(done));
+    })
+    .catch((err) => console.log(err));
+}
+
+async function streamDownloadDecryptToDisk(url) {
   // create readable stream for ciphertext
   let size;
-  let rs_src = fetch(url).then((response) => {
+  let cipher;
+  let rs_src = fetch(url).then(async (response) => {
     size = response.headers.get("content-length");
+    const salt = response.headers.get("salt");
+    const iv = response.headers.get("iv");
+    const key = await deriveKey("sandy86kumar", hexToBuffer(salt), 100000, 256);
+    const iv_buffer = hexToBuffer(iv);
+    const iv_binaryString = arrayBufferToBinaryString(iv_buffer);
+    cipher = forge.cipher.createDecipher("AES-CBC", key);
+    cipher.start({ iv: iv_binaryString });
     return response.body;
   });
 
@@ -85,4 +143,5 @@ export {
   arrayBufferToBinaryString,
   hexToBuffer,
   streamDownloadDecryptToDisk,
+  saveFile,
 };

@@ -15,6 +15,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   return {
     backgroundColor,
     height: theme.spacing(3),
+    cursor: "pointer",
     color: theme.palette.text.primary,
     fontWeight: theme.typography.fontWeightRegular,
     "&:hover, &:focus": {
@@ -29,18 +30,16 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
 
 function handleClick(event) {
   event.preventDefault();
-  console.info("You clicked a breadcrumb.");
-  console.log(event.target);
 }
 
 export default function CustomizedBreadcrumbs({ queue }) {
   let label;
-  let link = "/dashboard";
+  let link = "/dashboard/home";
   return (
     <div
       role="presentation"
       onClick={handleClick}
-      style={{ height: 40, margin: 0, padding: 0 }}
+      style={{ height: "100%", marginLeft: 15, padding: 0 }}
     >
       <Breadcrumbs aria-label="breadcrumb">
         {queue.map((path) => {

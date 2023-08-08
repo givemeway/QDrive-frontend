@@ -12,8 +12,9 @@ import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
 import Checkbox from "@mui/material/Checkbox";
 import { Check, CheckBox } from "@mui/icons-material";
 import { useEffect } from "react";
-import { Button } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
+import { download } from "../download.js";
 const columns = [
   { id: "name", label: "Name", minWidth: 400 },
   {
@@ -36,7 +37,7 @@ const columns = [
   },
 ];
 
-const downloadUrl = `https://localhost:3001/app/downloadFiles`;
+const downloadUrl = `/app/downloadFiles`;
 
 export default function StickyHeadTable({ data }) {
   let rows = [];
@@ -81,7 +82,7 @@ export default function StickyHeadTable({ data }) {
     setRowsPerPage(10);
   }, [data]);
   return (
-    <Paper sx={{ height: "100%", marginTop: 0, overflow: "hidden" }}>
+    <Paper sx={{ height: "100%" }}>
       <TableContainer sx={{ maxHeight: 500, minWidth: 600, width: "100%" }}>
         <Table stickyHeader aria-label="sticky table" size="small">
           <TableBody sx={{ height: "100%" }}>
@@ -98,7 +99,7 @@ export default function StickyHeadTable({ data }) {
                     <TableCell
                       align="left"
                       style={{
-                        width: "60%",
+                        width: "100%",
                         display: "flex",
                         flexDirection: "row",
                         justifyContent: "flex-start",
@@ -107,36 +108,55 @@ export default function StickyHeadTable({ data }) {
                     >
                       {row.item === "folder" ? (
                         <Link
-                          to={"/dashboard" + row.path}
+                          to={"/dashboard/home" + row.path}
                           style={{
                             textDecoration: "none",
                             display: "flex",
                             flexDirection: "row",
                             justifyContent: "flex-start",
+                            marginLeft: 10,
+                            gap: 15,
                             alignItems: "center",
-                            fontSize: "1.5rem",
                             color: "rgb(128, 128, 128)",
                           }}
                         >
-                          <FolderOpenIcon color="primary" fontSize="large" />
-                          {row.label}
+                          <FolderOpenIcon
+                            color="primary"
+                            sx={{ width: 50, height: 50 }}
+                          />
+
+                          <Typography sx={{ fontSize: "1.25rem" }}>
+                            {row.label}
+                          </Typography>
                         </Link>
                       ) : (
-                        <a
-                          href={row.path}
-                          style={{
+                        <Button
+                          onClick={() => download(row.path)}
+                          fullWidth
+                          sx={{
                             textDecoration: "none",
+                            textTransform: "none",
                             display: "flex",
                             flexDirection: "row",
-                            justifyContent: "space-around",
+                            justifyContent: "flex-start",
+                            gap: 2,
                             alignItems: "center",
                             fontSize: "1.5rem",
                             color: "rgb(128, 128, 128)",
                           }}
                         >
-                          <FileOpenIcon color="primary" fontSize="large" />
-                          {row.label}
-                        </a>
+                          <FileOpenIcon
+                            color="primary"
+                            sx={{ width: 50, height: 50 }}
+                          />
+
+                          <Typography
+                            align="right"
+                            sx={{ fontSize: "1.25rem" }}
+                          >
+                            {row.label}
+                          </Typography>
+                        </Button>
                       )}
                     </TableCell>
                     <TableCell align="left" style={{ width: "10%" }}>

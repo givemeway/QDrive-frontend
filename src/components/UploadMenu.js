@@ -57,14 +57,14 @@ function InputFileLabel({ children }) {
 
 export default function UploadMenu() {
   return (
-    <Stack sx={{ marginBottom: 0 }}>
+    <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
       <Box
         display="flex"
         flexDirection="row"
         alignItems="center"
         alignContent="center"
         sx={{
-          height: "100%",
+          height: "70%",
           background: "#F9F9F9",
           border: "1px solid #DBDBDB",
         }}
@@ -112,6 +112,7 @@ export default function UploadMenu() {
         justifyContent="space-between"
         sx={{
           width: "100%",
+          height: "50%",
           background: "#F9F9F9",
           border: "1px solid #DBDBDB",
         }}

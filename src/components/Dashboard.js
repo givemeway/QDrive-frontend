@@ -1,5 +1,7 @@
+/*global axios */
 import { Grid, Box, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
+import { download } from "../download.js";
 
 import NavigatePanel from "./Panel";
 import Header from "./Header";
@@ -7,10 +9,11 @@ import MainPanel from "./MainPanel";
 import Menu from "./UploadMenu";
 
 import { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 const url = "/app/browseFolder";
 const csrfurl = "/app/csrftoken";
+const searchURL = "/app/search";
 
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);
@@ -19,72 +22,100 @@ async function fetchCSRFToken(csrfurl) {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [breadCrumb, setBreadCrumb] = useState(["/"]);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [isSearch, setIsSearch] = useState(false);
+
   const params = useParams();
   const subpath = params["*"];
+
   useEffect(() => {
-    let homedir;
-    let curDir;
-    let breadCrumbQueue;
-    if (subpath.length === 0) {
-      homedir = "/";
-      curDir = "/";
-      setBreadCrumb(["/"]);
-    } else {
-      curDir = subpath.split("/").slice(1).join("/");
-      breadCrumbQueue = [...subpath.split("/")];
-      setBreadCrumb(["/", ...breadCrumbQueue]);
-      if (curDir.length === 0) {
+    setDataLoaded(false);
+    setIsSearch(false);
+    setSearchValue("");
+    const path = subpath.split("/");
+    if (path[0] === "home") {
+      let homedir;
+      let curDir;
+      let breadCrumbQueue;
+
+      if (path.length === 1) {
+        homedir = "/";
         curDir = "/";
+        setBreadCrumb(["/"]);
+      } else {
+        curDir = path.slice(2).join("/");
+        breadCrumbQueue = [...path.slice(1)];
+        setBreadCrumb(["/", ...breadCrumbQueue]);
+        if (curDir.length === 0) {
+          curDir = "/";
+        }
+        homedir = path[1];
       }
-      homedir = subpath.split("/")[0];
+      fetchCSRFToken(csrfurl).then((csrftoken) => {
+        const headers = {
+          "X-CSRF-Token": csrftoken,
+          "Content-type": "application/x-www-form-urlencoded",
+          devicename: homedir,
+          currentdirectory: curDir,
+          username: "sandeep.kumar@idriveinc.com",
+          sortorder: "ASC",
+        };
+        const options = {
+          method: "POST",
+          credentials: "include",
+          mode: "cors",
+          headers: headers,
+        };
+        fetch(url + "/", options)
+          .then((res) => res.json())
+          .then((data) => {
+            setData(() => {
+              setDataLoaded(true);
+              return data;
+            });
+          })
+          .catch((err) => console.log(err));
+      });
+    } else if (path[0] === "search") {
+      const initiateSearch = async (value) => {
+        try {
+          const res = await axios.get(searchURL + `?search=${value}`);
+          setData(res.data);
+          setDataLoaded(true);
+        } catch (err) {
+          console.log(err);
+          setData([]);
+          setDataLoaded(true);
+        }
+      };
+      const param = path.slice(1)[0];
+      setIsSearch(true);
+      setSearchValue(param);
+      initiateSearch(param);
     }
-    fetchCSRFToken(csrfurl).then((csrftoken) => {
-      const headers = {
-        "X-CSRF-Token": csrftoken,
-        "Content-type": "application/x-www-form-urlencoded",
-        devicename: homedir,
-        currentdirectory: curDir,
-        username: "sandeep.kumar@idriveinc.com",
-        sortorder: "ASC",
-      };
-      const options = {
-        method: "POST",
-        credentials: "include",
-        mode: "cors",
-        headers: headers,
-      };
-      fetch(url + "/", options)
-        .then((res) => res.json())
-        .then((data) => {
-          setData(() => {
-            setDataLoaded(true);
-            return data;
-          });
-        })
-        .catch((err) => console.log(err));
-    });
   }, [subpath]);
   return (
     <Grid container columns={2} wrap="nowrap">
       <Grid item sx={{ width: 200, height: "100vh" }}>
         <NavigatePanel />
       </Grid>
-      <Grid item sx={{ width: "100%", height: "100vh" }}>
+      <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
         <Grid container sx={{ height: "100%" }}>
-          <Grid item xs={12} sx={{ height: "25%" }}>
-            {dataLoaded && <Header queue={breadCrumb} />}
+          <Grid item xs={12} sx={{ height: "15%" }}>
+            <Header
+              queue={breadCrumb}
+              searchValue={searchValue}
+              search={isSearch}
+            />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={{ height: "5%" }}>
             <Menu />
           </Grid>
-          <Grid
-            item
-            xs={12}
-            sx={{ height: "60%", overflowY: "auto", overflowX: "hidden" }}
-          >
+          <Grid item xs={12} sx={{ height: "75%" }}>
             {!dataLoaded ? (
               <Box
                 sx={{
