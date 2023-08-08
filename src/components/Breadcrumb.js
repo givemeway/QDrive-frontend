@@ -39,7 +39,16 @@ export default function CustomizedBreadcrumbs({ queue }) {
     <div
       role="presentation"
       onClick={handleClick}
-      style={{ height: "100%", marginLeft: 15, padding: 0 }}
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        gap: 2,
+        height: "33%",
+        margin: 0,
+        padding: 0,
+      }}
     >
       <Breadcrumbs aria-label="breadcrumb">
         {queue.map((path) => {

@@ -17,7 +17,7 @@ const Header = ({ queue, searchValue, search }) => {
     }
   }, [search]);
   return (
-    <Stack>
+    <Stack sx={{ height: "100%" }}>
       <AvatarMenu />
       <Search searchValue={searchValue} />
       {showBreadCrumb ? (
@@ -28,7 +28,7 @@ const Header = ({ queue, searchValue, search }) => {
           flexDirection="row"
           alignItems="center"
           justifyContent="flex-start"
-          sx={{ margin: 0, padding: 0 }}
+          sx={{ margin: 0, padding: 0, height: "33%" }}
         >
           <IconButton
             aria-label="delete"

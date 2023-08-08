@@ -105,17 +105,17 @@ const Dashboard = () => {
       </Grid>
       <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
         <Grid container sx={{ height: "100%" }}>
-          <Grid item xs={12} sx={{ height: "15%" }}>
+          <Grid item xs={12} sx={{ height: "20%", margin: 0, padding: 0 }}>
             <Header
               queue={breadCrumb}
               searchValue={searchValue}
               search={isSearch}
             />
           </Grid>
-          <Grid item xs={12} sx={{ height: "5%" }}>
+          <Grid item xs={12} sx={{ height: "10%", margin: 0, padding: 0 }}>
             <Menu />
           </Grid>
-          <Grid item xs={12} sx={{ height: "75%" }}>
+          <Grid item xs={12} sx={{ height: "70%", margin: 0, padding: 0 }}>
             {!dataLoaded ? (
               <Box
                 sx={{

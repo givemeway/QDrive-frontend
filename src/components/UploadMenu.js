@@ -12,7 +12,7 @@ import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded"
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
-import { Share } from "@mui/icons-material";
+import { useState, useEffect } from "react";
 
 function CustomButton({ children }) {
   return (
@@ -32,6 +32,18 @@ function CustomButton({ children }) {
 }
 
 function InputFileLabel({ children }) {
+  const [files, setFiles] = useState([]);
+  const handleChange = (e) => {
+    setFiles(
+      Array.from(e.target.files).map((file) => {
+        file.modified = false;
+        return file;
+      })
+    );
+  };
+  useEffect(() => {
+    console.log(files);
+  }, [files]);
   return (
     <label
       htmlFor="upload-file"
@@ -48,7 +60,8 @@ function InputFileLabel({ children }) {
         id="upload-file"
         name="upload-file"
         type="file"
-        multiple
+        webkitdirectory="true"
+        onChange={handleChange}
       />
       {children}
     </label>
@@ -64,7 +77,7 @@ export default function UploadMenu() {
         alignItems="center"
         alignContent="center"
         sx={{
-          height: "70%",
+          height: "65%",
           background: "#F9F9F9",
           border: "1px solid #DBDBDB",
         }}
@@ -112,7 +125,7 @@ export default function UploadMenu() {
         justifyContent="space-between"
         sx={{
           width: "100%",
-          height: "50%",
+          height: "35%",
           background: "#F9F9F9",
           border: "1px solid #DBDBDB",
         }}

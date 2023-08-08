@@ -18,7 +18,7 @@ export default function Search({ searchValue }) {
       alignItems="center"
       justifyContent="flex-start"
       columnGap={2}
-      sx={{ marginBottom: 2, height: 40 }}
+      sx={{ margin: 0, padding: 0, height: "33%" }}
     >
       <TextField
         placeholder="search file/folder"
