@@ -37,47 +37,48 @@ function CustomButton({ children }) {
 }
 
 const uploadFolder = async (cwd, filesList, device) => {
+  let tempDeviceName;
   const uploadingDirPath =
     cwd === "/"
       ? filesList[0].webkitRelativePath.split(/\//g)[0]
       : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
-
+  if (device === "/") {
+    tempDeviceName = filesList[0].webkitRelativePath.split(/\//g)[0];
+  }
   const { data } = await axios.get(csrftokenURL);
   const CSRFToken = data.CSRFToken;
-  console.log(CSRFToken);
   console.log(uploadingDirPath);
-  getfilesCurDir(uploadingDirPath, device, CSRFToken)
-    .then(async (DbFiles) => {
-      let files = await compareFiles(filesList, DbFiles, cwd);
-      console.log(files.length);
-      for (let i = 0; i < files.length; i++) {
-        try {
-          let data = await uploadFile(
-            files[i],
-            cwd,
-            files[i].modified,
-            device,
-            CSRFToken
-          );
+  const DbFiles = await getfilesCurDir(
+    uploadingDirPath,
+    tempDeviceName,
+    CSRFToken
+  );
 
-          console.log(data);
-        } catch (err) {
-          console.log(err);
-        }
-      }
-    })
-    .catch((err) => {
-      console.log("inside this error block");
+  let files = await compareFiles(filesList, DbFiles, cwd);
+  console.log(files.length);
+  for (let i = 0; i < files.length; i++) {
+    try {
+      let data = await uploadFile(
+        files[i],
+        cwd,
+        files[i].modified,
+        device,
+        CSRFToken
+      );
+
+      console.log(data);
+    } catch (err) {
       console.log(err);
-    });
+    }
+  }
 };
 
-function InputFileLabel({ children, setFiles }) {
-  // const [files, setFiles] = useState([]);
+function InputFileLabel({ children, setFiles, setIsUploading, isDirectory }) {
   const handleChange = (e) => {
     setFiles(
       Array.from(e.target.files).map((file) => {
         file.modified = false;
+        setIsUploading(true);
         return file;
       })
     );
@@ -99,7 +100,7 @@ function InputFileLabel({ children, setFiles }) {
         id="upload-file"
         name="upload-file"
         type="file"
-        webkitdirectory="true"
+        {...(isDirectory ? { webkitdirectory: "true" } : { multiple: true })}
         onChange={handleChange}
       />
       {children}
@@ -111,7 +112,9 @@ export default function UploadMenu({ path }) {
   const [pwd, setPWD] = useState("/");
   const [device, setDevice] = useState("/");
   const [files, setFiles] = useState([]);
-
+  const [isUploading, setIsUploading] = useState(false);
+  // TODO: 1 track the upload and make sure uploadfolder is not invoked again until the current upload is complete.
+  // TODO: 2 Clear the files once the upload is complete
   useEffect(() => {
     const subpart = path.split("/").slice(1);
     if (subpart.length === 0) {
@@ -124,10 +127,18 @@ export default function UploadMenu({ path }) {
     }
   }, [path]);
   useEffect(() => {
-    console.log(files);
-    console.log(device, pwd);
-    if (files.length > 0) {
-      uploadFolder(pwd, files, device);
+    if (files.length > 0 && isUploading) {
+      uploadFolder(pwd, files, device)
+        .then(() => {
+          setIsUploading(false);
+          setFiles([]);
+          console.log("upload complete");
+        })
+        .catch((err) => {
+          setIsUploading(false);
+          setFiles([]);
+          console.log(err);
+        });
     }
   }, [files, pwd, device]);
   return (
@@ -144,7 +155,11 @@ export default function UploadMenu({ path }) {
         }}
       >
         <CustomButton>
-          <InputFileLabel setFiles={setFiles}>
+          <InputFileLabel
+            setFiles={setFiles}
+            setIsUploading={setIsUploading}
+            isDirectory={false}
+          >
             <UploadFileIcon
               color="primary"
               sx={{ cursor: "pointer", fontSize: 25 }}
@@ -153,7 +168,11 @@ export default function UploadMenu({ path }) {
         </CustomButton>
         <Divider orientation="vertical" />
         <CustomButton>
-          <InputFileLabel setFiles={setFiles}>
+          <InputFileLabel
+            setFiles={setFiles}
+            setIsUploading={setIsUploading}
+            isDirectory={true}
+          >
             <DriveFolderUploadIcon
               color="primary"
               sx={{ cursor: "pointer", fontSize: 25 }}
@@ -180,37 +199,6 @@ export default function UploadMenu({ path }) {
         </CustomButton>
         <Divider orientation="vertical" />
       </Box>
-      {/* <Box
-        display="flex"
-        flexDirection="row"
-        justifyContent="space-between"
-        sx={{
-          width: "100%",
-          height: "35%",
-          background: "#F9F9F9",
-          border: "1px solid #DBDBDB",
-        }}
-      >
-        <Typography
-          component="span"
-          align="left"
-          sx={{ width: "60%", marginLeft: 2 }}
-        >
-          Name
-        </Typography>
-        <Divider orientation="vertical" />
-        <Typography component="span" align="left" sx={{ width: "10%" }}>
-          Size
-        </Typography>
-        <Divider orientation="vertical" />
-        <Typography component="span" align="left" sx={{ width: "10%" }}>
-          Version
-        </Typography>
-        <Divider orientation="vertical" sx={{ color: "red" }} />
-        <Typography component="span" align="left" sx={{ width: "20%" }}>
-          Modified
-        </Typography>
-      </Box> */}
     </Stack>
   );
 }

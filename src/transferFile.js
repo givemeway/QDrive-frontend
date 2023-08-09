@@ -1,7 +1,7 @@
 /* global forge */
 /* global axios */
 
-import { fileUploadURL, username, devicename } from "./config.js";
+import { fileUploadURL, username } from "./config.js";
 import { deriveKey, encryptMessage } from "./cryptoutil.js";
 import {
   arrayBufferToBinaryString,
@@ -13,14 +13,34 @@ import {
 const uploadFile = (file, cwd, modified, device, CSRFToken) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const filePath =
-        cwd === "/"
-          ? file.webkitRelativePath
-          : cwd + "/" + file.webkitRelativePath;
+      let filePath;
+      if (device !== "/") {
+        console.log("inside here");
+        filePath =
+          cwd === "/"
+            ? file.webkitRelativePath
+            : cwd + "/" + file.webkitRelativePath;
+      } else {
+        filePath =
+          cwd === "/"
+            ? file.webkitRelativePath.split(/\//g).slice(1).join("/")
+            : cwd +
+              "/" +
+              file.webkitRelativePath.split(/\//g).slice(1).join("/");
+
+        device = file.webkitRelativePath.split(/\//g)[0];
+      }
+
       const pathParts = filePath.split("/");
       pathParts.pop();
-      const dir = pathParts.join("/");
+      let dir = pathParts.join("/");
 
+      if (dir.length === 0) {
+        dir = "/";
+      }
+      if (device.length === 0) {
+        device = "/";
+      }
       if (file.size === 0) {
         reject(`Empty file`);
         return;
@@ -104,7 +124,6 @@ const uploadFile = (file, cwd, modified, device, CSRFToken) => {
             },
           })
           .then(function (response) {
-            console.log(response.data);
             currentChunk++;
             if (currentChunk < file.size / CHUNK_SIZE) {
               headers["filemode"] = "a";
@@ -119,9 +138,6 @@ const uploadFile = (file, cwd, modified, device, CSRFToken) => {
               retries++;
               uploadChunk(chunk);
             } else {
-              // uploadCountElement.textContent =
-              //   "Uploaded " + uploadCount + " out of " + totalCount;
-
               if (error.response) {
                 switch (error.response.status) {
                   case 500:
