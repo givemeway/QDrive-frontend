@@ -112,10 +112,10 @@ const Dashboard = () => {
               search={isSearch}
             />
           </Grid>
-          <Grid item xs={12} sx={{ height: "10%", margin: 0, padding: 0 }}>
+          <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
             <Menu path={subpath} />
           </Grid>
-          <Grid item xs={12} sx={{ height: "70%", margin: 0, padding: 0 }}>
+          <Grid item xs={12} sx={{ height: "75%", margin: 0, padding: 0 }}>
             {!dataLoaded ? (
               <Box
                 sx={{

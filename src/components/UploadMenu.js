@@ -1,3 +1,5 @@
+/* global forge */
+/* global axios */
 import {
   Box,
   TextField,
@@ -13,6 +15,9 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import { useState, useEffect } from "react";
+import { getfilesCurDir, compareFiles } from "../filesInfo.js";
+import { uploadFile } from "../transferFile.js";
+import { csrftokenURL } from "../config.js";
 
 function CustomButton({ children }) {
   return (
@@ -31,8 +36,44 @@ function CustomButton({ children }) {
   );
 }
 
-function InputFileLabel({ children }) {
-  const [files, setFiles] = useState([]);
+const uploadFolder = async (cwd, filesList, device) => {
+  const uploadingDirPath =
+    cwd === "/"
+      ? filesList[0].webkitRelativePath.split(/\//g)[0]
+      : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
+
+  const { data } = await axios.get(csrftokenURL);
+  const CSRFToken = data.CSRFToken;
+  console.log(CSRFToken);
+  console.log(uploadingDirPath);
+  getfilesCurDir(uploadingDirPath, device, CSRFToken)
+    .then(async (DbFiles) => {
+      let files = await compareFiles(filesList, DbFiles, cwd);
+      console.log(files.length);
+      for (let i = 0; i < files.length; i++) {
+        try {
+          let data = await uploadFile(
+            files[i],
+            cwd,
+            files[i].modified,
+            device,
+            CSRFToken
+          );
+
+          console.log(data);
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    })
+    .catch((err) => {
+      console.log("inside this error block");
+      console.log(err);
+    });
+};
+
+function InputFileLabel({ children, setFiles }) {
+  // const [files, setFiles] = useState([]);
   const handleChange = (e) => {
     setFiles(
       Array.from(e.target.files).map((file) => {
@@ -41,9 +82,7 @@ function InputFileLabel({ children }) {
       })
     );
   };
-  useEffect(() => {
-    console.log(files);
-  }, [files]);
+
   return (
     <label
       htmlFor="upload-file"
@@ -71,22 +110,26 @@ function InputFileLabel({ children }) {
 export default function UploadMenu({ path }) {
   const [pwd, setPWD] = useState("/");
   const [device, setDevice] = useState("/");
-  useEffect(() => {
-    console.log(pwd, device);
-    const subpart = path.split("/").slice(1);
+  const [files, setFiles] = useState([]);
 
+  useEffect(() => {
+    const subpart = path.split("/").slice(1);
     if (subpart.length === 0) {
       setDevice("/");
       setPWD("/");
     } else {
-      setDevice(subpart.slice(0, 1));
-      setPWD(subpart.slice(1));
+      setDevice(subpart.slice(0, 1)[0]);
+      const path = subpart.slice(1).join("/");
+      setPWD(path.length === 0 ? "/" : path);
     }
   }, [path]);
   useEffect(() => {
-    console.log(pwd);
-    console.log(device);
-  }, [pwd, device]);
+    console.log(files);
+    console.log(device, pwd);
+    if (files.length > 0) {
+      uploadFolder(pwd, files, device);
+    }
+  }, [files, pwd, device]);
   return (
     <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
       <Box
@@ -95,13 +138,13 @@ export default function UploadMenu({ path }) {
         alignItems="center"
         alignContent="center"
         sx={{
-          height: "65%",
+          height: "100%",
           background: "#F9F9F9",
           border: "1px solid #DBDBDB",
         }}
       >
         <CustomButton>
-          <InputFileLabel>
+          <InputFileLabel setFiles={setFiles}>
             <UploadFileIcon
               color="primary"
               sx={{ cursor: "pointer", fontSize: 25 }}
@@ -110,7 +153,7 @@ export default function UploadMenu({ path }) {
         </CustomButton>
         <Divider orientation="vertical" />
         <CustomButton>
-          <InputFileLabel>
+          <InputFileLabel setFiles={setFiles}>
             <DriveFolderUploadIcon
               color="primary"
               sx={{ cursor: "pointer", fontSize: 25 }}
@@ -137,7 +180,7 @@ export default function UploadMenu({ path }) {
         </CustomButton>
         <Divider orientation="vertical" />
       </Box>
-      <Box
+      {/* <Box
         display="flex"
         flexDirection="row"
         justifyContent="space-between"
@@ -167,7 +210,7 @@ export default function UploadMenu({ path }) {
         <Typography component="span" align="left" sx={{ width: "20%" }}>
           Modified
         </Typography>
-      </Box>
+      </Box> */}
     </Stack>
   );
 }

@@ -16,10 +16,8 @@ async function fetchCSRFToken(csrfurl) {
 
 export default function MainPanel({ data }) {
   return (
-    <>
-      <Stack flexDirection="column">
-        <Table data={data} />
-      </Stack>
-    </>
+    <Stack flexDirection="column" sx={{ height: "100%", width: "100%" }}>
+      <Table data={data} />
+    </Stack>
   );
 }

@@ -1,3 +1,6 @@
+/* global forge */
+/* global axios */
+
 import { fileUploadURL, username, devicename } from "./config.js";
 import { deriveKey, encryptMessage } from "./cryptoutil.js";
 import {
@@ -7,18 +10,7 @@ import {
   arrayBufferToHex,
 } from "./util.js";
 
-const uploadFile = (
-  file,
-  cwd,
-  progressBar,
-  hashHex,
-  token,
-  CSRFToken,
-  modified,
-  uploadCountElement,
-  uploadCount,
-  totalCount
-) => {
+const uploadFile = (file, cwd, modified, device, CSRFToken) => {
   return new Promise(async (resolve, reject) => {
     try {
       const filePath =
@@ -45,7 +37,7 @@ const uploadFile = (
       let headers = {
         filename: file.name,
         dir: dir,
-        devicename: devicename,
+        devicename: device,
         username: username,
         "Content-Type": "application/octet-stream",
         "Content-Disposition": `attachment; filename="${file.name}"`,
@@ -106,15 +98,13 @@ const uploadFile = (
           .post(fileUploadURL, chunk, {
             headers: headers,
             onUploadProgress: function (event) {
-              progressBar.textContent = `${file.name} - ${parseFloat(
-                ((currentChunk + 1) / totalChunks) * event.progress * 100
-              ).toFixed(2)}%`;
+              // progressBar.textContent = `${file.name} - ${parseFloat(
+              //   ((currentChunk + 1) / totalChunks) * event.progress * 100
+              // ).toFixed(2)}%`;
             },
           })
           .then(function (response) {
             console.log(response.data);
-            uploadCountElement.textContent =
-              "Uploaded " + uploadCount + " out of " + totalCount;
             currentChunk++;
             if (currentChunk < file.size / CHUNK_SIZE) {
               headers["filemode"] = "a";
@@ -129,8 +119,8 @@ const uploadFile = (
               retries++;
               uploadChunk(chunk);
             } else {
-              uploadCountElement.textContent =
-                "Uploaded " + uploadCount + " out of " + totalCount;
+              // uploadCountElement.textContent =
+              //   "Uploaded " + uploadCount + " out of " + totalCount;
 
               if (error.response) {
                 switch (error.response.status) {

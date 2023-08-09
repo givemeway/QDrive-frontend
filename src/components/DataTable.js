@@ -9,31 +9,112 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import FolderOpenIcon from "@mui/icons-material/FolderOpenRounded";
 import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
-import Checkbox from "@mui/material/Checkbox";
-import { Check, CheckBox } from "@mui/icons-material";
+import { DataGrid, gridRowsLoadingSelector } from "@mui/x-data-grid";
 import { useEffect } from "react";
-import { Button, Typography } from "@mui/material";
+import { Button, Typography, Box } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { download } from "../download.js";
+// const columns = [
+//   { id: "name", label: "Name", minWidth: 400 },
+//   {
+//     id: "Size",
+//     label: "Size",
+//     minWidth: 50,
+//     align: "left",
+//   },
+//   {
+//     id: "versions",
+//     label: "Versions",
+//     minWidth: 50,
+//     align: "left",
+//   },
+//   {
+//     id: "modified",
+//     label: "Modified",
+//     minWidth: 170,
+//     align: "left",
+//   },
+// ];
+
 const columns = [
-  { id: "name", label: "Name", minWidth: 400 },
   {
-    id: "Size",
-    label: "Size",
-    minWidth: 50,
-    align: "left",
+    field: "name",
+    headerName: "Name",
+    flex: 0.5,
+    editable: true,
+    renderCell: (cellValues) => {
+      return (
+        <>
+          {cellValues.row.item === "folder" ? (
+            <Link
+              to={"/dashboard/home" + cellValues.row.path}
+              style={{
+                textDecoration: "none",
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "flex-start",
+                marginLeft: 10,
+                gap: 15,
+                alignItems: "center",
+                color: "rgb(128, 128, 128)",
+              }}
+            >
+              <FolderOpenIcon color="primary" sx={{ width: 50, height: 50 }} />
+
+              <Typography sx={{ fontSize: "1.25rem" }}>
+                {cellValues.row.name}
+              </Typography>
+            </Link>
+          ) : (
+            <Button
+              onClick={() => download(cellValues.row.path)}
+              fullWidth
+              sx={{
+                textDecoration: "none",
+                textTransform: "none",
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "flex-start",
+                gap: 2,
+                alignItems: "center",
+                fontSize: "1.5rem",
+                color: "rgb(128, 128, 128)",
+              }}
+            >
+              <FileOpenIcon color="primary" sx={{ width: 50, height: 50 }} />
+
+              <Typography align="right" sx={{ fontSize: "1.25rem" }}>
+                {cellValues.row.name}
+              </Typography>
+            </Button>
+          )}
+        </>
+      );
+    },
   },
   {
-    id: "versions",
-    label: "Versions",
-    minWidth: 50,
-    align: "left",
+    field: "size",
+    headerName: "Size",
+    flex: 0.15,
+    editable: false,
   },
   {
-    id: "modified",
-    label: "Modified",
-    minWidth: 170,
-    align: "left",
+    field: "versions",
+    headerName: "Versions",
+    type: "number",
+    flex: 0.15,
+    editable: false,
+  },
+  {
+    field: "modified",
+    headerName: "Modified",
+    description: "This column has a value getter and is not sortable.",
+    flex: 0.2,
+    editable: false,
+    // sortable: false,
+    // width: 160,
+    // valueGetter: (params) =>
+    //   `${params.row.firstName || ""} ${params.row.lastName || ""}`,
   },
 ];
 
@@ -47,6 +128,7 @@ export default function StickyHeadTable({ data }) {
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
+    console.log("new page");
   };
 
   const handleChangeRowsPerPage = (event) => {
@@ -57,7 +139,7 @@ export default function StickyHeadTable({ data }) {
   useEffect(() => {
     rows = data.files.map((file) => ({
       id: file.id,
-      label: file.filename,
+      name: file.filename,
       size: file.size,
       path: `${downloadUrl}?device=${file.device}&dir=${file.directory}&file=${file.filename}`,
       versions: file.versions,
@@ -68,7 +150,7 @@ export default function StickyHeadTable({ data }) {
       ...rows,
       ...data.folders.map((folder) => ({
         id: folder.id,
-        label: folder.folder,
+        name: folder.folder,
         size: "--",
         path: folder.path,
         versions: "--",
@@ -82,108 +164,22 @@ export default function StickyHeadTable({ data }) {
     setRowsPerPage(10);
   }, [data]);
   return (
-    <Paper sx={{ height: "100%" }}>
-      <TableContainer sx={{ maxHeight: 500, minWidth: 600, width: "100%" }}>
-        <Table stickyHeader aria-label="sticky table" size="small">
-          <TableBody sx={{ height: "100%" }}>
-            {newRows
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row) => {
-                return (
-                  <TableRow
-                    hover
-                    tabIndex={-1}
-                    key={row.id}
-                    sx={{ height: 50 }}
-                  >
-                    <TableCell
-                      align="left"
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                      }}
-                    >
-                      {row.item === "folder" ? (
-                        <Link
-                          to={"/dashboard/home" + row.path}
-                          style={{
-                            textDecoration: "none",
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "flex-start",
-                            marginLeft: 10,
-                            gap: 15,
-                            alignItems: "center",
-                            color: "rgb(128, 128, 128)",
-                          }}
-                        >
-                          <FolderOpenIcon
-                            color="primary"
-                            sx={{ width: 50, height: 50 }}
-                          />
-
-                          <Typography sx={{ fontSize: "1.25rem" }}>
-                            {row.label}
-                          </Typography>
-                        </Link>
-                      ) : (
-                        <Button
-                          onClick={() => download(row.path)}
-                          fullWidth
-                          sx={{
-                            textDecoration: "none",
-                            textTransform: "none",
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "flex-start",
-                            gap: 2,
-                            alignItems: "center",
-                            fontSize: "1.5rem",
-                            color: "rgb(128, 128, 128)",
-                          }}
-                        >
-                          <FileOpenIcon
-                            color="primary"
-                            sx={{ width: 50, height: 50 }}
-                          />
-
-                          <Typography
-                            align="right"
-                            sx={{ fontSize: "1.25rem" }}
-                          >
-                            {row.label}
-                          </Typography>
-                        </Button>
-                      )}
-                    </TableCell>
-                    <TableCell align="left" style={{ width: "10%" }}>
-                      {row.size}
-                    </TableCell>
-                    <TableCell align="left" style={{ width: "10%" }}>
-                      {row.versions}
-                    </TableCell>
-                    <TableCell align="left" style={{ width: "20%" }}>
-                      {row.modified}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25, 100]}
-        component="div"
-        count={newRows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        sx={{ position: "sticky", bottom: 0, top: 0 }}
+    <Box sx={{ height: "100%", width: "100%" }}>
+      <DataGrid
+        rows={newRows}
+        columns={columns}
+        initialState={{
+          pagination: {
+            paginationModel: {
+              pageSize: 10,
+            },
+          },
+        }}
+        pageSizeOptions={[5, 10, 15, 20, 50, 100]}
+        checkboxSelection
+        disableRowSelectionOnClick
+        rowHeight={75}
       />
-    </Paper>
+    </Box>
   );
 }

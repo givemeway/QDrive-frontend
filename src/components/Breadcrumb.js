@@ -36,10 +36,23 @@ export default function CustomizedBreadcrumbs({ queue }) {
   let label;
   let link = "/dashboard/home";
   return (
-    <div
-      role="presentation"
-      onClick={handleClick}
-      style={{
+    // <div
+    //   role="presentation"
+    //   onClick={handleClick}
+    // style={{
+    //   display: "flex",
+    //   flexDirection: "row",
+    //   justifyContent: "flex-start",
+    //   alignItems: "center",
+    //   gap: 2,
+    //   height: "33%",
+    //   margin: 0,
+    //   padding: 0,
+    // }}
+    // >
+    <Breadcrumbs
+      aria-label="breadcrumb"
+      sx={{
         display: "flex",
         flexDirection: "row",
         justifyContent: "flex-start",
@@ -50,26 +63,25 @@ export default function CustomizedBreadcrumbs({ queue }) {
         padding: 0,
       }}
     >
-      <Breadcrumbs aria-label="breadcrumb">
-        {queue.map((path) => {
-          if (path === "/") {
-            label = "Home";
-          } else {
-            label = path;
-            link += `/${path}`;
-          }
+      {queue.map((path) => {
+        if (path === "/") {
+          label = "Home";
+        } else {
+          label = path;
+          link += `/${path}`;
+        }
 
-          return (
-            <StyledBreadcrumb
-              component={Link}
-              to={link}
-              label={label}
-              key={link}
-              icon={label === "Home" ? <HomeIcon fontSize="small" /> : <></>}
-            />
-          );
-        })}
-      </Breadcrumbs>
-    </div>
+        return (
+          <StyledBreadcrumb
+            component={Link}
+            to={link}
+            label={label}
+            key={link}
+            icon={label === "Home" ? <HomeIcon fontSize="small" /> : <></>}
+          />
+        );
+      })}
+    </Breadcrumbs>
+    // </div>
   );
 }
