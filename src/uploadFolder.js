@@ -2,15 +2,13 @@ import { uploadFile } from "./transferFile.js";
 import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { cwd, csrftokenURL } from "./config.js";
 
-const response = await fetch(csrftokenURL);
-const { CSRFToken } = await response.json();
 const uploadingDirPath =
   cwd === "/"
     ? filesList[0].webkitRelativePath.split(/\//g)[0]
     : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
 
 console.log(uploadingDirPath);
-getfilesCurDir(uploadingDirPath, CSRFToken)
+getfilesCurDir(uploadingDirPath)
   .then(async (DbFiles) => {
     let files = await compareFiles(filesList, DbFiles, cwd);
     console.log(files.length);
@@ -23,7 +21,6 @@ getfilesCurDir(uploadingDirPath, CSRFToken)
           progressBar,
           hashHex,
           token,
-          CSRFToken,
           files[i].modified,
           uploadCountElement,
           i + 1,

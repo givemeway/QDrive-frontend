@@ -113,7 +113,7 @@ const Dashboard = () => {
             />
           </Grid>
           <Grid item xs={12} sx={{ height: "10%", margin: 0, padding: 0 }}>
-            <Menu />
+            <Menu path={subpath} />
           </Grid>
           <Grid item xs={12} sx={{ height: "70%", margin: 0, padding: 0 }}>
             {!dataLoaded ? (

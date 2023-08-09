@@ -68,7 +68,25 @@ function InputFileLabel({ children }) {
   );
 }
 
-export default function UploadMenu() {
+export default function UploadMenu({ path }) {
+  const [pwd, setPWD] = useState("/");
+  const [device, setDevice] = useState("/");
+  useEffect(() => {
+    console.log(pwd, device);
+    const subpart = path.split("/").slice(1);
+
+    if (subpart.length === 0) {
+      setDevice("/");
+      setPWD("/");
+    } else {
+      setDevice(subpart.slice(0, 1));
+      setPWD(subpart.slice(1));
+    }
+  }, [path]);
+  useEffect(() => {
+    console.log(pwd);
+    console.log(device);
+  }, [pwd, device]);
   return (
     <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
       <Box
