@@ -27,7 +27,7 @@ const getfilesCurDir = async (cwd, device, CSRFToken) => {
   }
 };
 
-const compareFiles = async (selectedFileList, DbFileList, cwd) => {
+const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
   if (DbFileList.length === 0) {
     return selectedFileList;
   }
@@ -62,11 +62,14 @@ const compareFiles = async (selectedFileList, DbFileList, cwd) => {
   });
   let filesToUpload = [];
   for (const file of selectedFileList) {
-    const filePath =
+    let filePath =
       cwd === "/"
-        ? file.webkitRelativePath
-        : cwd + "/" + file.webkitRelativePath;
+        ? file.webkitRelativePath.split(/\//g).slice(1).join("/")
+        : cwd + "/" + file.webkitRelativePath.split(/\//g).slice(1).join("/");
     let dirName = getDirName(filePath);
+    if (dirName.length === 0) {
+      dirName = "/";
+    }
     if (files.hasOwnProperty(dirName)) {
       if (!files[dirName].hasOwnProperty(file.name)) {
         file.modified = false;

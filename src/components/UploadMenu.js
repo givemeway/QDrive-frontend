@@ -1,14 +1,8 @@
 /* global forge */
 /* global axios */
-import {
-  Box,
-  TextField,
-  Fab,
-  Button,
-  Divider,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Divider, Stack, Typography } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMoreOutlined.js";
+import ExpandLessIcon from "@mui/icons-material/ExpandLessOutlined.js";
 import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
@@ -36,14 +30,16 @@ function CustomButton({ children }) {
   );
 }
 
-const uploadFolder = async (cwd, filesList, device) => {
+const uploadFolder = async (cwd, filesList, device, setFilesUploaded) => {
   let tempDeviceName;
-  const uploadingDirPath =
+  console.log(cwd);
+  let uploadingDirPath =
     cwd === "/"
       ? filesList[0].webkitRelativePath.split(/\//g)[0]
       : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
   if (device === "/") {
     tempDeviceName = filesList[0].webkitRelativePath.split(/\//g)[0];
+    uploadingDirPath = "/";
   }
   const { data } = await axios.get(csrftokenURL);
   const CSRFToken = data.CSRFToken;
@@ -53,8 +49,8 @@ const uploadFolder = async (cwd, filesList, device) => {
     tempDeviceName,
     CSRFToken
   );
-
-  let files = await compareFiles(filesList, DbFiles, cwd);
+  console.log(DbFiles);
+  let files = await compareFiles(filesList, DbFiles, cwd, device);
   console.log(files.length);
   for (let i = 0; i < files.length; i++) {
     try {
@@ -67,6 +63,7 @@ const uploadFolder = async (cwd, filesList, device) => {
       );
 
       console.log(data);
+      setFilesUploaded((prev) => [...prev, data]);
     } catch (err) {
       console.log(err);
     }
@@ -100,7 +97,7 @@ function InputFileLabel({ children, setFiles, setIsUploading, isDirectory }) {
         id="upload-file"
         name="upload-file"
         type="file"
-        {...(isDirectory ? { webkitdirectory: "true" } : { multiple: true })}
+        webkitdirectory="true"
         onChange={handleChange}
       />
       {children}
@@ -115,6 +112,19 @@ export default function UploadMenu({ path }) {
   const [isUploading, setIsUploading] = useState(false);
   // TODO: 1 track the upload and make sure uploadfolder is not invoked again until the current upload is complete.
   // TODO: 2 Clear the files once the upload is complete
+  const [expandProgress, setExpandProgress] = useState(true);
+  const [progressBlock, setProgressBlock] = useState("block");
+  const [filesUploaded, setFilesUploaded] = useState([]);
+  const close = () => {
+    setExpandProgress((prev) => !prev);
+  };
+  useEffect(() => {
+    if (expandProgress) {
+      setProgressBlock("block");
+    } else {
+      setProgressBlock("none");
+    }
+  }, [expandProgress]);
   useEffect(() => {
     const subpart = path.split("/").slice(1);
     if (subpart.length === 0) {
@@ -128,7 +138,7 @@ export default function UploadMenu({ path }) {
   }, [path]);
   useEffect(() => {
     if (files.length > 0 && isUploading) {
-      uploadFolder(pwd, files, device)
+      uploadFolder(pwd, files, device, setFilesUploaded)
         .then(() => {
           setIsUploading(false);
           setFiles([]);
@@ -142,63 +152,123 @@ export default function UploadMenu({ path }) {
     }
   }, [files, pwd, device]);
   return (
-    <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
+    <>
+      <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
+        <Box
+          display="flex"
+          flexDirection="row"
+          alignItems="center"
+          alignContent="center"
+          sx={{
+            height: "100%",
+            background: "#F9F9F9",
+            border: "1px solid #DBDBDB",
+            margin: 0,
+            padding: 0,
+          }}
+        >
+          <CustomButton>
+            <InputFileLabel
+              setFiles={setFiles}
+              setIsUploading={setIsUploading}
+              isDirectory={false}
+            >
+              <UploadFileIcon
+                color="primary"
+                sx={{ cursor: "pointer", fontSize: 25 }}
+              />
+            </InputFileLabel>
+          </CustomButton>
+
+          <Divider orientation="vertical" />
+          <CustomButton>
+            <InputFileLabel
+              setFiles={setFiles}
+              setIsUploading={setIsUploading}
+              isDirectory={true}
+            >
+              <DriveFolderUploadIcon
+                color="primary"
+                sx={{ cursor: "pointer", fontSize: 25 }}
+              />
+            </InputFileLabel>
+          </CustomButton>
+
+          <Divider orientation="vertical" />
+
+          <CustomButton>
+            <CloudDownloadIcon
+              color="primary"
+              sx={{ cursor: "pointer", fontSize: 25 }}
+            />
+          </CustomButton>
+          <Divider orientation="vertical" />
+
+          <CustomButton>
+            <ShareIcon
+              color="primary"
+              sx={{ cursor: "pointer", fontSize: 25 }}
+            />
+          </CustomButton>
+          <Divider orientation="vertical" />
+          <CustomButton>
+            <DeleteIcon
+              color="primary"
+              sx={{ cursor: "pointer", fontSize: 25 }}
+            />
+          </CustomButton>
+          <Divider orientation="vertical" />
+        </Box>
+      </Stack>
       <Box
-        display="flex"
-        flexDirection="row"
-        alignItems="center"
-        alignContent="center"
         sx={{
-          height: "100%",
-          background: "#F9F9F9",
+          display: "flex",
+          flexDirection: "column",
+          background: "white",
           border: "1px solid #DBDBDB",
+          width: "30%",
+          zIndex: 300,
+          position: "absolute",
+          bottom: 2,
+          left: 167,
         }}
       >
-        <CustomButton>
-          <InputFileLabel
-            setFiles={setFiles}
-            setIsUploading={setIsUploading}
-            isDirectory={false}
-          >
-            <UploadFileIcon
-              color="primary"
-              sx={{ cursor: "pointer", fontSize: 25 }}
-            />
-          </InputFileLabel>
-        </CustomButton>
-        <Divider orientation="vertical" />
-        <CustomButton>
-          <InputFileLabel
-            setFiles={setFiles}
-            setIsUploading={setIsUploading}
-            isDirectory={true}
-          >
-            <DriveFolderUploadIcon
-              color="primary"
-              sx={{ cursor: "pointer", fontSize: 25 }}
-            />
-          </InputFileLabel>
-        </CustomButton>
-        <Divider orientation="vertical" />
-        <CustomButton>
-          <CloudDownloadIcon
-            color="primary"
-            sx={{ cursor: "pointer", fontSize: 25 }}
-          />
-        </CustomButton>
-        <Divider orientation="vertical" />
-        <CustomButton>
-          <ShareIcon color="primary" sx={{ cursor: "pointer", fontSize: 25 }} />
-        </CustomButton>
-        <Divider orientation="vertical" />
-        <CustomButton>
-          <DeleteIcon
-            color="primary"
-            sx={{ cursor: "pointer", fontSize: 25 }}
-          />
-        </CustomButton>
-        <Divider orientation="vertical" />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flexWrap: "nowrap",
+            justifyContent: "space-evenly",
+            alignItems: "center",
+            width: "100%",
+            height: 48,
+            background: "#F9F9F9",
+            borderBottom: "1px solid #DBDBDB",
+          }}
+        >
+          <Typography>
+            Uploading of items, 16 minutes left{" "}
+            <Button onClick={close}>
+              {progressBlock === "block" ? (
+                <ExpandMoreIcon color="primary" fontSize="large" />
+              ) : (
+                <ExpandLessIcon color="primary" fontSize="large" />
+              )}
+            </Button>
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            display: progressBlock,
+            height: 300,
+            overflow: "auto",
+          }}
+        >
+          {filesUploaded.map((file) => (
+            <Typography>{file}</Typography>
+          ))}
+        </Box>
       </Box>
-    </Stack>
+    </>
   );
 }

@@ -1,22 +1,30 @@
-import { Box, Stack } from "@mui/material";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Stack, Box, Button, Typography } from "@mui/material";
+import { useState, useEffect } from "react";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMoreOutlined.js";
+import ExpandLessIcon from "@mui/icons-material/ExpandLessOutlined.js";
+import Drawer from "./DrawerUpload.js";
 
 import Table from "./DataTable";
-import Menu from "./UploadMenu";
-
-const url = "/app/browseFolder";
-const csrfurl = "/app/csrftoken";
-
-async function fetchCSRFToken(csrfurl) {
-  const response = await fetch(csrfurl);
-  const { CSRFToken } = await response.json();
-  return CSRFToken;
-}
 
 export default function MainPanel({ data }) {
+  const [expandProgress, setExpandProgress] = useState(true);
+  const [progressBlock, setProgressBlock] = useState("block");
+  const close = () => {
+    setExpandProgress((prev) => !prev);
+  };
+  useEffect(() => {
+    if (expandProgress) {
+      setProgressBlock("block");
+    } else {
+      setProgressBlock("none");
+    }
+  }, [expandProgress]);
   return (
-    <Stack flexDirection="column" sx={{ height: "100%", width: "100%" }}>
+    <Stack
+      display="flex"
+      flexDirection="column"
+      sx={{ height: "100%", width: "100%" }}
+    >
       <Table data={data} />
     </Stack>
   );

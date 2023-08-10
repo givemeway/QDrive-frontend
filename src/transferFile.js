@@ -15,7 +15,6 @@ const uploadFile = (file, cwd, modified, device, CSRFToken) => {
     try {
       let filePath;
       if (device !== "/") {
-        console.log("inside here");
         filePath =
           cwd === "/"
             ? file.webkitRelativePath
@@ -84,7 +83,7 @@ const uploadFile = (file, cwd, modified, device, CSRFToken) => {
       const salt = generateRandomBytes(32);
       const iv_buffer = generateRandomBytes(16);
       const iv = arrayBufferToBinaryString(iv_buffer);
-      const key = await deriveKey("sandy86kumar", salt, 100000, 256);
+      const key = await deriveKey("sandy86kumar", salt);
 
       const enc_fileName = encryptMessage("AES-CBC", file.name, key, iv);
 

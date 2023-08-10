@@ -103,7 +103,7 @@ async function streamDownloadDecryptToDisk(url) {
     size = response.headers.get("content-length");
     const salt = response.headers.get("salt");
     const iv = response.headers.get("iv");
-    const key = await deriveKey("sandy86kumar", hexToBuffer(salt), 100000, 256);
+    const key = await deriveKey("sandy86kumar", hexToBuffer(salt));
     const iv_buffer = hexToBuffer(iv);
     const iv_binaryString = arrayBufferToBinaryString(iv_buffer);
     cipher = forge.cipher.createDecipher("AES-CBC", key);

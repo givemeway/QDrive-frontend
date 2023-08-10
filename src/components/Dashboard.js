@@ -1,7 +1,6 @@
 /*global axios */
 import { Grid, Box, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
-import { download } from "../download.js";
 
 import NavigatePanel from "./Panel";
 import Header from "./Header";
@@ -9,7 +8,7 @@ import MainPanel from "./MainPanel";
 import Menu from "./UploadMenu";
 
 import { useEffect, useState } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const url = "/app/browseFolder";
 const csrfurl = "/app/csrftoken";
