@@ -1,6 +1,13 @@
 /* global forge */
 /* global axios */
-import { Box, Button, Divider, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  Stack,
+  Typography,
+  LinearProgress,
+} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMoreOutlined.js";
 import ExpandLessIcon from "@mui/icons-material/ExpandLessOutlined.js";
 import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
@@ -30,7 +37,14 @@ function CustomButton({ children }) {
   );
 }
 
-const uploadFolder = async (cwd, filesList, device, setFilesUploaded) => {
+const uploadFolder = async (
+  cwd,
+  filesList,
+  device,
+  setFilesToUpload,
+  setFilesUploaded,
+  setFileUploadProgress
+) => {
   let tempDeviceName;
   console.log(cwd);
   let uploadingDirPath =
@@ -49,25 +63,32 @@ const uploadFolder = async (cwd, filesList, device, setFilesUploaded) => {
     tempDeviceName,
     CSRFToken
   );
-  console.log(DbFiles);
   let files = await compareFiles(filesList, DbFiles, cwd, device);
   console.log(files.length);
-  for (let i = 0; i < files.length; i++) {
-    try {
-      let data = await uploadFile(
-        files[i],
-        cwd,
-        files[i].modified,
-        device,
-        CSRFToken
-      );
-
-      console.log(data);
-      setFilesUploaded((prev) => [...prev, data]);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  setFilesToUpload(
+    () =>
+      new Map(
+        files.map((file) => [
+          file.webkitRelativePath,
+          { name: file.name, progress: 0 },
+        ])
+      )
+  );
+  // for (let i = 0; i < files.length; i++) {
+  //   try {
+  //     let data = await uploadFile(
+  //       files[i],
+  //       cwd,
+  //       files[i].modified,
+  //       device,
+  //       CSRFToken,
+  //       setFileUploadProgress
+  //     );
+  //     setFilesUploaded((prev) => [...prev, data]);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // }
 };
 
 function InputFileLabel({ children, setFiles, setIsUploading, isDirectory }) {
@@ -115,6 +136,8 @@ export default function UploadMenu({ path }) {
   const [expandProgress, setExpandProgress] = useState(true);
   const [progressBlock, setProgressBlock] = useState("block");
   const [filesUploaded, setFilesUploaded] = useState([]);
+  const [fileUploadProgress, setFileUploadProgress] = useState(0);
+  const [filesToUpload, setFilesToUpload] = useState([]);
   const close = () => {
     setExpandProgress((prev) => !prev);
   };
@@ -138,7 +161,14 @@ export default function UploadMenu({ path }) {
   }, [path]);
   useEffect(() => {
     if (files.length > 0 && isUploading) {
-      uploadFolder(pwd, files, device, setFilesUploaded)
+      uploadFolder(
+        pwd,
+        files,
+        device,
+        setFilesToUpload,
+        setFilesUploaded,
+        setFileUploadProgress
+      )
         .then(() => {
           setIsUploading(false);
           setFiles([]);
@@ -151,6 +181,9 @@ export default function UploadMenu({ path }) {
         });
     }
   }, [files, pwd, device]);
+  useEffect(() => {
+    console.log(filesToUpload);
+  }, [filesToUpload]);
   return (
     <>
       <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
@@ -230,7 +263,7 @@ export default function UploadMenu({ path }) {
           zIndex: 300,
           position: "absolute",
           bottom: 2,
-          left: 167,
+          left: 200,
         }}
       >
         <Box
@@ -257,17 +290,20 @@ export default function UploadMenu({ path }) {
             </Button>
           </Typography>
         </Box>
-        <Box
+        <Stack
           sx={{
             display: progressBlock,
             height: 300,
             overflow: "auto",
           }}
         >
-          {filesUploaded.map((file) => (
-            <Typography>{file}</Typography>
+          {Array.from(filesToUpload).map((file) => (
+            <Box sx={{ width: "100%" }} key={file[0]}>
+              <Typography>{file[1].name}</Typography>
+              <LinearProgress variant="determinate" value={file[1].progress} />
+            </Box>
           ))}
-        </Box>
+        </Stack>
       </Box>
     </>
   );

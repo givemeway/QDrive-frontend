@@ -10,9 +10,18 @@ import {
   arrayBufferToHex,
 } from "./util.js";
 
-const uploadFile = (file, cwd, modified, device, CSRFToken) => {
+const uploadFile = (
+  file,
+  cwd,
+  modified,
+  device,
+  CSRFToken,
+  setFilesToUpload,
+  id
+) => {
   return new Promise(async (resolve, reject) => {
     try {
+      let progress = 0;
       let filePath;
       if (device !== "/") {
         filePath =
@@ -117,6 +126,14 @@ const uploadFile = (file, cwd, modified, device, CSRFToken) => {
           .post(fileUploadURL, chunk, {
             headers: headers,
             onUploadProgress: function (event) {
+              progress = Math.round(
+                ((currentChunk + 1) / totalChunks) * event.progress * 100
+              );
+              setFilesToUpload((prev) =>
+                prev.map((f) =>
+                  f.id === id ? { ...f, progress: progress } : f
+                )
+              );
               // progressBar.textContent = `${file.name} - ${parseFloat(
               //   ((currentChunk + 1) / totalChunks) * event.progress * 100
               // ).toFixed(2)}%`;

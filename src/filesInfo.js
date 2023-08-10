@@ -61,6 +61,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
     }
   });
   let filesToUpload = [];
+  let idx = 0;
   for (const file of selectedFileList) {
     let filePath =
       cwd === "/"
@@ -73,6 +74,8 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
     if (files.hasOwnProperty(dirName)) {
       if (!files[dirName].hasOwnProperty(file.name)) {
         file.modified = false;
+        file.id = idx;
+        file.progress = 0;
         filesToUpload.push(file);
       } else {
         const localFileHash = await hashFileChunked(file);
@@ -80,11 +83,15 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
           console.log("Modified");
           file.modified = true;
           file.hash = localFileHash;
+          file.id = idx;
+          file.progress = 0;
           filesToUpload.push(file);
         }
       }
     } else {
       file.modified = false;
+      file.id = idx;
+      file.progress = 0;
       filesToUpload.push(file);
     }
   }
