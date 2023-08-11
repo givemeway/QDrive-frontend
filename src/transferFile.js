@@ -10,14 +10,21 @@ import {
   arrayBufferToHex,
 } from "./util.js";
 
+function formatBytes(bytes) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
 const uploadFile = (
   file,
   cwd,
   modified,
   device,
   CSRFToken,
-  setFilesToUpload,
-  id
+  setTrackFilesProgress
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -80,7 +87,7 @@ const uploadFile = (
         reader.readAsArrayBuffer(file.slice(start, end));
       };
 
-      const CHUNK_SIZE = 1024 * 1024 * 1;
+      const CHUNK_SIZE = 1024 * 1024 * 10;
       const MAX_RETRIES = 3;
       let retries = 0;
       let currentChunk = 0;
@@ -129,10 +136,18 @@ const uploadFile = (
               progress = Math.round(
                 ((currentChunk + 1) / totalChunks) * event.progress * 100
               );
-              setFilesToUpload((prev) =>
-                prev.map((f) =>
-                  f.id === id ? { ...f, progress: progress } : f
-                )
+              setTrackFilesProgress((prev) =>
+                new Map(prev).set(file.webkitRelativePath, {
+                  name: file.name,
+                  progress: progress,
+                  status: "uploading",
+                  size: formatBytes(file.size),
+                  bytes: file.size,
+                  folder: file.webkitRelativePath
+                    .split("/")
+                    .slice(0, -1)
+                    .join("/"),
+                })
               );
               // progressBar.textContent = `${file.name} - ${parseFloat(
               //   ((currentChunk + 1) / totalChunks) * event.progress * 100
@@ -145,6 +160,19 @@ const uploadFile = (
               headers["filemode"] = "a";
               loadNextChunk();
             } else {
+              setTrackFilesProgress((prev) =>
+                new Map(prev).set(file.webkitRelativePath, {
+                  name: file.name,
+                  progress: progress,
+                  status: "uploaded",
+                  size: formatBytes(file.size),
+                  bytes: file.size,
+                  folder: file.webkitRelativePath
+                    .split("/")
+                    .slice(0, -1)
+                    .join("/"),
+                })
+              );
               resolve(response.data);
             }
           })

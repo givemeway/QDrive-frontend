@@ -5,6 +5,14 @@
 
 import { deriveKey } from "./cryptoutil.js";
 
+function formatBytes(bytes) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
 const arrayBufferToHex = (buffer) => {
   return [...new Uint8Array(buffer)]
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -144,4 +152,5 @@ export {
   hexToBuffer,
   streamDownloadDecryptToDisk,
   saveFile,
+  formatBytes,
 };
