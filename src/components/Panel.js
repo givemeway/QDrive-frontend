@@ -1,4 +1,5 @@
 import { Stack, Button, Box, Grid, Typography } from "@mui/material";
+import React from "react";
 
 const Tab = ({ children }) => {
   return (
@@ -21,6 +22,7 @@ const Tab = ({ children }) => {
 };
 
 const Panel = () => {
+  console.log("side panel rendered");
   return (
     <Box
       display="flex"
@@ -43,4 +45,4 @@ const Panel = () => {
   );
 };
 
-export default Panel;
+export default React.memo(Panel);

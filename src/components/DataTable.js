@@ -1,21 +1,21 @@
-import * as React from "react";
 import FolderOpenIcon from "@mui/icons-material/FolderOpenRounded";
 import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
 import { DataGrid, gridRowsLoadingSelector } from "@mui/x-data-grid";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Button, Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 import { download } from "../download.js";
+import { formatBytes } from "../util.js";
 
 const downloadUrl = `/app/downloadFiles`;
 
-export default function DataGridTable({ data }) {
+export default React.memo(function DataGridTable({ data }) {
   let rows = [];
   const [newRows, setNewRows] = React.useState([]);
   const [contextMenu, setContextMenu] = React.useState(null);
-
+  console.log("table rendered");
   const columns = [
     {
       field: "name",
@@ -75,6 +75,7 @@ export default function DataGridTable({ data }) {
               <Button
                 onClick={() => download(cellValues.row.path)}
                 fullWidth
+                disableRipple
                 sx={{
                   textDecoration: "none",
                   textTransform: "none",
@@ -85,6 +86,7 @@ export default function DataGridTable({ data }) {
                   alignItems: "center",
                   fontSize: "1.5rem",
                   color: "rgb(128, 128, 128)",
+                  "&:hover": { backgroundColor: "transparent" },
                 }}
               >
                 <FileOpenIcon color="primary" sx={{ width: 50, height: 50 }} />
@@ -147,7 +149,7 @@ export default function DataGridTable({ data }) {
     rows = data.files.map((file) => ({
       id: file.id,
       name: file.filename,
-      size: file.size,
+      size: formatBytes(file.size),
       path: `${downloadUrl}?device=${file.device}&dir=${file.directory}&file=${file.filename}`,
       versions: file.versions,
       modified: file.last_modified,
@@ -187,4 +189,4 @@ export default function DataGridTable({ data }) {
       />
     </Box>
   );
-}
+});

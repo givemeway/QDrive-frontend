@@ -8,8 +8,8 @@ import MainPanel from "./MainPanel";
 import Menu from "./UploadMenu";
 import { PathContext } from "./Context";
 
-import { useEffect, useState, useContext, createContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const url = "/app/browseFolder";
 const csrfurl = "/app/csrftoken";
@@ -22,8 +22,6 @@ async function fetchCSRFToken(csrfurl) {
 }
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-
   const [data, setData] = useState([]);
   const [breadCrumb, setBreadCrumb] = useState(["/"]);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -32,7 +30,7 @@ const Dashboard = () => {
 
   const params = useParams();
   const subpath = params["*"];
-
+  console.log("dashboard rendered");
   useEffect(() => {
     setDataLoaded(false);
     setIsSearch(false);
@@ -141,4 +139,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default React.memo(Dashboard);

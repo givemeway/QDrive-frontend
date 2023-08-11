@@ -23,6 +23,7 @@ function CustomButton({ children }) {
       disableRipple
       sx={{
         border: "none",
+        boxSizing: "border-box",
         "&:hover": {
           backgroundColor: "#EFF3FA",
           border: "none",
@@ -49,6 +50,9 @@ const findFilesToUpload = async (
         : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
     if (device === "/") {
       tempDeviceName = filesList[0].webkitRelativePath.split(/\//g)[0];
+      if (tempDeviceName.length === 0) {
+        tempDeviceName = "/";
+      }
       uploadingDirPath = "/";
     }
     const { data } = await axios.get(csrftokenURL);
@@ -56,8 +60,8 @@ const findFilesToUpload = async (
     setCSRFToken(CSRFToken);
     console.log(uploadingDirPath);
     const DbFiles = await getfilesCurDir(
-      uploadingDirPath,
-      tempDeviceName,
+      cwd,
+      tempDeviceName !== undefined ? tempDeviceName : device,
       CSRFToken
     );
     let files = await compareFiles(filesList, DbFiles, cwd, device);
@@ -84,29 +88,34 @@ const findFilesToUpload = async (
   }
 };
 
-// const uploadFiles = async (
-//   files,
-//   cwd,
-//   device,
-//   CSRFToken,
-//   setTrackFilesProgress,
-//   setFilesStatus
-// ) => {
-//   setFilesStatus((prev) => ({ ...prev, total: files.length }));
-//   const promises = files.map((file, i) =>
-//     uploadFile(
-//       file,
-//       cwd,
-//       file.modified,
-//       device,
-//       CSRFToken,
-//       setTrackFilesProgress
-//     ).then(() => {
-//       setFilesStatus((prev) => ({ ...prev, processed: prev.processed + 1 }));
-//     })
-//   );
-//   await Promise.all(promises);
-// };
+function promiseAll(promises, concurrencyLimit) {
+  return new Promise((resolve, reject) => {
+    let completed = 0;
+    let running = 0;
+    let index = 0;
+
+    function runNext() {
+      if (completed + running === promises.length) {
+        resolve();
+        return;
+      }
+
+      while (running < concurrencyLimit && index < promises.length) {
+        running++;
+        promises[index]
+          .then(() => {
+            completed++;
+            running--;
+            runNext();
+          })
+          .catch(reject);
+        index++;
+      }
+    }
+
+    runNext();
+  });
+}
 
 const uploadFiles = async (
   files,
@@ -117,21 +126,19 @@ const uploadFiles = async (
   setFilesStatus
 ) => {
   setFilesStatus((prev) => ({ ...prev, total: files.length }));
-  for (let i = 0; i < files.length; i++) {
-    try {
-      await uploadFile(
-        files[i],
-        cwd,
-        files[i].modified,
-        device,
-        CSRFToken,
-        setTrackFilesProgress
-      );
-      setFilesStatus((prev) => ({ ...prev, processed: i + 1 }));
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  const promises = files.map((file, i) =>
+    uploadFile(
+      file,
+      cwd,
+      file.modified,
+      device,
+      CSRFToken,
+      setTrackFilesProgress
+    ).then(() => {
+      setFilesStatus((prev) => ({ ...prev, processed: prev.processed + 1 }));
+    })
+  );
+  await promiseAll(promises, 5);
 };
 
 function InputFileLabel({
@@ -220,7 +227,8 @@ function InputFileLabel({
         id="upload-file"
         name="upload-file"
         type="file"
-        webkitdirectory="true"
+        multiple={true}
+        // webkitdirectory="true"
         onChange={handleChange}
       />
       {children}

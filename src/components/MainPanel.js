@@ -1,8 +1,9 @@
 import { Stack } from "@mui/material";
+import React from "react";
 
 import Table from "./DataTable";
 
-export default function MainPanel({ data }) {
+export default React.memo(function MainPanel({ data }) {
   return (
     <Stack
       display="flex"
@@ -12,4 +13,4 @@ export default function MainPanel({ data }) {
       <Table data={data} />
     </Stack>
   );
-}
+});

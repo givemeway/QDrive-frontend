@@ -89,6 +89,9 @@ const uploadFile = (
         "Content-Disposition": `attachment; filename="${file.name}"`,
         "X-CSRF-Token": CSRFToken,
       };
+      if (file.hasOwnProperty("hash")) {
+        fileStat.checksum = file.hash;
+      }
 
       const reader = new FileReader();
 
@@ -139,7 +142,6 @@ const uploadFile = (
         }
 
         headers.filestat = JSON.stringify(fileStat);
-
         axios
           .post(fileUploadURL, chunk, {
             headers: headers,

@@ -2,6 +2,8 @@ import { fetchFilesURL, username } from "./config.js";
 import { hashFileChunked } from "./hashFile.js";
 
 const getfilesCurDir = async (cwd, device, CSRFToken) => {
+  console.log(device);
+  console.log(cwd);
   const headers = {
     "X-CSRF-Token": CSRFToken,
     devicename: device,
@@ -63,14 +65,17 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
   let filesToUpload = [];
   let idx = 0;
   for (const file of selectedFileList) {
-    let filePath =
-      cwd === "/"
-        ? file.webkitRelativePath.split(/\//g).slice(1).join("/")
-        : cwd + "/" + file.webkitRelativePath.split(/\//g).slice(1).join("/");
-    let dirName = getDirName(filePath);
-    if (dirName.length === 0) {
-      dirName = "/";
+    let dirName;
+    let filePath;
+    if (device === "/") {
+      const pathParts = file.webkitRelativePath.split("/").slice(1).join("/");
+      filePath = cwd === "/" ? pathParts : cwd + "/" + pathParts;
+    } else {
+      const pathParts = file.webkitRelativePath;
+      filePath = cwd === "/" ? pathParts : cwd + "/" + pathParts;
     }
+
+    dirName = getDirName(filePath);
     if (files.hasOwnProperty(dirName)) {
       if (!files[dirName].hasOwnProperty(file.name)) {
         file.modified = false;
@@ -101,6 +106,9 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
 const getDirName = (relativePath) => {
   let pathParts = relativePath.split(/\//g);
   pathParts.pop();
+  if (pathParts.length === 0) {
+    return "/";
+  }
   const dir = pathParts.join("/");
   return dir;
 };
