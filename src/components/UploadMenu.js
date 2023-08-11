@@ -83,30 +83,6 @@ const findFilesToUpload = async (
   }
 };
 
-// const uploadFiles = async (
-//   files,
-//   cwd,
-//   device,
-//   CSRFToken,
-//   setTrackFilesProgress,
-//   setFilesStatus
-// ) => {
-//   setFilesStatus((prev) => ({ ...prev, total: files.length }));
-//   const promises = files.map((file, i) =>
-//     uploadFile(
-//       file,
-//       cwd,
-//       file.modified,
-//       device,
-//       CSRFToken,
-//       setTrackFilesProgress
-//     ).then(() => {
-//       setFilesStatus((prev) => ({ ...prev, processed: i + 1 }));
-//     })
-//   );
-//   await Promise.all(promises);
-// };
-
 const uploadFiles = async (
   files,
   cwd,
@@ -116,22 +92,46 @@ const uploadFiles = async (
   setFilesStatus
 ) => {
   setFilesStatus((prev) => ({ ...prev, total: files.length }));
-  for (let i = 0; i < files.length; i++) {
-    try {
-      await uploadFile(
-        files[i],
-        cwd,
-        files[i].modified,
-        device,
-        CSRFToken,
-        setTrackFilesProgress
-      );
-      setFilesStatus((prev) => ({ ...prev, processed: i + 1 }));
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  const promises = files.map((file, i) =>
+    uploadFile(
+      file,
+      cwd,
+      file.modified,
+      device,
+      CSRFToken,
+      setTrackFilesProgress
+    ).then(() => {
+      setFilesStatus((prev) => ({ ...prev, processed: prev.processed + 1 }));
+    })
+  );
+  await Promise.all(promises);
 };
+
+// const uploadFiles = async (
+//   files,
+//   cwd,
+//   device,
+//   CSRFToken,
+//   setTrackFilesProgress,
+//   setFilesStatus
+// ) => {
+//   setFilesStatus((prev) => ({ ...prev, total: files.length }));
+//   for (let i = 0; i < files.length; i++) {
+//     try {
+//       await uploadFile(
+//         files[i],
+//         cwd,
+//         files[i].modified,
+//         device,
+//         CSRFToken,
+//         setTrackFilesProgress
+//       );
+//       setFilesStatus((prev) => ({ ...prev, processed: i + 1 }));
+//     } catch (err) {
+//       console.log(err);
+//     }
+//   }
+// };
 
 function InputFileLabel({
   children,
@@ -201,6 +201,7 @@ function InputFileLabel({
         return file;
       })
     );
+    console.log("inside change");
   };
 
   return (

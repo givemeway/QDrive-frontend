@@ -87,7 +87,7 @@ const uploadFile = (
         reader.readAsArrayBuffer(file.slice(start, end));
       };
 
-      const CHUNK_SIZE = 1024 * 1024 * 10;
+      const CHUNK_SIZE = 1024 * 1024 * 1;
       const MAX_RETRIES = 3;
       let retries = 0;
       let currentChunk = 0;
