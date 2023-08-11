@@ -6,8 +6,9 @@ import NavigatePanel from "./Panel";
 import Header from "./Header";
 import MainPanel from "./MainPanel";
 import Menu from "./UploadMenu";
+import { PathContext } from "./Context";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext, createContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 const url = "/app/browseFolder";
@@ -22,6 +23,7 @@ async function fetchCSRFToken(csrfurl) {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+
   const [data, setData] = useState([]);
   const [breadCrumb, setBreadCrumb] = useState(["/"]);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -112,7 +114,9 @@ const Dashboard = () => {
             />
           </Grid>
           <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
-            <Menu path={subpath} />
+            <PathContext.Provider value={subpath}>
+              <Menu />
+            </PathContext.Provider>
           </Grid>
           <Grid item xs={12} sx={{ height: "75%", margin: 0, padding: 0 }}>
             {!dataLoaded ? (

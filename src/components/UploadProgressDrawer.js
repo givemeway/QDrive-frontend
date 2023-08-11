@@ -1,5 +1,6 @@
 import { Box, Button, Stack, Typography, LinearProgress } from "@mui/material";
 import CachedIcon from "@mui/icons-material/Cached";
+import ErrorIcon from "@mui/icons-material/Error";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -8,8 +9,9 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLessOutlined.js";
 import { useState, useEffect } from "react";
 import { formatBytes } from "../util.js";
 import { FixedSizeList as List } from "react-window";
+import React from "react";
 
-export default function UploadProgressDrawer({
+export default React.memo(function UploadProgressDrawer({
   trackFilesProgress,
   uploadCompleted,
   filesStatus,
@@ -17,7 +19,6 @@ export default function UploadProgressDrawer({
 }) {
   const [expandProgress, setExpandProgress] = useState(true);
   const [progressBlock, setProgressBlock] = useState("block");
-
   const close = () => {
     setExpandProgress((prev) => !prev);
   };
@@ -29,13 +30,8 @@ export default function UploadProgressDrawer({
     }
   }, [expandProgress]);
 
-  function getRowStyles() {
-    return { height: 70 };
-  }
-
   function Row({ index, style }) {
     const [key, val] = Array.from(trackFilesProgress)[index];
-
     return (
       <div style={style} key={key}>
         <Stack>
@@ -62,6 +58,7 @@ export default function UploadProgressDrawer({
               {val.status === "uploaded" && (
                 <CheckCircleOutlineIcon sx={{ color: "#7CAC61" }} />
               )}
+              {val.status === "failed" && <ErrorIcon sx={{ color: "red" }} />}
             </Box>
             <Stack sx={{ width: "65%" }}>
               <Typography fontSize={14} align="left">
@@ -69,7 +66,12 @@ export default function UploadProgressDrawer({
               </Typography>
               {val.status === "queued" && (
                 <Typography fontSize={10} align="left">
-                  Queued
+                  In Queue
+                </Typography>
+              )}
+              {val.status === "failed" && (
+                <Typography fontSize={10} align="left">
+                  {val.error}
                 </Typography>
               )}
               {val.status === "uploading" && (
@@ -206,4 +208,4 @@ export default function UploadProgressDrawer({
       </Stack>
     </Box>
   );
-}
+});

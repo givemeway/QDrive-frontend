@@ -58,6 +58,17 @@ const uploadFile = (
       }
       if (file.size === 0) {
         reject(`Empty file`);
+        setTrackFilesProgress((prev) =>
+          new Map(prev).set(file.webkitRelativePath, {
+            name: file.name,
+            progress: progress,
+            status: "failed",
+            size: formatBytes(file.size),
+            bytes: file.size,
+            folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
+            error: "Empty File",
+          })
+        );
         return;
       }
 

@@ -1,6 +1,7 @@
 /* global forge */
 /* global axios */
 import { Box, Button, Divider, Stack } from "@mui/material";
+import React from "react";
 
 import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
@@ -8,11 +9,12 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { getfilesCurDir, compareFiles } from "../filesInfo.js";
 import { uploadFile } from "../transferFile.js";
 import { csrftokenURL } from "../config.js";
 import { formatBytes } from "../util.js";
+import { PathContext } from "./Context.js";
 
 function CustomButton({ children }) {
   return (
@@ -41,7 +43,6 @@ const findFilesToUpload = async (
 ) => {
   try {
     let tempDeviceName;
-    console.log(cwd);
     let uploadingDirPath =
       cwd === "/"
         ? filesList[0].webkitRelativePath.split(/\//g)[0]
@@ -83,30 +84,6 @@ const findFilesToUpload = async (
   }
 };
 
-const uploadFiles = async (
-  files,
-  cwd,
-  device,
-  CSRFToken,
-  setTrackFilesProgress,
-  setFilesStatus
-) => {
-  setFilesStatus((prev) => ({ ...prev, total: files.length }));
-  const promises = files.map((file, i) =>
-    uploadFile(
-      file,
-      cwd,
-      file.modified,
-      device,
-      CSRFToken,
-      setTrackFilesProgress
-    ).then(() => {
-      setFilesStatus((prev) => ({ ...prev, processed: prev.processed + 1 }));
-    })
-  );
-  await Promise.all(promises);
-};
-
 // const uploadFiles = async (
 //   files,
 //   cwd,
@@ -116,26 +93,49 @@ const uploadFiles = async (
 //   setFilesStatus
 // ) => {
 //   setFilesStatus((prev) => ({ ...prev, total: files.length }));
-//   for (let i = 0; i < files.length; i++) {
-//     try {
-//       await uploadFile(
-//         files[i],
-//         cwd,
-//         files[i].modified,
-//         device,
-//         CSRFToken,
-//         setTrackFilesProgress
-//       );
-//       setFilesStatus((prev) => ({ ...prev, processed: i + 1 }));
-//     } catch (err) {
-//       console.log(err);
-//     }
-//   }
+//   const promises = files.map((file, i) =>
+//     uploadFile(
+//       file,
+//       cwd,
+//       file.modified,
+//       device,
+//       CSRFToken,
+//       setTrackFilesProgress
+//     ).then(() => {
+//       setFilesStatus((prev) => ({ ...prev, processed: prev.processed + 1 }));
+//     })
+//   );
+//   await Promise.all(promises);
 // };
+
+const uploadFiles = async (
+  files,
+  cwd,
+  device,
+  CSRFToken,
+  setTrackFilesProgress,
+  setFilesStatus
+) => {
+  setFilesStatus((prev) => ({ ...prev, total: files.length }));
+  for (let i = 0; i < files.length; i++) {
+    try {
+      await uploadFile(
+        files[i],
+        cwd,
+        files[i].modified,
+        device,
+        CSRFToken,
+        setTrackFilesProgress
+      );
+      setFilesStatus((prev) => ({ ...prev, processed: i + 1 }));
+    } catch (err) {
+      console.log(err);
+    }
+  }
+};
 
 function InputFileLabel({
   children,
-  path,
   setTrackFilesProgress,
   setIsUploading,
   setShowProgress,
@@ -148,17 +148,8 @@ function InputFileLabel({
   const [device, setDevice] = useState("/");
   const [filesToUpload, setFilesToUpload] = useState([]);
   const [CSRFToken, setCSRFToken] = useState("");
-
+  const path = useContext(PathContext);
   useEffect(() => {
-    const subpart = path.split("/").slice(1);
-    if (subpart.length === 0) {
-      setDevice("/");
-      setPWD("/");
-    } else {
-      setDevice(subpart.slice(0, 1)[0]);
-      const actualPath = subpart.slice(1).join("/");
-      setPWD(actualPath.length === 0 ? "/" : actualPath);
-    }
     if (files.length > 0) {
       findFilesToUpload(pwd, files, device, setTrackFilesProgress, setCSRFToken)
         .then((files) => {
@@ -202,6 +193,15 @@ function InputFileLabel({
       })
     );
     console.log("inside change");
+    const subpart = path.split("/").slice(1);
+    if (subpart.length === 0) {
+      setDevice("/");
+      setPWD("/");
+    } else {
+      setDevice(subpart.slice(0, 1)[0]);
+      const actualPath = subpart.slice(1).join("/");
+      setPWD(actualPath.length === 0 ? "/" : actualPath);
+    }
   };
 
   return (
@@ -228,12 +228,13 @@ function InputFileLabel({
   );
 }
 
-export default function UploadMenu({ path }) {
+export default React.memo(function UploadMenu() {
   const [isUploading, setIsUploading] = useState(false);
   const [trackFilesProgress, setTrackFilesProgress] = useState([]);
   const [showProgres, setShowProgress] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
   const [filesStatus, setFilesStatus] = useState({ processed: 0, total: 0 });
+  console.log("upload menu rendered");
   return (
     <>
       <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
@@ -252,7 +253,6 @@ export default function UploadMenu({ path }) {
         >
           <CustomButton>
             <InputFileLabel
-              path={path}
               setTrackFilesProgress={setTrackFilesProgress}
               setIsUploading={setIsUploading}
               setShowProgress={setShowProgress}
@@ -270,7 +270,6 @@ export default function UploadMenu({ path }) {
           <Divider orientation="vertical" />
           <CustomButton>
             <InputFileLabel
-              path={path}
               setTrackFilesProgress={setTrackFilesProgress}
               setIsUploading={setIsUploading}
               setShowProgress={setShowProgress}
@@ -321,4 +320,4 @@ export default function UploadMenu({ path }) {
       )}
     </>
   );
-}
+});
