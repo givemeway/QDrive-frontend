@@ -15,7 +15,8 @@ export default React.memo(function UploadProgressDrawer({
   trackFilesProgress,
   uploadCompleted,
   filesStatus,
-  showProgres,
+  showProgress,
+  setUpload,
 }) {
   const [expandProgress, setExpandProgress] = useState(true);
   const [progressBlock, setProgressBlock] = useState("block");
@@ -34,98 +35,101 @@ export default React.memo(function UploadProgressDrawer({
     const [key, val] = Array.from(trackFilesProgress)[index];
     return (
       <div style={style} key={key}>
-        <Stack>
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-evenly",
+            alignItems: "center",
+            borderBottom: "1px solid #DFDCD8",
+          }}
+        >
           <Box
             sx={{
-              width: "100%",
               display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-evenly",
+              justifyContent: "center",
               alignItems: "center",
-              borderBottom: "1px solid #DFDCD8",
+              width: "10%",
             }}
           >
-            <Box
+            {val.status === "queued" && <ScheduleIcon />}
+            {val.status === "uploading" && <CachedIcon />}
+            {val.status === "uploaded" && (
+              <CheckCircleOutlineIcon sx={{ color: "#7CAC61" }} />
+            )}
+            {val.status === "failed" && <ErrorIcon sx={{ color: "red" }} />}
+          </Box>
+          <Stack
+            sx={{
+              width: "70%",
+              flexGrow: 1,
+            }}
+          >
+            <Typography fontSize={14} align="left">
+              {val.name}
+            </Typography>
+            {val.status === "queued" && (
+              <Typography fontSize={10} align="left">
+                In Queue
+              </Typography>
+            )}
+            {val.status === "failed" && (
+              <Typography fontSize={10} align="left">
+                {val.error}
+              </Typography>
+            )}
+            {val.status === "uploading" && (
+              <Typography fontSize={10} align="left">
+                Uploading {formatBytes((val.bytes * val.progress) / 100)} /{" "}
+                {val.size}
+              </Typography>
+            )}
+            {val.status === "uploaded" && (
+              <Typography fontSize={10} align="left">
+                Uploaded To {val.folder}
+              </Typography>
+            )}
+          </Stack>
+
+          {val.status === "uploaded" && (
+            <Button
+              variant="contained"
+              size="small"
+              disableRipple
               sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                width: "10%",
+                boxShadow: 0,
+                fontSize: 10,
+                marginRight: 1,
+                background: "#F5EFE5",
+                color: "#1A1918",
+                "&:hover": { backgroundColor: "transparent" },
               }}
             >
-              {val.status === "queued" && <ScheduleIcon />}
-              {val.status === "uploading" && <CachedIcon />}
-              {val.status === "uploaded" && (
-                <CheckCircleOutlineIcon sx={{ color: "#7CAC61" }} />
-              )}
-              {val.status === "failed" && <ErrorIcon sx={{ color: "red" }} />}
-            </Box>
-            <Stack sx={{ width: "65%" }}>
-              <Typography fontSize={14} align="left">
-                {val.name}
-              </Typography>
-              {val.status === "queued" && (
-                <Typography fontSize={10} align="left">
-                  In Queue
-                </Typography>
-              )}
-              {val.status === "failed" && (
-                <Typography fontSize={10} align="left">
-                  {val.error}
-                </Typography>
-              )}
-              {val.status === "uploading" && (
-                <Typography fontSize={10} align="left">
-                  Uploading {formatBytes((val.bytes * val.progress) / 100)} /{" "}
-                  {val.size}
-                </Typography>
-              )}
-              {val.status === "uploaded" && (
-                <Typography fontSize={10} align="left">
-                  Uploaded To {val.folder}
-                </Typography>
-              )}
-            </Stack>
-
-            {val.status === "uploaded" && (
-              <Button
-                variant="contained"
-                size="small"
-                disableRipple
-                sx={{
-                  width: "25%",
-                  boxShadow: 0,
-                  fontSize: 10,
-                  background: "#F5EFE5",
-                  color: "#1A1918",
-                  "&:hover": { backgroundColor: "transparent" },
-                }}
-              >
-                Copy Link
-              </Button>
-            )}
-            {(val.status === "uploading" || val.status === "queued") && (
-              <Button
-                variant="contained"
-                size="small"
-                disableRipple
-                sx={{
-                  width: "25%",
-                  fontSize: 10,
-                  boxShadow: 0,
-                  background: "#F5EFE5",
-                  color: "#1A1918",
-                  "&:hover": { backgroundColor: "transparent" },
-                }}
-              >
-                Cancel
-              </Button>
-            )}
-          </Box>
-          {val.status !== "uploaded" && (
-            <LinearProgress variant="determinate" value={val.progress} />
+              Copy Link
+            </Button>
           )}
-        </Stack>
+          {(val.status === "uploading" || val.status === "queued") && (
+            <Button
+              variant="contained"
+              size="small"
+              disableRipple
+              sx={{
+                boxShadow: 0,
+                fontSize: 10,
+                marginRight: 1,
+                background: "#F5EFE5",
+                color: "#1A1918",
+                "&:hover": { backgroundColor: "transparent" },
+              }}
+            >
+              Cancel
+            </Button>
+          )}
+        </Box>
+        {val.status === "uploading" && (
+          <LinearProgress variant="determinate" value={val.progress} />
+        )}
       </div>
     );
   }
@@ -144,50 +148,54 @@ export default React.memo(function UploadProgressDrawer({
       }}
     >
       <Box
+        onClick={close}
         sx={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           flexWrap: "nowrap",
-          justifyContent: "space-evenly",
+          justifyContent: "space-between",
           alignItems: "center",
           width: "100%",
           height: 48,
           background: "#F5EFE5",
           border: "1px solid #BBB5AE",
           boxSizing: "border-box",
+          cursor: "pointer",
         }}
       >
-        <Button
-          onClick={close}
-          fullWidth
-          disableRipple
-          sx={{
-            color: "#66625F",
-            fontSize: "1rem",
-            fontWeight: 500,
-            textTransform: "none",
-            margin: 0,
-            padding: 0,
-            "&:hover": { backgroundColor: "transparent" },
-          }}
-        >
+        <Box sx={{ flexGrow: 1, marginLeft: 2 }}>
           {!uploadCompleted && (
-            <Typography>
+            <Typography align="left">
               Uploading {filesStatus.processed} of {filesStatus.total} items
             </Typography>
           )}
           {uploadCompleted && (
-            <Typography>
+            <Typography align="left">
               {filesStatus.processed} of {filesStatus.total} uploads complete
             </Typography>
           )}
+        </Box>
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            marginRight: 2,
+          }}
+        >
           {progressBlock === "block" ? (
             <ExpandMoreIcon color="#363432" sx={{ fontSize: "2rem" }} />
           ) : (
-            <ExpandLessIcon color="#363432" fontSize="medium" />
+            <ExpandLessIcon color="#363432" sx={{ fontSize: "2rem" }} />
           )}
-          {uploadCompleted && <CloseIcon color="#363432" />}
-        </Button>
+          {uploadCompleted && (
+            <CloseIcon color="#363432" onClick={() => setUpload(null)} />
+          )}
+        </Box>
+
+        {/* </Box> */}
       </Box>
       <Stack
         sx={{
@@ -196,11 +204,11 @@ export default React.memo(function UploadProgressDrawer({
           overflow: "auto",
         }}
       >
-        {showProgres && (
+        {showProgress && (
           <List
-            height={300}
+            height={500}
             itemCount={Array.from(trackFilesProgress).length}
-            itemSize={60}
+            itemSize={65}
           >
             {Row}
           </List>

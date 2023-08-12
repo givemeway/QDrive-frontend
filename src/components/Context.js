@@ -1,3 +1,10 @@
 import { createContext } from "react";
 const PathContext = createContext();
-export { PathContext };
+const FilesUploadContext = createContext();
+const trackFilesProgress = createContext();
+const uploadCompleted = createContext();
+const filesStatus = createContext();
+const showProgress = createContext();
+const WhoIsUploading = createContext();
+const UploadContext = createContext();
+export { PathContext, UploadContext };

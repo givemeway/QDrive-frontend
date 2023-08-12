@@ -45,7 +45,27 @@ const uploadFile = (
 
         device = file.webkitRelativePath.split(/\//g)[0];
       }
-
+      const updateFileState = (state, error) => {
+        let body = {
+          name: file.name,
+          progress: progress,
+          status: state,
+          size: formatBytes(file.size),
+          bytes: file.size,
+          folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
+        };
+        if (error !== null) {
+          body.error = error;
+        }
+        setTrackFilesProgress((prev) =>
+          new Map(prev).set(
+            file.webkitRelativePath === ""
+              ? file.name
+              : file.webkitRelativePath,
+            body
+          )
+        );
+      };
       const pathParts = filePath.split("/");
       pathParts.pop();
       let dir = pathParts.join("/");
@@ -58,17 +78,7 @@ const uploadFile = (
       }
       if (file.size === 0) {
         reject(`Empty file`);
-        setTrackFilesProgress((prev) =>
-          new Map(prev).set(file.webkitRelativePath, {
-            name: file.name,
-            progress: progress,
-            status: "failed",
-            size: formatBytes(file.size),
-            bytes: file.size,
-            folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
-            error: "Empty File",
-          })
-        );
+        updateFileState("failed", "Empty File");
         return;
       }
 
@@ -149,22 +159,7 @@ const uploadFile = (
               progress = Math.round(
                 ((currentChunk + 1) / totalChunks) * event.progress * 100
               );
-              setTrackFilesProgress((prev) =>
-                new Map(prev).set(file.webkitRelativePath, {
-                  name: file.name,
-                  progress: progress,
-                  status: "uploading",
-                  size: formatBytes(file.size),
-                  bytes: file.size,
-                  folder: file.webkitRelativePath
-                    .split("/")
-                    .slice(0, -1)
-                    .join("/"),
-                })
-              );
-              // progressBar.textContent = `${file.name} - ${parseFloat(
-              //   ((currentChunk + 1) / totalChunks) * event.progress * 100
-              // ).toFixed(2)}%`;
+              updateFileState("uploading", null);
             },
           })
           .then(function (response) {
@@ -173,19 +168,7 @@ const uploadFile = (
               headers["filemode"] = "a";
               loadNextChunk();
             } else {
-              setTrackFilesProgress((prev) =>
-                new Map(prev).set(file.webkitRelativePath, {
-                  name: file.name,
-                  progress: progress,
-                  status: "uploaded",
-                  size: formatBytes(file.size),
-                  bytes: file.size,
-                  folder: file.webkitRelativePath
-                    .split("/")
-                    .slice(0, -1)
-                    .join("/"),
-                })
-              );
+              updateFileState("uploaded", null);
               resolve(response.data);
             }
           })
@@ -198,18 +181,23 @@ const uploadFile = (
               if (error.response) {
                 switch (error.response.status) {
                   case 500:
+                    updateFileState("failed", error.response.data);
                     reject(error.response.data);
                     break;
                   case 401:
+                    updateFileState("failed", error.response.data);
                     reject(error.response.data);
                     break;
                   case 403:
+                    updateFileState("failed", error.response.data);
                     reject(error.response.data);
                     break;
                   default:
+                    updateFileState("failed", error.response.data);
                     reject(error);
                 }
               } else {
+                updateFileState("failed", error);
                 reject(error);
               }
             }
