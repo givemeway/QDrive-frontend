@@ -6,7 +6,7 @@ import NavigatePanel from "./Panel";
 import Header from "./Header";
 import MainPanel from "./MainPanel";
 import Menu from "./UploadMenu";
-import { PathContext } from "./Context";
+import { PathContext, ItemSelectionContext } from "./Context";
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -27,6 +27,10 @@ const Dashboard = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
+  const [itemsSelected, setItemsSelection] = useState({
+    fileIds: [],
+    directories: [],
+  });
 
   const params = useParams();
   const subpath = params["*"];
@@ -112,9 +116,11 @@ const Dashboard = () => {
             />
           </Grid>
           <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
-            <PathContext.Provider value={subpath}>
-              <Menu />
-            </PathContext.Provider>
+            <ItemSelectionContext.Provider value={itemsSelected}>
+              <PathContext.Provider value={subpath}>
+                <Menu />
+              </PathContext.Provider>
+            </ItemSelectionContext.Provider>
           </Grid>
           <Grid item xs={12} sx={{ height: "75%", margin: 0, padding: 0 }}>
             {!dataLoaded ? (
@@ -130,7 +136,11 @@ const Dashboard = () => {
                 <Typography align="center">Loading...</Typography>
               </Box>
             ) : (
-              <MainPanel data={data} />
+              <ItemSelectionContext.Provider
+                value={{ itemsSelected, setItemsSelection }}
+              >
+                <MainPanel data={data} />
+              </ItemSelectionContext.Provider>
             )}
           </Grid>
         </Grid>

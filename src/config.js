@@ -2,6 +2,7 @@ const host = "https://localhost:3001";
 const fileUploadURL = `/app/receiveFiles`;
 const loginURL = `/app/login`;
 const fetchFilesURL = `/app/getCurrentDirFiles`;
+const deleteItemsURL = "/app/delete";
 const filesFoldersURL = `/app/browseFolder`;
 const downloadURL = `/app/downloadFiles`;
 const csrftokenURL = `/app/csrftoken`;
@@ -19,4 +20,5 @@ export {
   downloadURL,
   csrftokenURL,
   filesFoldersURL,
+  deleteItemsURL,
 };

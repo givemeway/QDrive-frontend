@@ -3,11 +3,12 @@ import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
 import { DataGrid, gridRowsLoadingSelector } from "@mui/x-data-grid";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { Button, Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 import { download } from "../download.js";
 import { formatBytes } from "../util.js";
+import { ItemSelectionContext } from "./Context.js";
 
 const downloadUrl = `/app/downloadFiles`;
 
@@ -15,6 +16,9 @@ export default React.memo(function DataGridTable({ data }) {
   let rows = [];
   const [newRows, setNewRows] = React.useState([]);
   const [contextMenu, setContextMenu] = React.useState(null);
+  const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
+  const { setItemsSelection } = useContext(ItemSelectionContext);
+
   console.log("table rendered");
   const columns = [
     {
@@ -144,10 +148,26 @@ export default React.memo(function DataGridTable({ data }) {
   const handleClose = () => {
     setContextMenu(null);
   };
-
+  useEffect(() => {
+    const files = [];
+    const folders = [];
+    rowSelectionModel.forEach((val) => {
+      const item = val.split(";");
+      if (item[0] === "file") {
+        files.push({ id: item[1], path: item[2] });
+      }
+      if (item[0] === "folder") {
+        folders.push({ id: item[1], path: item[2] });
+      }
+    });
+    setItemsSelection((prev) => ({
+      fileIds: [...files],
+      directories: [...folders],
+    }));
+  }, [rowSelectionModel]);
   useEffect(() => {
     rows = data.files.map((file) => ({
-      id: file.id,
+      id: `file;${file.id};device=${file.device}&dir=${file.directory}&file=${file.filename}`,
       name: file.filename,
       size: formatBytes(file.size),
       path: `${downloadUrl}?device=${file.device}&dir=${file.directory}&file=${file.filename}`,
@@ -158,7 +178,7 @@ export default React.memo(function DataGridTable({ data }) {
     rows = [
       ...rows,
       ...data.folders.map((folder) => ({
-        id: folder.id,
+        id: `folder;${folder.id};${folder.path}`,
         name: folder.folder,
         size: "--",
         path: folder.path,
@@ -186,6 +206,10 @@ export default React.memo(function DataGridTable({ data }) {
         checkboxSelection
         disableRowSelectionOnClick
         rowHeight={75}
+        onRowSelectionModelChange={(newRowSelectionModel) => {
+          setRowSelectionModel(newRowSelectionModel);
+        }}
+        rowSelectionModel={rowSelectionModel}
       />
     </Box>
   );

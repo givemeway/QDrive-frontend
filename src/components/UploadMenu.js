@@ -5,11 +5,10 @@ import { Box, Button, Divider, Stack } from "@mui/material";
 import React, { useState } from "react";
 
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
-import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
-import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
+import DeleteItems from "./DeleteItems.js";
 import { UploadContext } from "./Context.js";
 
 function CustomButton({ children }) {
@@ -78,12 +77,7 @@ export default React.memo(function UploadMenu() {
             />
           </CustomButton>
           <Divider orientation="vertical" />
-          <CustomButton>
-            <DeleteIcon
-              color="primary"
-              sx={{ cursor: "pointer", fontSize: 25 }}
-            />
-          </CustomButton>
+          <DeleteItems />
           <Divider orientation="vertical" />
         </Box>
       </Stack>
