@@ -6,7 +6,11 @@ import NavigatePanel from "./Panel";
 import Header from "./Header";
 import MainPanel from "./MainPanel";
 import Menu from "./UploadMenu";
-import { PathContext, ItemSelectionContext } from "./Context";
+import {
+  PathContext,
+  ItemSelectionContext,
+  UploadFolderContenxt,
+} from "./Context";
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -116,11 +120,13 @@ const Dashboard = () => {
             />
           </Grid>
           <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
-            <ItemSelectionContext.Provider value={itemsSelected}>
-              <PathContext.Provider value={subpath}>
-                <Menu />
-              </PathContext.Provider>
-            </ItemSelectionContext.Provider>
+            <UploadFolderContenxt.Provider value={{ setData }}>
+              <ItemSelectionContext.Provider value={itemsSelected}>
+                <PathContext.Provider value={subpath}>
+                  <Menu />
+                </PathContext.Provider>
+              </ItemSelectionContext.Provider>
+            </UploadFolderContenxt.Provider>
           </Grid>
           <Grid item xs={12} sx={{ height: "75%", margin: 0, padding: 0 }}>
             {!dataLoaded ? (

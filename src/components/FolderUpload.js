@@ -2,19 +2,19 @@
 /* global axios */
 /* global async */
 import React from "react";
-import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
-import DeleteIcon from "@mui/icons-material/DeleteRounded";
-import ShareIcon from "@mui/icons-material/ShareRounded";
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useContext, useRef } from "react";
 import { getfilesCurDir, compareFiles } from "../filesInfo.js";
 import { uploadFile } from "../transferFile.js";
-import { csrftokenURL } from "../config.js";
+import { csrftokenURL, filesFoldersURL } from "../config.js";
 import { formatBytes } from "../util.js";
-import { PathContext, UploadContext } from "./Context.js";
+import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
 import { Button } from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
+import { Typography, Box } from "@mui/material";
+import Snackbar from "@mui/material/Snackbar";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function CustomButton({ children }) {
   return (
@@ -94,12 +94,14 @@ const uploadFiles = async (
   device,
   CSRFToken,
   setTrackFilesProgress,
-  setFilesStatus
+  setFilesStatus,
+  setUploadInitiated
 ) => {
   try {
     setFilesStatus((prev) => ({ ...prev, total: files.length, processed: 0 }));
 
     const promises = [];
+    let idx = 0;
     for (const file of files) {
       promises.push(async () => {
         try {
@@ -115,6 +117,10 @@ const uploadFiles = async (
             ...prev,
             processed: prev.processed + 1,
           }));
+          if (idx === 0) {
+            setUploadInitiated(true);
+          }
+          idx++;
         } catch (err) {
           // setFilesStatus((prev) => ({
           //   ...prev,
@@ -141,8 +147,56 @@ function FolderUpload({ setUpload }) {
   const [showProgress, setShowProgress] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
   const [filesStatus, setFilesStatus] = useState({ processed: 0, total: 0 });
+  const [preparingFiles, setPreparingFiles] = useState(false);
+  const [uploadInitiated, setUploadInitiated] = useState(false);
+  const { setData } = useContext(UploadFolderContenxt);
+
+  const navigate = useNavigate();
   const path = useContext(PathContext);
   const folderProgress = useContext(UploadContext);
+  const params = useParams();
+  const subpath = params["*"];
+  useEffect(() => {
+    const path = subpath.split("/");
+    if (path[0] === "home" && uploadInitiated) {
+      let homedir;
+      let curDir;
+
+      if (path.length === 1) {
+        homedir = "/";
+        curDir = "/";
+      } else {
+        curDir = path.slice(2).join("/");
+
+        if (curDir.length === 0) {
+          curDir = "/";
+        }
+        homedir = path[1];
+      }
+      const headers = {
+        "X-CSRF-Token": CSRFToken,
+        "Content-type": "application/x-www-form-urlencoded",
+        devicename: homedir,
+        currentdirectory: curDir,
+        username: "sandeep.kumar@idriveinc.com",
+        sortorder: "ASC",
+      };
+      const options = {
+        method: "POST",
+        credentials: "include",
+        mode: "cors",
+        headers: headers,
+      };
+      fetch(filesFoldersURL + "/", options)
+        .then((res) => res.json())
+        .then((data) => {
+          setData(() => {
+            return data;
+          });
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [uploadInitiated]);
   useEffect(() => {
     if (files.length > 0) {
       findFilesToUpload(pwd, files, device, setTrackFilesProgress, setCSRFToken)
@@ -158,7 +212,9 @@ function FolderUpload({ setUpload }) {
     }
   }, [files]);
   useEffect(() => {
+    setPreparingFiles(false);
     if (filesToUpload.length > 0) {
+      setUpload("folder");
       setShowProgress(true);
       setUploadCompleted(false);
       uploadFiles(
@@ -167,13 +223,15 @@ function FolderUpload({ setUpload }) {
         device,
         CSRFToken,
         setTrackFilesProgress,
-        setFilesStatus
+        setFilesStatus,
+        setUploadInitiated
       )
         .then(() => {
           //   setUpload(null);
           setFilesToUpload([]);
           setUploadCompleted(true);
           console.log("file upload complete");
+          navigate(0);
         })
         .catch((err) => {
           //   setUpload(null);
@@ -185,7 +243,9 @@ function FolderUpload({ setUpload }) {
   }, [filesToUpload]);
 
   const handleFolderSelection = (e) => {
-    setUpload("folder");
+    console.log("triggered before set preparing files");
+    setPreparingFiles(true);
+    // setUpload("folder");
     setFiles(
       Array.from(e.target.files).map((file) => {
         file.modified = false;
@@ -204,7 +264,6 @@ function FolderUpload({ setUpload }) {
       setPWD(actualPath.length === 0 ? "/" : actualPath);
     }
   };
-
   return (
     <>
       <CustomButton>
@@ -241,6 +300,22 @@ function FolderUpload({ setUpload }) {
           setUpload={setUpload}
         />
       )}
+      <Snackbar
+        open={preparingFiles}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        message={
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="flex-start"
+            gap={2}
+          >
+            {preparingFiles && <CircularProgress />}
+            {preparingFiles && <Typography>Preparing Files..</Typography>}
+          </Box>
+        }
+      ></Snackbar>
     </>
   );
 }

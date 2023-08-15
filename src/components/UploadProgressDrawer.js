@@ -9,7 +9,15 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLessOutlined.js";
 import { useState, useEffect } from "react";
 import { formatBytes } from "../util.js";
 import { FixedSizeList as List } from "react-window";
+import { alpha, styled } from "@mui/material/styles";
 import React from "react";
+
+const SlowLinearProgress = styled(LinearProgress)({
+  "& .MuiLinearProgress-bar": {
+    // apply a new animation-duration to the `.bar` class
+    animationDuration: "0.5s",
+  },
+});
 
 export default React.memo(function UploadProgressDrawer({
   trackFilesProgress,
@@ -197,6 +205,15 @@ export default React.memo(function UploadProgressDrawer({
 
         {/* </Box> */}
       </Box>
+      {!expandProgress && (
+        <Box sx={{ width: "100%" }}>
+          {/* <LinearProgress
+            variant="determinate"
+            value={Math.ceil((filesStatus.processed / filesStatus.total) * 100)}
+          /> */}
+          <LinearProgress />
+        </Box>
+      )}
       <Stack
         sx={{
           display: progressBlock,

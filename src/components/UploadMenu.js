@@ -2,14 +2,14 @@
 /* global axios */
 /* global async */
 import { Box, Button, Divider, Stack } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
-import { UploadContext } from "./Context.js";
+import { UploadContext, ItemSelectionContext } from "./Context.js";
 
 function CustomButton({ children }) {
   return (
@@ -33,7 +33,8 @@ function CustomButton({ children }) {
 export default React.memo(function UploadMenu() {
   const [upload, setUpload] = useState(null);
   console.log("upload menu rendered");
-  console.log(upload);
+  const { fileIds, directories } = useContext(ItemSelectionContext);
+
   return (
     <>
       <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
@@ -61,24 +62,27 @@ export default React.memo(function UploadMenu() {
           </UploadContext.Provider>
 
           <Divider orientation="vertical" />
+          {(fileIds.length > 0 || directories.length > 0) && (
+            <>
+              <CustomButton>
+                <CloudDownloadIcon
+                  color="primary"
+                  sx={{ cursor: "pointer", fontSize: 25 }}
+                />
+              </CustomButton>
+              <Divider orientation="vertical" />
 
-          <CustomButton>
-            <CloudDownloadIcon
-              color="primary"
-              sx={{ cursor: "pointer", fontSize: 25 }}
-            />
-          </CustomButton>
-          <Divider orientation="vertical" />
-
-          <CustomButton>
-            <ShareIcon
-              color="primary"
-              sx={{ cursor: "pointer", fontSize: 25 }}
-            />
-          </CustomButton>
-          <Divider orientation="vertical" />
-          <DeleteItems />
-          <Divider orientation="vertical" />
+              <CustomButton>
+                <ShareIcon
+                  color="primary"
+                  sx={{ cursor: "pointer", fontSize: 25 }}
+                />
+              </CustomButton>
+              <Divider orientation="vertical" />
+              <DeleteItems />
+              <Divider orientation="vertical" />
+            </>
+          )}
         </Box>
       </Stack>
       {/* <UploadProgressDrawer /> */}

@@ -9,6 +9,7 @@ import { ItemSelectionContext } from "./Context";
 import CircularProgress from "@mui/material/CircularProgress";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import { useNavigate, useParams, Navigate } from "react-router-dom";
 
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);
@@ -21,19 +22,12 @@ const DeleteItems = () => {
   const { fileIds, directories } = useContext(ItemSelectionContext);
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = React.useState(false);
-
-  const handleClick = () => {
-    setOpen(true);
-  };
-
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setOpen(false);
-  };
+  const [failed, setFailed] = useState({ files: [], folders: [] });
+  const navigate = useNavigate();
+  const params = useParams();
+  const subpath = params["*"];
   console.log("delete item rendered");
+
   useEffect(() => {
     fetchCSRFToken(csrftokenURL)
       .then((csrftoken) => setCSRFToken(csrftoken))
@@ -45,6 +39,7 @@ const DeleteItems = () => {
     e.stopPropagation();
     console.log(fileIds, directories);
     setIsDeleting(true);
+    setOpen(true);
   };
 
   useEffect(() => {
@@ -65,26 +60,38 @@ const DeleteItems = () => {
         const res = await axios.post(deleteItemsURL, body, {
           headers: headers,
         });
+        navigate(0);
         console.log(res.data);
+        setFailed(res.data);
         setIsDeleting(false);
       })();
     }
   }, [isDeleting]);
+
+  const handleClose = (e, reason) => {
+    setOpen(false);
+  };
+
   const action = (
     <React.Fragment>
-      <Button color="secondary" size="small" onClick={handleClose}>
-        UNDO
-      </Button>
-      <IconButton
-        size="small"
-        aria-label="close"
-        color="inherit"
-        onClick={handleClose}
-      >
-        <CloseIcon fontSize="small" />
-      </IconButton>
+      {!isDeleting && (
+        <>
+          <Button color="secondary" size="small" onClick={handleClose}>
+            UNDO
+          </Button>
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleClose}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>{" "}
+        </>
+      )}
     </React.Fragment>
   );
+
   return (
     <>
       <Button
@@ -102,31 +109,42 @@ const DeleteItems = () => {
       >
         <DeleteIcon color="primary" sx={{ cursor: "pointer", fontSize: 25 }} />
       </Button>
-      {isDeleting && (
-        <Snackbar
-          open={true}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          onClose={handleClick}
-        >
-          <SnackbarContent
-            message={
-              <Box
-                display="flex"
-                flexDirection="row"
-                alignItems="center"
-                justifyContent="flex-start"
-                gap={2}
-              >
-                <CircularProgress />
+
+      <Snackbar
+        open={open}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        onClose={handleClose}
+        action={action}
+        message={
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="flex-start"
+            gap={2}
+          >
+            {isDeleting && <CircularProgress />}
+            {isDeleting && (
+              <Typography>
+                Deleting {fileIds.length + directories.length} items
+              </Typography>
+            )}
+            {!isDeleting && (
+              <>
                 <Typography>
-                  Deleting {fileIds.length} files & {directories.length} folders
+                  Deleted {fileIds.length + directories.length} items
                 </Typography>
-              </Box>
-            }
-            action={action}
-          ></SnackbarContent>
-        </Snackbar>
-      )}
+                {failed.files.length > 0 ||
+                  (failed.folders.length > 0 && (
+                    <Typography>
+                      Deletion Failed for {failed.files + failed.folders} items
+                    </Typography>
+                  ))}
+              </>
+            )}
+          </Box>
+        }
+      ></Snackbar>
     </>
   );
 };
