@@ -8,16 +8,17 @@ import { Button, Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 import { download } from "../download.js";
 import { formatBytes } from "../util.js";
-import { ItemSelectionContext } from "./Context.js";
+import { ItemSelectionContext, UploadFolderContenxt } from "./Context.js";
 
 const downloadUrl = `/app/downloadFiles`;
 
-export default React.memo(function DataGridTable({ data }) {
+export default React.memo(function DataGridTable() {
   let rows = [];
   const [newRows, setNewRows] = React.useState([]);
   const [contextMenu, setContextMenu] = React.useState(null);
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const { setItemsSelection } = useContext(ItemSelectionContext);
+  const data = useContext(UploadFolderContenxt);
 
   console.log("table rendered");
   const columns = [

@@ -4,14 +4,14 @@
 import React from "react";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext } from "react";
 import { getfilesCurDir, compareFiles } from "../filesInfo.js";
 import { uploadFile } from "../transferFile.js";
 import { csrftokenURL, filesFoldersURL } from "../config.js";
 import { formatBytes } from "../util.js";
 import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
 import { Button } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Typography, Box } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -122,10 +122,6 @@ const uploadFiles = async (
           }
           idx++;
         } catch (err) {
-          // setFilesStatus((prev) => ({
-          //   ...prev,
-          //   processed: prev.processed + 1,
-          // }));
           console.log(err);
         }
       });
@@ -150,8 +146,6 @@ function FolderUpload({ setUpload }) {
   const [preparingFiles, setPreparingFiles] = useState(false);
   const [uploadInitiated, setUploadInitiated] = useState(false);
   const { setData } = useContext(UploadFolderContenxt);
-
-  const navigate = useNavigate();
   const path = useContext(PathContext);
   const folderProgress = useContext(UploadContext);
   const params = useParams();
@@ -231,7 +225,7 @@ function FolderUpload({ setUpload }) {
           setFilesToUpload([]);
           setUploadCompleted(true);
           console.log("file upload complete");
-          navigate(0);
+          // navigate(0);
         })
         .catch((err) => {
           //   setUpload(null);
@@ -245,6 +239,7 @@ function FolderUpload({ setUpload }) {
   const handleFolderSelection = (e) => {
     console.log("triggered before set preparing files");
     setPreparingFiles(true);
+    setUploadInitiated(false);
     // setUpload("folder");
     setFiles(
       Array.from(e.target.files).map((file) => {

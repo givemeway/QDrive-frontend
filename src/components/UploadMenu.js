@@ -9,6 +9,7 @@ import ShareIcon from "@mui/icons-material/ShareRounded";
 import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
+import DownloadItems from "./Download.js";
 import { UploadContext, ItemSelectionContext } from "./Context.js";
 
 function CustomButton({ children }) {
@@ -64,12 +65,7 @@ export default React.memo(function UploadMenu() {
           <Divider orientation="vertical" />
           {(fileIds.length > 0 || directories.length > 0) && (
             <>
-              <CustomButton>
-                <CloudDownloadIcon
-                  color="primary"
-                  sx={{ cursor: "pointer", fontSize: 25 }}
-                />
-              </CustomButton>
+              <DownloadItems />
               <Divider orientation="vertical" />
 
               <CustomButton>

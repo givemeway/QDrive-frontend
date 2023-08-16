@@ -3,18 +3,17 @@
 /* global async */
 import React from "react";
 import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
-import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
-import DeleteIcon from "@mui/icons-material/DeleteRounded";
-import ShareIcon from "@mui/icons-material/ShareRounded";
+import CircularProgress from "@mui/material/CircularProgress";
+
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext } from "react";
+import { useParams } from "react-router-dom";
 import { getfilesCurDir, compareFiles } from "../filesInfo.js";
 import { uploadFile } from "../transferFile.js";
-import { csrftokenURL } from "../config.js";
+import { csrftokenURL, filesFoldersURL } from "../config.js";
 import { formatBytes } from "../util.js";
-import { PathContext, UploadContext } from "./Context.js";
-import { Button } from "@mui/material";
+import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
+import { Button, Snackbar, Box, Typography } from "@mui/material";
 
 function CustomButton({ children }) {
   return (
@@ -143,9 +142,59 @@ function FilesUpload({ setUpload }) {
   const [showProgress, setShowProgress] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
   const [filesStatus, setFilesStatus] = useState({ processed: 0, total: 0 });
+  const [preparingFiles, setPreparingFiles] = useState(false);
+  const { setData } = useContext(UploadFolderContenxt);
   const path = useContext(PathContext);
   const fileProgress = useContext(UploadContext);
+  const params = useParams();
+  const subpath = params["*"];
+  useEffect(() => {
+    const path = subpath.split("/");
+    console.log("inside file status");
+    if (
+      path[0] === "home" &&
+      filesToUpload.length > 0 &&
+      filesStatus.processed % 10 === 0
+    ) {
+      console.log("10 files uploaded");
+      let homedir;
+      let curDir;
 
+      if (path.length === 1) {
+        homedir = "/";
+        curDir = "/";
+      } else {
+        curDir = path.slice(2).join("/");
+
+        if (curDir.length === 0) {
+          curDir = "/";
+        }
+        homedir = path[1];
+      }
+      const headers = {
+        "X-CSRF-Token": CSRFToken,
+        "Content-type": "application/x-www-form-urlencoded",
+        devicename: homedir,
+        currentdirectory: curDir,
+        username: "sandeep.kumar@idriveinc.com",
+        sortorder: "ASC",
+      };
+      const options = {
+        method: "POST",
+        credentials: "include",
+        mode: "cors",
+        headers: headers,
+      };
+      fetch(filesFoldersURL + "/", options)
+        .then((res) => res.json())
+        .then((data) => {
+          setData(() => {
+            return data;
+          });
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [filesStatus]);
   useEffect(() => {
     if (files.length > 0) {
       findFilesToUpload(pwd, files, device, setTrackFilesProgress, setCSRFToken)
@@ -161,7 +210,9 @@ function FilesUpload({ setUpload }) {
     }
   }, [files]);
   useEffect(() => {
+    setPreparingFiles(false);
     if (filesToUpload.length > 0) {
+      setUpload("file");
       setShowProgress(true);
       setUploadCompleted(false);
       uploadFiles(
@@ -177,6 +228,7 @@ function FilesUpload({ setUpload }) {
           setFilesToUpload([]);
           setUploadCompleted(true);
           console.log("file upload complete");
+          // navigate(0);
         })
         .catch((err) => {
           //   setUpload(null);
@@ -188,14 +240,17 @@ function FilesUpload({ setUpload }) {
   }, [filesToUpload]);
 
   const handleFileSelection = (e) => {
-    setUpload("file");
+    console.log("triggered before set preparing files");
+    setPreparingFiles(true);
+    // setUpload("folder");
     setFiles(
       Array.from(e.target.files).map((file) => {
         file.modified = false;
         return file;
       })
     );
-    console.log("inside file upload component");
+
+    console.log("inside folder upload component");
     const subpart = path.split("/").slice(1);
     if (subpart.length === 0) {
       setDevice("/");
@@ -243,6 +298,22 @@ function FilesUpload({ setUpload }) {
           setUpload={setUpload}
         />
       )}
+      <Snackbar
+        open={preparingFiles}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        message={
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="flex-start"
+            gap={2}
+          >
+            {preparingFiles && <CircularProgress />}
+            {preparingFiles && <Typography>Preparing Files..</Typography>}
+          </Box>
+        }
+      ></Snackbar>
     </>
   );
 }

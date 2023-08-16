@@ -1,15 +1,16 @@
 /*global axios */
 
 import React, { useEffect, useState, useContext } from "react";
-import { Button, SnackbarContent, Typography, Box } from "@mui/material";
-import Snackbar from "@mui/material/Snackbar";
+import { Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
-import { deleteItemsURL, csrftokenURL } from "../config";
-import { ItemSelectionContext } from "./Context";
-import CircularProgress from "@mui/material/CircularProgress";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
-import { useNavigate, useParams, Navigate } from "react-router-dom";
+import { deleteItemsURL, csrftokenURL, filesFoldersURL } from "../config";
+import {
+  ItemSelectionContext,
+  UploadFolderContenxt,
+  SnackBarContext,
+} from "./Context";
+
+import { useParams } from "react-router-dom";
 
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);
@@ -21,9 +22,9 @@ const DeleteItems = () => {
   const [CSRFToken, setCSRFToken] = useState("");
   const { fileIds, directories } = useContext(ItemSelectionContext);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [open, setOpen] = React.useState(false);
-  const [failed, setFailed] = useState({ files: [], folders: [] });
-  const navigate = useNavigate();
+  const [isDeleted, setIsDeleted] = useState(false);
+  const { setData } = useContext(UploadFolderContenxt);
+  const { setItemDeletion } = useContext(SnackBarContext);
   const params = useParams();
   const subpath = params["*"];
   console.log("delete item rendered");
@@ -37,10 +38,57 @@ const DeleteItems = () => {
   const handleDelete = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log(fileIds, directories);
+    setItemDeletion((prev) => ({
+      ...prev,
+      isDeleting: true,
+      isOpen: true,
+      total: fileIds.length + directories.length,
+    }));
     setIsDeleting(true);
-    setOpen(true);
+    setIsDeleted(false);
   };
+
+  useEffect(() => {
+    const path = subpath.split("/");
+    if (path[0] === "home" && isDeleted) {
+      let homedir;
+      let curDir;
+      console.log("inside delete component after deletion");
+      if (path.length === 1) {
+        homedir = "/";
+        curDir = "/";
+      } else {
+        curDir = path.slice(2).join("/");
+
+        if (curDir.length === 0) {
+          curDir = "/";
+        }
+        homedir = path[1];
+      }
+      const headers = {
+        "X-CSRF-Token": CSRFToken,
+        "Content-type": "application/x-www-form-urlencoded",
+        devicename: homedir,
+        currentdirectory: curDir,
+        username: "sandeep.kumar@idriveinc.com",
+        sortorder: "ASC",
+      };
+      const options = {
+        method: "POST",
+        credentials: "include",
+        mode: "cors",
+        headers: headers,
+      };
+      fetch(filesFoldersURL + "/", options)
+        .then((res) => res.json())
+        .then((data) => {
+          setData(() => {
+            return data;
+          });
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [isDeleted]);
 
   useEffect(() => {
     if (
@@ -56,41 +104,22 @@ const DeleteItems = () => {
         fileIds: JSON.stringify([...fileIds]),
         directories: JSON.stringify([...directories]),
       };
+      setIsDeleted(false);
       (async () => {
         const res = await axios.post(deleteItemsURL, body, {
           headers: headers,
         });
-        navigate(0);
-        console.log(res.data);
-        setFailed(res.data);
+        setItemDeletion((prev) => ({
+          ...prev,
+          isDeleting: false,
+          itemsFailed: res.data.files.length + res.data.folders.length,
+          itemsDeleted: fileIds.length + directories.length,
+        }));
+        setIsDeleted(true);
         setIsDeleting(false);
       })();
     }
   }, [isDeleting]);
-
-  const handleClose = (e, reason) => {
-    setOpen(false);
-  };
-
-  const action = (
-    <React.Fragment>
-      {!isDeleting && (
-        <>
-          <Button color="secondary" size="small" onClick={handleClose}>
-            UNDO
-          </Button>
-          <IconButton
-            size="small"
-            aria-label="close"
-            color="inherit"
-            onClick={handleClose}
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>{" "}
-        </>
-      )}
-    </React.Fragment>
-  );
 
   return (
     <>
@@ -109,42 +138,6 @@ const DeleteItems = () => {
       >
         <DeleteIcon color="primary" sx={{ cursor: "pointer", fontSize: 25 }} />
       </Button>
-
-      <Snackbar
-        open={open}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        onClose={handleClose}
-        action={action}
-        message={
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="flex-start"
-            gap={2}
-          >
-            {isDeleting && <CircularProgress />}
-            {isDeleting && (
-              <Typography>
-                Deleting {fileIds.length + directories.length} items
-              </Typography>
-            )}
-            {!isDeleting && (
-              <>
-                <Typography>
-                  Deleted {fileIds.length + directories.length} items
-                </Typography>
-                {failed.files.length > 0 ||
-                  (failed.folders.length > 0 && (
-                    <Typography>
-                      Deletion Failed for {failed.files + failed.folders} items
-                    </Typography>
-                  ))}
-              </>
-            )}
-          </Box>
-        }
-      ></Snackbar>
     </>
   );
 };

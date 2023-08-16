@@ -10,6 +10,7 @@ import {
   PathContext,
   ItemSelectionContext,
   UploadFolderContenxt,
+  SnackBarContext,
 } from "./Context";
 
 import React, { useEffect, useState } from "react";
@@ -31,6 +32,14 @@ const Dashboard = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
+  const [itemDeletion, setItemDeletion] = useState({
+    isOpen: false,
+    isDeleting: false,
+    isDeleted: false,
+    itemsDeleted: 0,
+    total: 0,
+    itemsFailed: 0,
+  });
   const [itemsSelected, setItemsSelection] = useState({
     fileIds: [],
     directories: [],
@@ -120,13 +129,15 @@ const Dashboard = () => {
             />
           </Grid>
           <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
-            <UploadFolderContenxt.Provider value={{ setData }}>
-              <ItemSelectionContext.Provider value={itemsSelected}>
-                <PathContext.Provider value={subpath}>
-                  <Menu />
-                </PathContext.Provider>
-              </ItemSelectionContext.Provider>
-            </UploadFolderContenxt.Provider>
+            <SnackBarContext.Provider value={{ setItemDeletion }}>
+              <UploadFolderContenxt.Provider value={{ setData }}>
+                <ItemSelectionContext.Provider value={itemsSelected}>
+                  <PathContext.Provider value={subpath}>
+                    <Menu />
+                  </PathContext.Provider>
+                </ItemSelectionContext.Provider>
+              </UploadFolderContenxt.Provider>
+            </SnackBarContext.Provider>
           </Grid>
           <Grid item xs={12} sx={{ height: "75%", margin: 0, padding: 0 }}>
             {!dataLoaded ? (
@@ -142,11 +153,17 @@ const Dashboard = () => {
                 <Typography align="center">Loading...</Typography>
               </Box>
             ) : (
-              <ItemSelectionContext.Provider
-                value={{ itemsSelected, setItemsSelection }}
+              <SnackBarContext.Provider
+                value={{ itemDeletion, setItemDeletion }}
               >
-                <MainPanel data={data} />
-              </ItemSelectionContext.Provider>
+                <UploadFolderContenxt.Provider value={data}>
+                  <ItemSelectionContext.Provider
+                    value={{ itemsSelected, setItemsSelection }}
+                  >
+                    <MainPanel />
+                  </ItemSelectionContext.Provider>
+                </UploadFolderContenxt.Provider>
+              </SnackBarContext.Provider>
             )}
           </Grid>
         </Grid>

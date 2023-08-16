@@ -9,8 +9,9 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLessOutlined.js";
 import { useState, useEffect } from "react";
 import { formatBytes } from "../util.js";
 import { FixedSizeList as List } from "react-window";
-import { alpha, styled } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import React from "react";
+import Draggable, { DraggableCore } from "react-draggable";
 
 const SlowLinearProgress = styled(LinearProgress)({
   "& .MuiLinearProgress-bar": {
@@ -142,95 +143,97 @@ export default React.memo(function UploadProgressDrawer({
     );
   }
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        background: "white",
-        boxShadow: 1,
-        width: "30%",
-        zIndex: 300,
-        position: "absolute",
-        bottom: 2,
-        left: 200,
-      }}
-    >
+    <Draggable>
       <Box
-        onClick={close}
         sx={{
           display: "flex",
-          flexDirection: "row",
-          flexWrap: "nowrap",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "100%",
-          height: 48,
-          background: "#F5EFE5",
-          border: "1px solid #BBB5AE",
-          boxSizing: "border-box",
-          cursor: "pointer",
+          flexDirection: "column",
+          background: "white",
+          boxShadow: 1,
+          width: "30%",
+          zIndex: 300,
+          position: "absolute",
+          bottom: 2,
+          // left: 200,
         }}
       >
-        <Box sx={{ flexGrow: 1, marginLeft: 2 }}>
-          {!uploadCompleted && (
-            <Typography align="left">
-              Uploading {filesStatus.processed} of {filesStatus.total} items
-            </Typography>
-          )}
-          {uploadCompleted && (
-            <Typography align="left">
-              {filesStatus.processed} of {filesStatus.total} uploads complete
-            </Typography>
-          )}
-        </Box>
         <Box
+          onClick={close}
           sx={{
-            flexGrow: 1,
             display: "flex",
             flexDirection: "row",
+            flexWrap: "nowrap",
+            justifyContent: "space-between",
             alignItems: "center",
-            justifyContent: "flex-end",
-            marginRight: 2,
+            width: "100%",
+            height: 48,
+            background: "#F5EFE5",
+            border: "1px solid #BBB5AE",
+            boxSizing: "border-box",
+            cursor: "pointer",
           }}
         >
-          {progressBlock === "block" ? (
-            <ExpandMoreIcon color="#363432" sx={{ fontSize: "2rem" }} />
-          ) : (
-            <ExpandLessIcon color="#363432" sx={{ fontSize: "2rem" }} />
-          )}
-          {uploadCompleted && (
-            <CloseIcon color="#363432" onClick={() => setUpload(null)} />
-          )}
-        </Box>
+          <Box sx={{ flexGrow: 1, marginLeft: 2 }}>
+            {!uploadCompleted && (
+              <Typography align="left">
+                Uploading {filesStatus.processed} of {filesStatus.total} items
+              </Typography>
+            )}
+            {uploadCompleted && (
+              <Typography align="left">
+                {filesStatus.processed} of {filesStatus.total} uploads complete
+              </Typography>
+            )}
+          </Box>
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              marginRight: 2,
+            }}
+          >
+            {progressBlock === "block" ? (
+              <ExpandMoreIcon color="#363432" sx={{ fontSize: "2rem" }} />
+            ) : (
+              <ExpandLessIcon color="#363432" sx={{ fontSize: "2rem" }} />
+            )}
+            {uploadCompleted && (
+              <CloseIcon color="#363432" onClick={() => setUpload(null)} />
+            )}
+          </Box>
 
-        {/* </Box> */}
-      </Box>
-      {!expandProgress && (
-        <Box sx={{ width: "100%" }}>
-          {/* <LinearProgress
+          {/* </Box> */}
+        </Box>
+        {!expandProgress && !uploadCompleted && (
+          <Box sx={{ width: "100%" }}>
+            {/* <LinearProgress
             variant="determinate"
             value={Math.ceil((filesStatus.processed / filesStatus.total) * 100)}
           /> */}
-          <LinearProgress />
-        </Box>
-      )}
-      <Stack
-        sx={{
-          display: progressBlock,
-          maxHeight: 500,
-          overflow: "auto",
-        }}
-      >
-        {showProgress && (
-          <List
-            height={500}
-            itemCount={Array.from(trackFilesProgress).length}
-            itemSize={65}
-          >
-            {Row}
-          </List>
+            <LinearProgress />
+          </Box>
         )}
-      </Stack>
-    </Box>
+        <Stack
+          sx={{
+            display: progressBlock,
+            maxHeight: 500,
+            overflow: "auto",
+          }}
+        >
+          {showProgress && (
+            <List
+              height={500}
+              itemCount={Array.from(trackFilesProgress).length}
+              itemSize={65}
+            >
+              {Row}
+            </List>
+          )}
+        </Stack>
+      </Box>
+    </Draggable>
   );
 });

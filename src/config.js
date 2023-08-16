@@ -6,6 +6,7 @@ const deleteItemsURL = "/app/delete";
 const filesFoldersURL = `/app/browseFolder`;
 const downloadURL = `/app/downloadFiles`;
 const csrftokenURL = `/app/csrftoken`;
+const downloadItemsURL = "/app/downloadFolders";
 const devicename = "DESKTOP-10RSGE8";
 const username = "sandeep.kumar@idriveinc.com";
 const cwd = "/";
@@ -21,4 +22,5 @@ export {
   csrftokenURL,
   filesFoldersURL,
   deleteItemsURL,
+  downloadItemsURL,
 };
