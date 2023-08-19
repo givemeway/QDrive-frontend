@@ -9,7 +9,7 @@ import ShareIcon from "@mui/icons-material/ShareRounded";
 import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
-import DownloadItems from "./Download.js";
+import DownloadItems from "./DownloadItems.js";
 import { UploadContext, ItemSelectionContext } from "./Context.js";
 
 function CustomButton({ children }) {

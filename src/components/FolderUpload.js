@@ -8,7 +8,7 @@ import { useState, useEffect, useContext } from "react";
 import { getfilesCurDir, compareFiles } from "../filesInfo.js";
 import { uploadFile } from "../transferFile.js";
 import { csrftokenURL, filesFoldersURL } from "../config.js";
-import { formatBytes } from "../util.js";
+import { formatBytes, formatSeconds } from "../util.js";
 import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
 import { Button } from "@mui/material";
 import { useParams } from "react-router-dom";
@@ -78,6 +78,7 @@ const findFilesToUpload = async (
               size: formatBytes(file.size),
               bytes: file.size,
               folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
+              eta: Infinity,
             },
           ])
         )
@@ -97,6 +98,17 @@ const uploadFiles = async (
   setFilesStatus,
   setUploadInitiated
 ) => {
+  let filesUploaded = 0;
+  let eta;
+  const ETA = (timeStarted) => {
+    const timeElapsed = new Date() - timeStarted;
+    const uploadSpeed = filesUploaded / (timeElapsed / 1000);
+    const time = (files.length - filesUploaded) / uploadSpeed;
+    eta = formatSeconds(time);
+    console.log("timer running");
+  };
+  const timeStarted = new Date();
+  const timer = setInterval(ETA, 1000, timeStarted);
   try {
     setFilesStatus((prev) => ({ ...prev, total: files.length, processed: 0 }));
 
@@ -113,9 +125,11 @@ const uploadFiles = async (
             CSRFToken,
             setTrackFilesProgress
           );
+          filesUploaded += 1;
           setFilesStatus((prev) => ({
             ...prev,
             processed: prev.processed + 1,
+            eta: eta,
           }));
           if (idx === 0) {
             setUploadInitiated(true);
@@ -128,6 +142,7 @@ const uploadFiles = async (
     }
 
     await async.parallelLimit(promises, 10);
+    clearInterval(timer);
   } catch (err) {
     console.log(err);
   }
@@ -142,7 +157,11 @@ function FolderUpload({ setUpload }) {
   const [trackFilesProgress, setTrackFilesProgress] = useState([]);
   const [showProgress, setShowProgress] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
-  const [filesStatus, setFilesStatus] = useState({ processed: 0, total: 0 });
+  const [filesStatus, setFilesStatus] = useState({
+    processed: 0,
+    total: 0,
+    eta: Infinity,
+  });
   const [preparingFiles, setPreparingFiles] = useState(false);
   const [uploadInitiated, setUploadInitiated] = useState(false);
   const { setData } = useContext(UploadFolderContenxt);

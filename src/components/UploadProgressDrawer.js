@@ -29,6 +29,7 @@ export default React.memo(function UploadProgressDrawer({
 }) {
   const [expandProgress, setExpandProgress] = useState(true);
   const [progressBlock, setProgressBlock] = useState("block");
+
   const close = () => {
     setExpandProgress((prev) => !prev);
   };
@@ -91,7 +92,7 @@ export default React.memo(function UploadProgressDrawer({
             {val.status === "uploading" && (
               <Typography fontSize={10} align="left">
                 Uploading {formatBytes((val.bytes * val.progress) / 100)} /{" "}
-                {val.size}
+                {val.size} - {val.eta} left..
               </Typography>
             )}
             {val.status === "uploaded" && (
@@ -176,7 +177,8 @@ export default React.memo(function UploadProgressDrawer({
           <Box sx={{ flexGrow: 1, marginLeft: 2 }}>
             {!uploadCompleted && (
               <Typography align="left">
-                Uploading {filesStatus.processed} of {filesStatus.total} items
+                Uploading {filesStatus.processed} of {filesStatus.total} items,{" "}
+                {filesStatus.eta} left
               </Typography>
             )}
             {uploadCompleted && (

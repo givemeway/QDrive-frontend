@@ -75,7 +75,18 @@ const Download = () => {
         });
 
         // create writable stream for file
-        let ws_dest = window.showSaveFilePicker().then((handle) => {
+        const opts = {
+          suggestedName: "QDrive.zip",
+          types: [
+            {
+              description: "Zip Files",
+              accept: {
+                "application/zip": [".zip"],
+              },
+            },
+          ],
+        };
+        let ws_dest = window.showSaveFilePicker(opts).then((handle) => {
           setOpen(true);
           return handle.createWritable();
         });

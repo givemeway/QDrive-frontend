@@ -5,10 +5,55 @@
 
 import { deriveKey } from "./cryptoutil.js";
 
+const opts = {
+  suggestedName: "",
+  types: [
+    {
+      description: "Files",
+      accept: {
+        "application/octet-stream": [],
+      },
+    },
+    {
+      description: "Text Files",
+      accept: {
+        "text/plain": [".txt", ".log"],
+      },
+    },
+    {
+      description: "Images",
+      accept: {
+        "image/jpeg": [".jpg", ".jpeg", ".JPG", ".JPEG"],
+        "image/png": [".png"],
+        "image/tiff": [".tiff", ".tif"],
+      },
+    },
+    {
+      description: "PDF files",
+      accept: {
+        "application/pdf": [".pdf"],
+      },
+    },
+    {
+      description: "Zip Files",
+      accept: {
+        "application/zip": [".zip"],
+      },
+    },
+  ],
+};
+
+function formatSeconds(seconds) {
+  if (seconds === 0) return "0 Seconds";
+  const units = ["seconds", "minutes", "hours", "days"];
+  const i = Math.floor(Math.log(seconds) / Math.log(60));
+  return parseFloat((seconds / Math.pow(60, i)).toFixed(2)) + " " + units[i];
+}
+
 function formatBytes(bytes) {
   if (bytes === 0) return "0 Bytes";
   const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const sizes = ["bytes", "kb", "mb", "gb", "tb"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
@@ -107,6 +152,8 @@ async function streamDownloadDecryptToDisk(url) {
   // create readable stream for ciphertext
   let size;
   let cipher;
+  const param = new URLSearchParams(url);
+  const filename = param.get("file");
   let rs_src = fetch(url).then(async (response) => {
     size = response.headers.get("content-length");
     const salt = response.headers.get("salt");
@@ -120,8 +167,9 @@ async function streamDownloadDecryptToDisk(url) {
   });
 
   // create writable stream for file
+  opts.suggestedName = filename;
   let ws_dest = window
-    .showSaveFilePicker()
+    .showSaveFilePicker(opts)
     .then((handle) => handle.createWritable());
 
   // create transform stream for decryption
@@ -153,4 +201,5 @@ export {
   streamDownloadDecryptToDisk,
   saveFile,
   formatBytes,
+  formatSeconds,
 };

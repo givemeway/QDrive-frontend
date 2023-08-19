@@ -8,15 +8,9 @@ import {
   binaryStringToArrayBuffer,
   generateRandomBytes,
   arrayBufferToHex,
+  formatBytes,
+  formatSeconds,
 } from "./util.js";
-
-function formatBytes(bytes) {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-}
 
 const uploadFile = (
   file,
@@ -27,9 +21,40 @@ const uploadFile = (
   setTrackFilesProgress
 ) => {
   return new Promise(async (resolve, reject) => {
+    let progress = 0;
+    let uploadedBytes = 0;
+    let currentChunkSize = 0;
+    let eta = 0;
+    let filePath;
+    const ETA = (timeStarted) => {
+      const timeElapsed = new Date() - timeStarted;
+      const uploadSpeed = uploadedBytes / (timeElapsed / 1000);
+      const time = (file.size - uploadedBytes) / uploadSpeed;
+      eta = formatSeconds(time);
+    };
+
+    const updateFileState = (state, error) => {
+      let body = {
+        name: file.name,
+        progress: progress,
+        status: state,
+        size: formatBytes(file.size),
+        bytes: file.size,
+        folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
+        eta: eta,
+      };
+
+      if (error !== null) {
+        body.error = error;
+      }
+      setTrackFilesProgress((prev) =>
+        new Map(prev).set(
+          file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
+          body
+        )
+      );
+    };
     try {
-      let progress = 0;
-      let filePath;
       if (device !== "/") {
         filePath =
           cwd === "/"
@@ -45,27 +70,6 @@ const uploadFile = (
 
         device = file.webkitRelativePath.split(/\//g)[0];
       }
-      const updateFileState = (state, error) => {
-        let body = {
-          name: file.name,
-          progress: progress,
-          status: state,
-          size: formatBytes(file.size),
-          bytes: file.size,
-          folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
-        };
-        if (error !== null) {
-          body.error = error;
-        }
-        setTrackFilesProgress((prev) =>
-          new Map(prev).set(
-            file.webkitRelativePath === ""
-              ? file.name
-              : file.webkitRelativePath,
-            body
-          )
-        );
-      };
       const pathParts = filePath.split("/");
       pathParts.pop();
       let dir = pathParts.join("/");
@@ -104,6 +108,8 @@ const uploadFile = (
       }
 
       const reader = new FileReader();
+      const timeStarted = new Date();
+      const timer = setInterval(ETA, 1000, timeStarted);
 
       const loadNextChunk = () => {
         let start = currentChunk * CHUNK_SIZE;
@@ -159,6 +165,7 @@ const uploadFile = (
               progress = Math.round(
                 ((currentChunk + 1) / totalChunks) * event.progress * 100
               );
+              uploadedBytes += currentChunkSize;
               updateFileState("uploading", null);
             },
           })
@@ -169,6 +176,7 @@ const uploadFile = (
               loadNextChunk();
             } else {
               updateFileState("uploaded", null);
+              clearInterval(timer);
               resolve(response.data);
             }
           })
@@ -220,13 +228,16 @@ const uploadFile = (
         hash_enc_chunk.update(encryptedChunk);
         headers.encchunkhash = hash_enc_chunk.digest().toHex();
         const arrBuffer = binaryStringToArrayBuffer(encryptedChunk);
+        currentChunkSize = arrBuffer.byteLength;
         uploadChunk(arrBuffer);
       };
 
-      reader.onerror = (event) => {
-        console.log(event);
+      reader.onerror = (err) => {
+        updateFileState("failed", err);
+        console.log(err);
       };
     } catch (err) {
+      updateFileState("failed", err);
       reject(err);
     }
   });

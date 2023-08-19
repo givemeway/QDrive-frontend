@@ -6,11 +6,10 @@ import MenuItem from "@mui/material/MenuItem";
 import React, { useEffect, useContext } from "react";
 import { Button, Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
-import { download } from "../download.js";
+import { download } from "../downloadFile.js";
 import { formatBytes } from "../util.js";
+import { downloadURL } from "../config.js";
 import { ItemSelectionContext, UploadFolderContenxt } from "./Context.js";
-
-const downloadUrl = `/app/downloadFiles`;
 
 export default React.memo(function DataGridTable() {
   let rows = [];
@@ -166,12 +165,21 @@ export default React.memo(function DataGridTable() {
       directories: [...folders],
     }));
   }, [rowSelectionModel]);
+
   useEffect(() => {
     rows = data.files.map((file) => ({
-      id: `file;${file.id};device=${file.device}&dir=${file.directory}&file=${file.filename}`,
+      id: `file;${file.id};device=${encodeURIComponent(
+        file.device
+      )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
+        file.filename
+      )}`,
       name: file.filename,
       size: formatBytes(file.size),
-      path: `${downloadUrl}?device=${file.device}&dir=${file.directory}&file=${file.filename}`,
+      path: `${downloadURL}?device=${encodeURIComponent(
+        file.device
+      )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
+        file.filename
+      )}`,
       versions: file.versions,
       modified: file.last_modified,
       item: "file",
