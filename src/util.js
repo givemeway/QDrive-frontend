@@ -46,8 +46,8 @@ const opts = {
 function formatSeconds(seconds) {
   if (seconds === 0) return "0 Seconds";
   const units = ["seconds", "minutes", "hours", "days"];
-  const i = Math.floor(Math.log(seconds) / Math.log(60));
-  return parseFloat((seconds / Math.pow(60, i)).toFixed(2)) + " " + units[i];
+  let i = Math.floor(Math.log(seconds) / Math.log(60));
+  return parseInt(seconds / Math.pow(60, i)) + " " + units[i];
 }
 
 function formatBytes(bytes) {

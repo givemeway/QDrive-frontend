@@ -40,7 +40,8 @@ const findFilesToUpload = async (
   filesList,
   device,
   setTrackFilesProgress,
-  setCSRFToken
+  setCSRFToken,
+  setFilesStatus
 ) => {
   try {
     let tempDeviceName;
@@ -66,6 +67,12 @@ const findFilesToUpload = async (
     );
     let files = await compareFiles(filesList, DbFiles, cwd, device);
     console.log(files.length);
+    files.forEach((file) =>
+      setFilesStatus((prev) => ({
+        ...prev,
+        totalSize: prev.totalSize + file.size,
+      }))
+    );
     setTrackFilesProgress(
       () =>
         new Map(
@@ -94,18 +101,20 @@ const uploadFiles = async (
   cwd,
   device,
   CSRFToken,
+  totalSize,
   setTrackFilesProgress,
   setFilesStatus,
   setUploadInitiated
 ) => {
   let filesUploaded = 0;
-  let eta;
+  let eta = Infinity;
+  const filesProgress = { uploaded: 0 };
   const ETA = (timeStarted) => {
     const timeElapsed = new Date() - timeStarted;
-    const uploadSpeed = filesUploaded / (timeElapsed / 1000);
-    const time = (files.length - filesUploaded) / uploadSpeed;
+    const uploadSpeed = filesProgress.uploaded / (timeElapsed / 1000);
+    const time = (totalSize - filesProgress.uploaded) / uploadSpeed;
     eta = formatSeconds(time);
-    console.log("timer running");
+    setFilesStatus((prev) => ({ ...prev, eta }));
   };
   const timeStarted = new Date();
   const timer = setInterval(ETA, 1000, timeStarted);
@@ -123,13 +132,14 @@ const uploadFiles = async (
             file.modified,
             device,
             CSRFToken,
-            setTrackFilesProgress
+            filesProgress,
+            setTrackFilesProgress,
+            setFilesStatus
           );
           filesUploaded += 1;
           setFilesStatus((prev) => ({
             ...prev,
             processed: prev.processed + 1,
-            eta: eta,
           }));
           if (idx === 0) {
             setUploadInitiated(true);
@@ -161,6 +171,8 @@ function FolderUpload({ setUpload }) {
     processed: 0,
     total: 0,
     eta: Infinity,
+    totalSize: 0,
+    uploaded: 0,
   });
   const [preparingFiles, setPreparingFiles] = useState(false);
   const [uploadInitiated, setUploadInitiated] = useState(false);
@@ -169,6 +181,7 @@ function FolderUpload({ setUpload }) {
   const folderProgress = useContext(UploadContext);
   const params = useParams();
   const subpath = params["*"];
+
   useEffect(() => {
     const path = subpath.split("/");
     if (path[0] === "home" && uploadInitiated) {
@@ -209,10 +222,17 @@ function FolderUpload({ setUpload }) {
         })
         .catch((err) => console.log(err));
     }
-  }, [uploadInitiated]);
+  }, [CSRFToken, setData, subpath, uploadInitiated]);
   useEffect(() => {
     if (files.length > 0) {
-      findFilesToUpload(pwd, files, device, setTrackFilesProgress, setCSRFToken)
+      findFilesToUpload(
+        pwd,
+        files,
+        device,
+        setTrackFilesProgress,
+        setCSRFToken,
+        setFilesStatus
+      )
         .then((files) => {
           setFilesToUpload(files);
           setFiles([]);
@@ -223,18 +243,21 @@ function FolderUpload({ setUpload }) {
           console.log(err);
         });
     }
-  }, [files]);
+  }, [device, files, pwd]);
   useEffect(() => {
     setPreparingFiles(false);
     if (filesToUpload.length > 0) {
       setUpload("folder");
       setShowProgress(true);
       setUploadCompleted(false);
+      console.log(filesStatus);
+      console.log(filesStatus.totalSize);
       uploadFiles(
         filesToUpload,
         pwd,
         device,
         CSRFToken,
+        filesStatus.totalSize,
         setTrackFilesProgress,
         setFilesStatus,
         setUploadInitiated
@@ -244,7 +267,6 @@ function FolderUpload({ setUpload }) {
           setFilesToUpload([]);
           setUploadCompleted(true);
           console.log("file upload complete");
-          // navigate(0);
         })
         .catch((err) => {
           //   setUpload(null);

@@ -43,6 +43,7 @@ export default React.memo(function UploadProgressDrawer({
 
   function Row({ index, style }) {
     const [key, val] = Array.from(trackFilesProgress)[index];
+
     return (
       <div style={style} key={key}>
         <Box

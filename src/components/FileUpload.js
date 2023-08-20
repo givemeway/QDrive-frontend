@@ -11,7 +11,7 @@ import { useParams } from "react-router-dom";
 import { getfilesCurDir, compareFiles } from "../filesInfo.js";
 import { uploadFile } from "../transferFile.js";
 import { csrftokenURL, filesFoldersURL } from "../config.js";
-import { formatBytes } from "../util.js";
+import { formatBytes, formatSeconds } from "../util.js";
 import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
 import { Button, Snackbar, Box, Typography } from "@mui/material";
 
@@ -39,7 +39,8 @@ const findFilesToUpload = async (
   filesList,
   device,
   setTrackFilesProgress,
-  setCSRFToken
+  setCSRFToken,
+  setFilesStatus
 ) => {
   try {
     let tempDeviceName;
@@ -65,6 +66,12 @@ const findFilesToUpload = async (
     );
     let files = await compareFiles(filesList, DbFiles, cwd, device);
     console.log(files.length);
+    files.forEach((file) =>
+      setFilesStatus((prev) => ({
+        ...prev,
+        totalSize: prev.totalSize + file.size,
+      }))
+    );
     setTrackFilesProgress(
       () =>
         new Map(
@@ -94,9 +101,21 @@ const uploadFiles = async (
   cwd,
   device,
   CSRFToken,
+  totalSize,
   setTrackFilesProgress,
   setFilesStatus
 ) => {
+  let eta = Infinity;
+  const filesProgress = { uploaded: 0 };
+  const ETA = (timeStarted) => {
+    const timeElapsed = new Date() - timeStarted;
+    const uploadSpeed = filesProgress.uploaded / (timeElapsed / 1000);
+    const time = (totalSize - filesProgress.uploaded) / uploadSpeed;
+    eta = formatSeconds(time);
+    setFilesStatus((prev) => ({ ...prev, eta }));
+  };
+  const timeStarted = new Date();
+  const timer = setInterval(ETA, 1000, timeStarted);
   try {
     setFilesStatus((prev) => ({ ...prev, total: files.length, processed: 0 }));
 
@@ -110,23 +129,22 @@ const uploadFiles = async (
             file.modified,
             device,
             CSRFToken,
-            setTrackFilesProgress
+            filesProgress,
+            setTrackFilesProgress,
+            setFilesStatus
           );
           setFilesStatus((prev) => ({
             ...prev,
             processed: prev.processed + 1,
           }));
         } catch (err) {
-          //   setFilesStatus((prev) => ({
-          //     ...prev,
-          //     processed: prev.processed + 1,
-          //   }));
           console.log(err);
         }
       });
     }
 
     await async.parallelLimit(promises, 10);
+    clearInterval(timer);
   } catch (err) {
     console.log(err);
   }
@@ -141,7 +159,13 @@ function FilesUpload({ setUpload }) {
   const [trackFilesProgress, setTrackFilesProgress] = useState([]);
   const [showProgress, setShowProgress] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
-  const [filesStatus, setFilesStatus] = useState({ processed: 0, total: 0 });
+  const [filesStatus, setFilesStatus] = useState({
+    processed: 0,
+    total: 0,
+    eta: Infinity,
+    totalSize: 0,
+    uploaded: 0,
+  });
   const [preparingFiles, setPreparingFiles] = useState(false);
   const { setData } = useContext(UploadFolderContenxt);
   const path = useContext(PathContext);
@@ -194,10 +218,17 @@ function FilesUpload({ setUpload }) {
         })
         .catch((err) => console.log(err));
     }
-  }, [filesStatus]);
+  }, [filesStatus.processed]);
   useEffect(() => {
     if (files.length > 0) {
-      findFilesToUpload(pwd, files, device, setTrackFilesProgress, setCSRFToken)
+      findFilesToUpload(
+        pwd,
+        files,
+        device,
+        setTrackFilesProgress,
+        setCSRFToken,
+        setFilesStatus
+      )
         .then((files) => {
           setFilesToUpload(files);
           setFiles([]);
@@ -220,6 +251,7 @@ function FilesUpload({ setUpload }) {
         pwd,
         device,
         CSRFToken,
+        filesStatus.totalSize,
         setTrackFilesProgress,
         setFilesStatus
       )

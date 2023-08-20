@@ -30,51 +30,53 @@ export default React.memo(function DataGridTable() {
         return (
           <>
             {cellValues.row.item === "folder" ? (
-              <div
-                onContextMenu={handleContextMenu}
-                style={{ cursor: "context-menu" }}
-              >
-                <Link
-                  to={"/dashboard/home" + cellValues.row.path}
-                  style={{
-                    textDecoration: "none",
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "flex-start",
-                    marginLeft: 10,
-                    gap: 15,
-                    alignItems: "center",
-                    color: "rgb(128, 128, 128)",
-                  }}
+              <>
+                <div
+                  onContextMenu={handleContextMenu}
+                  style={{ cursor: "context-menu" }}
                 >
-                  <FolderOpenIcon
-                    color="primary"
-                    sx={{ width: 50, height: 50 }}
-                  />
-
-                  <Typography sx={{ fontSize: "1.25rem" }}>
-                    {cellValues.row.name}
-                  </Typography>
-                  <Menu
-                    open={contextMenu !== null}
-                    onClose={handleClose}
-                    anchorReference="anchorPosition"
-                    anchorPosition={
-                      contextMenu !== null
-                        ? {
-                            top: contextMenu.mouseY,
-                            left: contextMenu.mouseX,
-                          }
-                        : undefined
-                    }
+                  <Link
+                    to={"/dashboard/home" + cellValues.row.path}
+                    style={{
+                      textDecoration: "none",
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "flex-start",
+                      marginLeft: 10,
+                      gap: 15,
+                      alignItems: "center",
+                      color: "rgb(128, 128, 128)",
+                    }}
                   >
-                    <MenuItem onClick={handleClose}>Copy</MenuItem>
-                    <MenuItem onClick={handleClose}>Print</MenuItem>
-                    <MenuItem onClick={handleClose}>Highlight</MenuItem>
-                    <MenuItem onClick={handleClose}>Email</MenuItem>
-                  </Menu>
-                </Link>
-              </div>
+                    <FolderOpenIcon
+                      color="primary"
+                      sx={{ width: 50, height: 50 }}
+                    />
+
+                    <Typography sx={{ fontSize: "1.25rem" }} fullWidth>
+                      {cellValues.row.name}
+                    </Typography>
+                  </Link>
+                </div>
+                <Menu
+                  open={contextMenu !== null}
+                  onClose={handleClose}
+                  anchorReference="anchorPosition"
+                  anchorPosition={
+                    contextMenu !== null
+                      ? {
+                          top: contextMenu.mouseY,
+                          left: contextMenu.mouseX,
+                        }
+                      : undefined
+                  }
+                >
+                  <MenuItem onClick={handleClose}>Copy</MenuItem>
+                  <MenuItem onClick={handleClose}>Print</MenuItem>
+                  <MenuItem onClick={handleClose}>Highlight</MenuItem>
+                  <MenuItem onClick={handleClose}>Email</MenuItem>
+                </Menu>
+              </>
             ) : (
               <Button
                 onClick={() => download(cellValues.row.path)}

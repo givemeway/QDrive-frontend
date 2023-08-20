@@ -18,7 +18,9 @@ const uploadFile = (
   modified,
   device,
   CSRFToken,
-  setTrackFilesProgress
+  filesProgress,
+  setTrackFilesProgress,
+  setFilesStatus
 ) => {
   return new Promise(async (resolve, reject) => {
     let progress = 0;
@@ -167,6 +169,12 @@ const uploadFile = (
               );
               uploadedBytes += currentChunkSize;
               updateFileState("uploading", null);
+              filesProgress.uploaded =
+                filesProgress.uploaded + currentChunkSize;
+              setFilesStatus((prev) => ({
+                ...prev,
+                uploaded: prev.uploaded + currentChunkSize,
+              }));
             },
           })
           .then(function (response) {
