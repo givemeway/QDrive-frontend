@@ -6,11 +6,15 @@ import React, { useState, useContext } from "react";
 
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
+import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
 import DownloadItems from "./DownloadItems.js";
 import { UploadContext, ItemSelectionContext } from "./Context.js";
+import MoveItems from "./MoveItems.js";
+import RenameItem from "./RenameItem.js";
+import CopyItems from "./CopyItems.js";
 
 function CustomButton({ children }) {
   return (
@@ -67,7 +71,12 @@ export default React.memo(function UploadMenu() {
             <>
               <DownloadItems />
               <Divider orientation="vertical" />
-
+              <MoveItems />
+              <Divider orientation="vertical" />
+              <RenameItem />
+              <Divider orientation="vertical" />
+              <CopyItems />
+              <Divider orientation="vertical" />
               <CustomButton>
                 <ShareIcon
                   color="primary"
