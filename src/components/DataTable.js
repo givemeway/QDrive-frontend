@@ -53,7 +53,7 @@ export default React.memo(function DataGridTable() {
                       sx={{ width: 50, height: 50 }}
                     />
 
-                    <Typography sx={{ fontSize: "1.25rem" }} fullWidth>
+                    <Typography sx={{ fontSize: "1.25rem" }}>
                       {cellValues.row.name}
                     </Typography>
                   </Link>

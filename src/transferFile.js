@@ -160,6 +160,38 @@ const uploadFile = (
         }
 
         headers.filestat = JSON.stringify(fileStat);
+
+        // let xhr = new XMLHttpRequest();
+        // xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        // for (const key of headers) {
+        //   xhr.setRequestHeader(key, headers[key]);
+        // }
+        // xhr.open("POST", fileUploadURL, true);
+
+        // xhr.onload = (event) => {
+        //   currentChunk++;
+        //   if (currentChunk < file.size / CHUNK_SIZE) {
+        //     headers["filemode"] = "a";
+        //     loadNextChunk();
+        //   } else {
+        //     updateFileState("uploaded", null);
+        //     clearInterval(timer);
+        //     resolve(event.target.result);
+        //   }
+        // };
+        // xhr.onprogress = (event) => {
+        //   progress = Math.round(
+        //     ((currentChunk + 1) / totalChunks) * event.progress * 100
+        //   );
+        //   uploadedBytes += currentChunkSize;
+        //   updateFileState("uploading", null);
+        //   filesProgress.uploaded = filesProgress.uploaded + currentChunkSize;
+        //   setFilesStatus((prev) => ({
+        //     ...prev,
+        //     uploaded: prev.uploaded + currentChunkSize,
+        //   }));
+        // };
+
         axios
           .post(fileUploadURL, chunk, {
             headers: headers,

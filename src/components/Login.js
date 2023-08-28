@@ -8,13 +8,13 @@ const csrftokenURL = `/app/csrftoken`;
 const validateLogin = (loginURL, options, setLogging) => {
   fetch(loginURL, options)
     .then((res) => {
-      if (res.status == 401 || res.status == 403) {
+      if (res.status === 401 || res.status === 403) {
         alert("Username or password incorrect!");
         throw Error("Username or password incorrect");
-      } else if (res.status == 200) {
+      } else if (res.status === 200) {
         setLogging(false);
         console.log("Login Successful");
-      } else if (res.status == 500) {
+      } else if (res.status === 500) {
         alert("Something Went wrong. Try again!");
         throw Error("Something Went wrong. Try again!");
       }

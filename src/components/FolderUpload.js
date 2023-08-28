@@ -1,6 +1,7 @@
 /* global forge */
 /* global axios */
 /* global async */
+/* global workerpool */
 import React from "react";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
@@ -124,6 +125,7 @@ const uploadFiles = async (
     const promises = [];
     let idx = 0;
     for (const file of files) {
+      // eslint-disable-next-line no-loop-func
       promises.push(async () => {
         try {
           await uploadFile(
@@ -225,23 +227,45 @@ function FolderUpload({ setUpload }) {
   }, [CSRFToken, setData, subpath, uploadInitiated]);
   useEffect(() => {
     if (files.length > 0) {
-      findFilesToUpload(
-        pwd,
-        files,
-        device,
-        setTrackFilesProgress,
-        setCSRFToken,
-        setFilesStatus
-      )
-        .then((files) => {
-          setFilesToUpload(files);
-          setFiles([]);
-        })
-        .catch((err) => {
-          setFilesToUpload([]);
-          setFiles([]);
-          console.log(err);
-        });
+      console.log("inside the findFilesToUpload");
+      const worker = new Worker(new URL("../worker.js", import.meta.url), {
+        type: "module",
+      });
+      worker.postMessage({ mode: "init", files, pwd, device });
+      worker.onmessage = ({ data }) => {
+        const { mode } = data;
+        console.log(mode);
+        if (mode === "filesToUpload") {
+          const { CSRFToken, trackFilesProgress, totalSize } = data;
+          setCSRFToken(CSRFToken);
+          setTrackFilesProgress(() => trackFilesProgress);
+          setFilesStatus((prev) => ({
+            ...prev,
+            totalSize: totalSize,
+          }));
+          console.log(CSRFToken, trackFilesProgress, totalSize);
+        }
+      };
+      worker.onerror = (e) => {
+        console.log(e);
+      };
+      // findFilesToUpload(
+      //   pwd,
+      //   files,
+      //   device,
+      //   setTrackFilesProgress,
+      //   setCSRFToken,
+      //   setFilesStatus
+      // )
+      //   .then((files) => {
+      //     setFilesToUpload(files);
+      //     setFiles([]);
+      //   })
+      //   .catch((err) => {
+      //     setFilesToUpload([]);
+      //     setFiles([]);
+      //     console.log(err);
+      //   });
     }
   }, [device, files, pwd]);
   useEffect(() => {

@@ -71,6 +71,7 @@ const Download = () => {
 
       (async () => {
         let rs_src = fetch(downloadItemsURL, options).then(async (response) => {
+          console.log(response.body);
           return response.body;
         });
 
