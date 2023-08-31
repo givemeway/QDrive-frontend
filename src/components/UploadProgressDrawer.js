@@ -11,12 +11,12 @@ import { formatBytes } from "../util.js";
 import { FixedSizeList as List } from "react-window";
 import { styled } from "@mui/material/styles";
 import React from "react";
-import Draggable, { DraggableCore } from "react-draggable";
+import Draggable from "react-draggable";
 
 const SlowLinearProgress = styled(LinearProgress)({
   "& .MuiLinearProgress-bar": {
     // apply a new animation-duration to the `.bar` class
-    animationDuration: "0.5s",
+    animationDuration: "3.0s",
   },
 });
 
@@ -29,7 +29,6 @@ export default React.memo(function UploadProgressDrawer({
 }) {
   const [expandProgress, setExpandProgress] = useState(true);
   const [progressBlock, setProgressBlock] = useState("block");
-
   const close = () => {
     setExpandProgress((prev) => !prev);
   };
@@ -43,7 +42,6 @@ export default React.memo(function UploadProgressDrawer({
 
   function Row({ index, style }) {
     const [key, val] = Array.from(trackFilesProgress)[index];
-
     return (
       <div style={style} key={key}>
         <Box
@@ -216,7 +214,7 @@ export default React.memo(function UploadProgressDrawer({
             variant="determinate"
             value={Math.ceil((filesStatus.processed / filesStatus.total) * 100)}
           /> */}
-            <LinearProgress />
+            <SlowLinearProgress />
           </Box>
         )}
         <Stack

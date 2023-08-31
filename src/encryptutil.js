@@ -44,14 +44,14 @@ const encryptFile = (file, enc_key, dir) => {
           derivedKey,
           arrBuffer
         ),
-        salt,
-        iv,
-        enc_fileName: await window.crypto.subtle.encrypt(
+        saltCrypto: salt,
+        ivCrypto: iv,
+        enc_fileName_crypto: await window.crypto.subtle.encrypt(
           { name: "AES-CBC", iv },
           derivedKey,
           enc.encode(file.name)
         ),
-        enc_directory: await window.crypto.subtle.encrypt(
+        enc_directory_crypto: await window.crypto.subtle.encrypt(
           { name: "AES-CBC", iv },
           derivedKey,
           enc.encode(dir)

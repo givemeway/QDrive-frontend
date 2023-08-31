@@ -9,7 +9,7 @@ import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { getfilesCurDir, compareFiles } from "../filesInfo.js";
-import { uploadFile } from "../transferFile.js";
+import { uploadFile } from "../transferFile_copy.js";
 import { csrftokenURL, filesFoldersURL } from "../config.js";
 import { formatBytes, formatSeconds } from "../util.js";
 import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
