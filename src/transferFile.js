@@ -55,10 +55,7 @@ const uploadFile = (
       if (error !== null) {
         body.error = error;
       }
-      // trackFilesProgress.set(
-      //   file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
-      //   body
-      // );
+
       postMessage({
         mode: "uploadProgress",
         fileName:
@@ -122,7 +119,6 @@ const uploadFile = (
       }
       const timeStarted = new Date();
       const timer = setInterval(ETA, 1000, timeStarted);
-
       const {
         encryptedFile,
         saltCrypto,
@@ -173,38 +169,35 @@ const uploadFile = (
         }
       };
       xhr.onprogress = (event) => {
-        //     progress = Math.round(
-        //       ((currentChunk + 1) / totalChunks) *
-        //         (event.loaded / event.total) *
-        //         100
-        //     );
-        //     uploadedBytes += currentChunkSize;
-        //     updateFileState("uploading", null);
-        //     filesProgress.uploaded = filesProgress.uploaded + currentChunkSize;
-        //     filesStatus = {
-        //       ...filesStatus,
-        //       uploaded: filesStatus.uploaded + currentChunkSize,
-        //     };
-        //     postMessage({
-        //       mode: "filesStatus_uploaded",
-        //       uploaded: filesStatus.uploaded + currentChunkSize,
-        //     });
         progress = Math.round((event.loaded / event.total) * 100);
-        console.log(progress, "%");
-        console.log(event.loaded, " loaded");
-        console.log(event.total, " total");
-        uploadedBytes += event.loaded;
-        console.log(uploadedBytes, " UploadedBytes for file");
-        updateFileState("uploading", null);
-        filesProgress.uploaded = filesProgress.uploaded + event.loaded;
-        filesStatus = {
-          ...filesStatus,
-          uploaded: filesStatus.uploaded + event.loaded,
-        };
-        postMessage({
-          mode: "filesStatus_uploaded",
-          uploaded: filesStatus.uploaded + currentChunkSize,
-        });
+        if (event.lengthComputable && progress === 100) {
+          uploadedBytes += file.size;
+          updateFileState("uploading", null);
+          filesProgress.uploaded = filesProgress.uploaded + file.size;
+          filesStatus = {
+            ...filesStatus,
+            uploaded: filesStatus.uploaded + file.size,
+          };
+          postMessage({
+            mode: "filesStatus_uploaded",
+            uploaded: filesStatus.uploaded + file.size,
+          });
+        } else if (event.lengthComputable && progress !== 100) {
+          uploadedBytes += parseInt(file.size * (progress / 100));
+          updateFileState("uploading", null);
+          filesProgress.uploaded =
+            filesProgress.uploaded + parseInt(file.size * (progress / 100));
+          filesStatus = {
+            ...filesStatus,
+            uploaded:
+              filesStatus.uploaded + parseInt(file.size * (progress / 100)),
+          };
+          postMessage({
+            mode: "filesStatus_uploaded",
+            uploaded:
+              filesStatus.uploaded + parseInt(file.size * (progress / 100)),
+          });
+        }
       };
       xhr.onerror = (e) => {
         console.error(e);

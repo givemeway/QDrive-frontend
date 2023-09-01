@@ -39,6 +39,7 @@ export default React.memo(function UploadProgressDrawer({
       setProgressBlock("none");
     }
   }, [expandProgress]);
+  console.log("drawer rendered");
 
   function Row({ index, style }) {
     const [key, val] = Array.from(trackFilesProgress)[index];

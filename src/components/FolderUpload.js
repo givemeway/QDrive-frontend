@@ -7,7 +7,6 @@ import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded"
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useContext } from "react";
 import { getfilesCurDir, compareFiles } from "../filesInfo.js";
-// import { uploadFile } from "../transferFile.js";
 import { csrftokenURL, filesFoldersURL } from "../config.js";
 import { formatBytes, formatSeconds } from "../util.js";
 import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
@@ -35,130 +34,6 @@ function CustomButton({ children }) {
     </Button>
   );
 }
-
-// const findFilesToUpload = async (
-//   cwd,
-//   filesList,
-//   device,
-//   setTrackFilesProgress,
-//   setCSRFToken,
-//   setFilesStatus
-// ) => {
-//   try {
-//     let tempDeviceName;
-//     let uploadingDirPath =
-//       cwd === "/"
-//         ? filesList[0].webkitRelativePath.split(/\//g)[0]
-//         : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
-//     if (device === "/") {
-//       tempDeviceName = filesList[0].webkitRelativePath.split(/\//g)[0];
-//       if (tempDeviceName.length === 0) {
-//         tempDeviceName = "/";
-//       }
-//       uploadingDirPath = "/";
-//     }
-//     const { data } = await axios.get(csrftokenURL);
-//     const CSRFToken = data.CSRFToken;
-//     setCSRFToken(CSRFToken);
-//     console.log(uploadingDirPath);
-//     const DbFiles = await getfilesCurDir(
-//       cwd,
-//       tempDeviceName !== undefined ? tempDeviceName : device,
-//       CSRFToken
-//     );
-//     let files = await compareFiles(filesList, DbFiles, cwd, device);
-//     console.log(files.length);
-//     files.forEach((file) =>
-//       setFilesStatus((prev) => ({
-//         ...prev,
-//         totalSize: prev.totalSize + file.size,
-//       }))
-//     );
-//     setTrackFilesProgress(
-//       () =>
-//         new Map(
-//           files.map((file) => [
-//             file.webkitRelativePath,
-//             {
-//               name: file.name,
-//               progress: 0,
-//               status: "queued",
-//               size: formatBytes(file.size),
-//               bytes: file.size,
-//               folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
-//               eta: Infinity,
-//             },
-//           ])
-//         )
-//     );
-//     return files;
-//   } catch (err) {
-//     return err;
-//   }
-// };
-
-// const uploadFiles = async (
-//   files,
-//   cwd,
-//   device,
-//   CSRFToken,
-//   totalSize,
-//   setTrackFilesProgress,
-//   setFilesStatus,
-//   setUploadInitiated
-// ) => {
-//   let filesUploaded = 0;
-//   let eta = Infinity;
-//   const filesProgress = { uploaded: 0 };
-//   const ETA = (timeStarted) => {
-//     const timeElapsed = new Date() - timeStarted;
-//     const uploadSpeed = filesProgress.uploaded / (timeElapsed / 1000);
-//     const time = (totalSize - filesProgress.uploaded) / uploadSpeed;
-//     eta = formatSeconds(time);
-//     setFilesStatus((prev) => ({ ...prev, eta }));
-//   };
-//   const timeStarted = new Date();
-//   const timer = setInterval(ETA, 1000, timeStarted);
-//   try {
-//     setFilesStatus((prev) => ({ ...prev, total: files.length, processed: 0 }));
-
-//     const promises = [];
-//     let idx = 0;
-//     for (const file of files) {
-//       // eslint-disable-next-line no-loop-func
-//       promises.push(async () => {
-//         try {
-//           await uploadFile(
-//             file,
-//             cwd,
-//             file.modified,
-//             device,
-//             CSRFToken,
-//             filesProgress,
-//             setTrackFilesProgress,
-//             setFilesStatus
-//           );
-//           filesUploaded += 1;
-//           setFilesStatus((prev) => ({
-//             ...prev,
-//             processed: prev.processed + 1,
-//           }));
-//           if (idx === 0) {
-//             setUploadInitiated(true);
-//           }
-//           idx++;
-//         } catch (err) {
-//           console.log(err);
-//         }
-//       });
-//     }
-
-//     await async.parallelLimit(promises, 10);
-//     clearInterval(timer);
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
 
 function FolderUpload({ setUpload }) {
   const [files, setFiles] = useState([]);
@@ -252,7 +127,6 @@ function FolderUpload({ setUpload }) {
           }));
           setFilesToUpload(toBeUploaded);
           setFiles([]);
-          // console.log(CSRFToken, trackFilesProgress, totalSize);
           worker.terminate();
         }
       };
@@ -262,23 +136,6 @@ function FolderUpload({ setUpload }) {
         console.error(e);
         worker.terminate();
       };
-      // findFilesToUpload(
-      //   pwd,
-      //   files,
-      //   device,
-      //   setTrackFilesProgress,
-      //   setCSRFToken,
-      //   setFilesStatus
-      // )
-      //   .then((files) => {
-      //     setFilesToUpload(files);
-      //     setFiles([]);
-      //   })
-      //   .catch((err) => {
-      //     setFilesToUpload([]);
-      //     setFiles([]);
-      //     console.log(err);
-      //   });
     }
   }, [device, files, pwd]);
   useEffect(() => {
@@ -310,7 +167,6 @@ function FolderUpload({ setUpload }) {
           setFilesStatus((prev) => ({ ...prev, total }));
         } else if (mode === "filesStatus_processed") {
           const { processed } = data;
-          console.log(processed);
           setFilesStatus((prev) => ({ ...prev, processed }));
         } else if (mode === "filesStatus_uploaded") {
           const { uploaded } = data;
@@ -324,7 +180,6 @@ function FolderUpload({ setUpload }) {
             new Map(prev).set(fileName, fileBody)
           );
         } else if (mode === "finish") {
-          // setUpload(null);
           setFilesToUpload([]);
           setUploadCompleted(true);
           console.log("file upload complete");
@@ -334,29 +189,6 @@ function FolderUpload({ setUpload }) {
       worker.onerror = (e) => {
         console.error(e);
       };
-
-      // uploadFiles(
-      //   filesToUpload,
-      //   pwd,
-      //   device,
-      //   CSRFToken,
-      //   filesStatus.totalSize,
-      //   setTrackFilesProgress,
-      //   setFilesStatus,
-      //   setUploadInitiated
-      // )
-      //   .then(() => {
-      //     //   setUpload(null);
-      //     setFilesToUpload([]);
-      //     setUploadCompleted(true);
-      //     console.log("file upload complete");
-      //   })
-      //   .catch((err) => {
-      //     //   setUpload(null);
-      //     setFilesToUpload([]);
-      //     setUploadCompleted(true);
-      //     console.log(err);
-      //   });
     }
   }, [filesToUpload]);
 
@@ -364,7 +196,6 @@ function FolderUpload({ setUpload }) {
     console.log("triggered before set preparing files");
     setPreparingFiles(true);
     setUploadInitiated(false);
-    // setUpload("folder");
     setFiles(
       Array.from(e.target.files).map((file) => {
         file.modified = false;
