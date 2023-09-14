@@ -169,8 +169,9 @@ export default React.memo(function DataGridTable() {
   }, [rowSelectionModel]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     rows = data.files.map((file) => ({
-      id: `file;${file.id};device=${encodeURIComponent(
+      id: `file;${file.uuid};device=${encodeURIComponent(
         file.device
       )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
         file.filename
@@ -181,7 +182,7 @@ export default React.memo(function DataGridTable() {
         file.device
       )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
         file.filename
-      )}`,
+      )}&uuid=${encodeURIComponent(file.uuid)}`,
       versions: file.versions,
       modified: file.last_modified,
       item: "file",

@@ -47,12 +47,24 @@ const findFilesToUpload = async (cwd, filesList, device) => {
         },
       ])
     );
+
+    let metadata = {};
+    files.forEach((file) => {
+      metadata[file.webkitRelativePath] = {};
+      metadata[file.webkitRelativePath]["modified"] = file.modified;
+      metadata[file.webkitRelativePath]["hash"] = file.hash;
+      metadata[file.webkitRelativePath]["id"] = file.id;
+      metadata[file.webkitRelativePath]["uuid"] = file.uuid;
+      metadata[file.webkitRelativePath]["progress"] = file.progress;
+    });
+
     postMessage({
       mode: "filesToUpload",
       CSRFToken,
       trackFilesProgress,
       totalSize,
       toBeUploaded: files,
+      metadata,
       total: files.length,
     });
   } catch (err) {
@@ -68,13 +80,23 @@ const uploadFiles = async (
   CSRFToken,
   totalSize,
   trackFilesProgress,
-  filesStatus
+  filesStatus,
+  metadata
 ) => {
   let eta = Infinity;
   const filesProgress = { uploaded: 0 };
-
   let uploadStarted = false;
-
+  let newFiles = [];
+  for (let file of files) {
+    if (metadata.hasOwnProperty(file.webkitRelativePath)) {
+      file.modified = metadata[file.webkitRelativePath]["modified"];
+      file.hash = metadata[file.webkitRelativePath]["hash"];
+      file.progress = metadata[file.webkitRelativePath]["progress"];
+      file.id = metadata[file.webkitRelativePath]["id"];
+      file.uuid = metadata[file.webkitRelativePath]["uuid"];
+      newFiles.push(file);
+    }
+  }
   const ETA = (timeStarted) => {
     const timeElapsed = new Date() - timeStarted;
     const uploadSpeed = filesProgress.uploaded / (timeElapsed / 1000);
@@ -92,7 +114,7 @@ const uploadFiles = async (
       processed: 0,
     });
     let idx = 0;
-    await async.eachLimit(files, 10, async (file) => {
+    await async.eachLimit(newFiles, 10, async (file) => {
       try {
         await uploadFile(
           file,
@@ -184,6 +206,7 @@ onmessage = ({ data }) => {
       total,
       trackFilesProgress,
       filesStatus,
+      metadata,
     } = data;
     uploadFiles(
       filesToUpload,
@@ -192,7 +215,8 @@ onmessage = ({ data }) => {
       CSRFToken,
       total,
       trackFilesProgress,
-      filesStatus
+      filesStatus,
+      metadata
     );
   }
 };

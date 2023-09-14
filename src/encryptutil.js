@@ -46,16 +46,16 @@ const encryptFile = (file, enc_key, dir) => {
         ),
         saltCrypto: salt,
         ivCrypto: iv,
-        enc_fileName_crypto: await window.crypto.subtle.encrypt(
-          { name: "AES-CBC", iv },
-          derivedKey,
-          enc.encode(file.name)
-        ),
-        enc_directory_crypto: await window.crypto.subtle.encrypt(
-          { name: "AES-CBC", iv },
-          derivedKey,
-          enc.encode(dir)
-        ),
+        // enc_fileName_crypto: await window.crypto.subtle.encrypt(
+        //   { name: "AES-CBC", iv },
+        //   derivedKey,
+        //   enc.encode(file.name)
+        // ),
+        // enc_directory_crypto: await window.crypto.subtle.encrypt(
+        //   { name: "AES-CBC", iv },
+        //   derivedKey,
+        //   enc.encode(dir)
+        // ),
       });
     };
     reader.onerror = (event) => {

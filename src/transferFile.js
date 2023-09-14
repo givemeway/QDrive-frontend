@@ -31,7 +31,6 @@ const uploadFile = (
   return new Promise(async (resolve, reject) => {
     let progress = 0;
     let uploadedBytes = 0;
-    let currentChunkSize = 0;
     let eta = 0;
     let filePath;
     const ETA = (timeStarted) => {
@@ -112,25 +111,31 @@ const uploadFile = (
         "Content-Disposition": `attachment; filename="${file.name}"`,
         "X-CSRF-Token": CSRFToken,
       };
-      if (file.hasOwnProperty("hash")) {
-        fileStat.checksum = file.hash;
-      } else {
+
+      if (!file.hash) {
         fileStat.checksum = await hashFile(file.slice(0, file.size));
+      } else {
+        fileStat.checksum = file.hash;
       }
+
+      if (modified) {
+        fileStat.uuid = file.uuid;
+      }
+
       const timeStarted = new Date();
       const timer = setInterval(ETA, 1000, timeStarted);
       const {
         encryptedFile,
         saltCrypto,
         ivCrypto,
-        enc_fileName_crypto,
-        enc_directory_crypto,
+        // enc_fileName_crypto,
+        // enc_directory_crypto,
       } = await encryptFile(file, "sandy86kumar", dir);
 
       fileStat.salt = arrayBufferToHex(saltCrypto);
       fileStat.iv = arrayBufferToHex(ivCrypto);
-      fileStat.enc_filename = enc_fileName_crypto;
-      fileStat.enc_directory = enc_directory_crypto;
+      // fileStat.enc_filename = enc_fileName_crypto;
+      // fileStat.enc_directory = enc_directory_crypto;
       headers.enc_file_checksum = await hashChunk(encryptedFile);
       headers.filestat = JSON.stringify(fileStat);
 

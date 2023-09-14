@@ -5,7 +5,7 @@
 import React from "react";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { getfilesCurDir, compareFiles } from "../filesInfo.js";
 import { csrftokenURL, filesFoldersURL } from "../config.js";
 import { formatBytes, formatSeconds } from "../util.js";
@@ -52,6 +52,7 @@ function FolderUpload({ setUpload }) {
     uploaded: 0,
   });
   const [preparingFiles, setPreparingFiles] = useState(false);
+  const filesMetaData = useRef({});
   const [uploadInitiated, setUploadInitiated] = useState(false);
   const { setData } = useContext(UploadFolderContenxt);
   const path = useContext(PathContext);
@@ -117,6 +118,7 @@ function FolderUpload({ setUpload }) {
             totalSize,
             total,
             toBeUploaded,
+            metadata,
           } = data;
           setCSRFToken(CSRFToken);
           setTrackFilesProgress(() => trackFilesProgress);
@@ -125,6 +127,7 @@ function FolderUpload({ setUpload }) {
             totalSize: totalSize,
             total: total,
           }));
+          filesMetaData.current = metadata;
           setFilesToUpload(toBeUploaded);
           setFiles([]);
           worker.terminate();
@@ -150,6 +153,7 @@ function FolderUpload({ setUpload }) {
       worker.postMessage({
         mode: "upload",
         filesToUpload,
+        metadata: filesMetaData.current,
         pwd,
         device,
         CSRFToken,
@@ -176,9 +180,10 @@ function FolderUpload({ setUpload }) {
           setUploadInitiated(uploadStarted);
         } else if (mode === "uploadProgress") {
           const { fileName, fileBody } = data;
-          setTrackFilesProgress((prev) =>
-            new Map(prev).set(fileName, fileBody)
-          );
+          setTrackFilesProgress((prev) => {
+            prev.set(fileName, fileBody);
+            return prev;
+          });
         } else if (mode === "finish") {
           setFilesToUpload([]);
           setUploadCompleted(true);

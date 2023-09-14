@@ -1,5 +1,5 @@
 import { fetchFilesURL, username } from "./config.js";
-import { hashFileChunked } from "./hashFile.js";
+import { hashFileChunked, hashFile } from "./hashFile.js";
 
 const getfilesCurDir = async (cwd, device, CSRFToken) => {
   console.log(device);
@@ -46,8 +46,10 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
       if (files[file.directory].hasOwnProperty(fileName)) {
         files[file.directory][fileName].hash.add(file.hashvalue);
         files[file.directory][fileName].lmd.add(file.last_modified);
+        files[file.directory][fileName].uuid = file.origin;
       } else {
         files[file.directory][fileName] = new Object();
+        files[file.directory][fileName].uuid = file.origin;
         files[file.directory][fileName].hash = new Set();
         files[file.directory][fileName].lmd = new Set();
         files[file.directory][fileName].lmd.add(file.last_modified);
@@ -56,6 +58,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
     } else {
       files[file.directory] = new Object();
       files[file.directory][fileName] = new Object();
+      files[file.directory][fileName].uuid = file.origin;
       files[file.directory][fileName].hash = new Set();
       files[file.directory][fileName].lmd = new Set();
       files[file.directory][fileName].lmd.add(file.last_modified);
@@ -64,6 +67,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
   });
   let filesToUpload = [];
   let idx = 0;
+
   for (const file of selectedFileList) {
     let dirName;
     let filePath;
@@ -76,6 +80,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
     }
 
     dirName = getDirName(filePath);
+
     if (files.hasOwnProperty(dirName)) {
       if (!files[dirName].hasOwnProperty(file.name)) {
         file.modified = false;
@@ -83,12 +88,13 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
         file.progress = 0;
         filesToUpload.push(file);
       } else {
-        const localFileHash = await hashFileChunked(file);
+        const localFileHash = await hashFile(file);
         if (!files[dirName][file.name]["hash"].has(localFileHash)) {
           console.log("Modified");
           file.modified = true;
           file.hash = localFileHash;
           file.id = idx;
+          file.uuid = files[dirName][file.name]["uuid"];
           file.progress = 0;
           filesToUpload.push(file);
         }
