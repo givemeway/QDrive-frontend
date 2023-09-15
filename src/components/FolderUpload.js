@@ -1,14 +1,8 @@
-/* global forge */
-/* global axios */
-/* global async */
-/* global workerpool */
 import React from "react";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useContext, useRef } from "react";
-import { getfilesCurDir, compareFiles } from "../filesInfo.js";
-import { csrftokenURL, filesFoldersURL } from "../config.js";
-import { formatBytes, formatSeconds } from "../util.js";
+import { filesFoldersURL } from "../config.js";
 import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
 import { Button } from "@mui/material";
 import { useParams } from "react-router-dom";

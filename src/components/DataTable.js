@@ -6,6 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import React, { useEffect, useContext } from "react";
 import { Button, Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
+import { Link as Atag } from "@mui/material";
 import { download } from "../downloadFile.js";
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
@@ -78,10 +79,34 @@ export default React.memo(function DataGridTable() {
                 </Menu>
               </>
             ) : (
-              <Button
-                onClick={() => download(cellValues.row.path)}
-                fullWidth
-                disableRipple
+              // <Button
+              //   onClick={() => download(cellValues.row.path)}
+              //   fullWidth
+              //   disableRipple
+              //   sx={{
+              //     textDecoration: "none",
+              //     textTransform: "none",
+              //     display: "flex",
+              //     flexDirection: "row",
+              //     justifyContent: "flex-start",
+              //     gap: 2,
+              //     alignItems: "center",
+              //     fontSize: "1.5rem",
+              //     color: "rgb(128, 128, 128)",
+              //     "&:hover": { backgroundColor: "transparent" },
+              //   }}
+              // >
+              //   <FileOpenIcon color="primary" sx={{ width: 50, height: 50 }} />
+
+              //   <Typography align="right" sx={{ fontSize: "1.25rem" }}>
+              //     {cellValues.row.name}
+              //   </Typography>
+              // </Button>
+              <Atag
+                href={cellValues.row.url}
+                rel="noreferrer"
+                target="_blank"
+                // onClick={() => download(cellValues.row.path)}
                 sx={{
                   textDecoration: "none",
                   textTransform: "none",
@@ -100,7 +125,7 @@ export default React.memo(function DataGridTable() {
                 <Typography align="right" sx={{ fontSize: "1.25rem" }}>
                   {cellValues.row.name}
                 </Typography>
-              </Button>
+              </Atag>
             )}
           </>
         );
@@ -156,10 +181,10 @@ export default React.memo(function DataGridTable() {
     rowSelectionModel.forEach((val) => {
       const item = val.split(";");
       if (item[0] === "file") {
-        files.push({ id: item[1], path: item[2] });
+        files.push({ id: item[1], path: item[2], file: item[3] });
       }
       if (item[0] === "folder") {
-        folders.push({ id: item[1], path: item[2] });
+        folders.push({ id: item[1], path: item[2], folder: item[3] });
       }
     });
     setItemsSelection((prev) => ({
@@ -175,12 +200,15 @@ export default React.memo(function DataGridTable() {
         file.device
       )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
         file.filename
-      )}`,
+      )};${file.filename}`,
       name: file.filename,
       size: formatBytes(file.size),
       path: `${downloadURL}?device=${encodeURIComponent(
         file.device
       )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
+        file.filename
+      )}&uuid=${encodeURIComponent(file.uuid)}`,
+      url: `https://localhost:3001${downloadURL}?file=${encodeURIComponent(
         file.filename
       )}&uuid=${encodeURIComponent(file.uuid)}`,
       versions: file.versions,
@@ -190,7 +218,7 @@ export default React.memo(function DataGridTable() {
     rows = [
       ...rows,
       ...data.folders.map((folder) => ({
-        id: `folder;${folder.id};${folder.path}`,
+        id: `folder;${folder.id};${folder.path};${folder.folder}`,
         name: folder.folder,
         size: "--",
         path: folder.path,

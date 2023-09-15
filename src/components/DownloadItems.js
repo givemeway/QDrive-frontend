@@ -14,7 +14,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import LinearProgress from "@mui/material/LinearProgress";
 
 import { ItemSelectionContext } from "./Context";
-import { downloadItemsURL, csrftokenURL } from "../config.js";
+import { downloadItemsURL, csrftokenURL, get_download_zip } from "../config.js";
 
 import { styled } from "@mui/material/styles";
 
@@ -69,39 +69,50 @@ const Download = () => {
         body: JSON.stringify(body),
       };
 
-      (async () => {
-        let rs_src = fetch(downloadItemsURL, options).then(async (response) => {
-          console.log(response.body);
-          return response.body;
-        });
+      fetch(get_download_zip, options)
+        .then((res) => res.json())
+        .then((data) => {
+          const { key } = data;
+          window.open(
+            `https://localhost:3001/app/downloadFolders?key=${key}`,
+            "_parent"
+          );
+        })
+        .catch((err) => console.error(err));
 
-        // create writable stream for file
-        const opts = {
-          suggestedName: "QDrive.zip",
-          types: [
-            {
-              description: "Zip Files",
-              accept: {
-                "application/zip": [".zip"],
-              },
-            },
-          ],
-        };
-        let ws_dest = window.showSaveFilePicker(opts).then((handle) => {
-          setOpen(true);
-          return handle.createWritable();
-        });
+      // (async () => {
+      //   let rs_src = fetch(downloadItemsURL, options).then(async (response) => {
+      //     console.log(response.body);
+      //     return response.body;
+      //   });
 
-        // create transform stream for decryption
-        let ts_dec = new TransformStream({
-          async transform(chunk, controller) {
-            controller.enqueue(chunk);
-          },
-        });
-        // stream cleartext to file
-        let rs_clear = rs_src.then((s) => s.pipeThrough(ts_dec));
-        return (await rs_clear).pipeTo(await ws_dest);
-      })().then(() => setOpen(false));
+      //   // create writable stream for file
+      //   const opts = {
+      //     suggestedName: "QDrive.zip",
+      //     types: [
+      //       {
+      //         description: "Zip Files",
+      //         accept: {
+      //           "application/zip": [".zip"],
+      //         },
+      //       },
+      //     ],
+      //   };
+      //   let ws_dest = window.showSaveFilePicker(opts).then((handle) => {
+      //     setOpen(true);
+      //     return handle.createWritable();
+      //   });
+
+      //   // create transform stream for decryption
+      //   let ts_dec = new TransformStream({
+      //     async transform(chunk, controller) {
+      //       controller.enqueue(chunk);
+      //     },
+      //   });
+      //   // stream cleartext to file
+      //   let rs_clear = rs_src.then((s) => s.pipeThrough(ts_dec));
+      //   return (await rs_clear).pipeTo(await ws_dest);
+      // })().then(() => setOpen(false));
     }
   }, [startDownload, CSRFToken]);
   return (

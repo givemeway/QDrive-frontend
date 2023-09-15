@@ -1,17 +1,11 @@
-/* global forge */
-/* global axios */
-/* global async */
 import React from "react";
 import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { getfilesCurDir, compareFiles } from "../filesInfo.js";
-import { uploadFile } from "../transferFile_copy.js";
-import { csrftokenURL, filesFoldersURL } from "../config.js";
-import { formatBytes, formatSeconds } from "../util.js";
+import { filesFoldersURL } from "../config.js";
 import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
 import { Button, Snackbar, Box, Typography } from "@mui/material";
 
@@ -34,124 +28,10 @@ function CustomButton({ children }) {
   );
 }
 
-const findFilesToUpload = async (
-  cwd,
-  filesList,
-  device,
-  setTrackFilesProgress,
-  setCSRFToken,
-  setFilesStatus
-) => {
-  try {
-    let tempDeviceName;
-    let uploadingDirPath =
-      cwd === "/"
-        ? filesList[0].webkitRelativePath.split(/\//g)[0]
-        : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
-    if (device === "/") {
-      tempDeviceName = filesList[0].webkitRelativePath.split(/\//g)[0];
-      if (tempDeviceName.length === 0) {
-        tempDeviceName = "/";
-      }
-      uploadingDirPath = "/";
-    }
-    const { data } = await axios.get(csrftokenURL);
-    const CSRFToken = data.CSRFToken;
-    setCSRFToken(CSRFToken);
-    console.log(uploadingDirPath);
-    const DbFiles = await getfilesCurDir(
-      cwd,
-      tempDeviceName !== undefined ? tempDeviceName : device,
-      CSRFToken
-    );
-    let files = await compareFiles(filesList, DbFiles, cwd, device);
-    console.log(files.length);
-    files.forEach((file) =>
-      setFilesStatus((prev) => ({
-        ...prev,
-        totalSize: prev.totalSize + file.size,
-      }))
-    );
-    setTrackFilesProgress(
-      () =>
-        new Map(
-          files.map((file) => [
-            file.webkitRelativePath === ""
-              ? file.name
-              : file.webkitRelativePath,
-            {
-              name: file.name,
-              progress: 0,
-              status: "queued",
-              size: formatBytes(file.size),
-              bytes: file.size,
-              folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
-            },
-          ])
-        )
-    );
-    return files;
-  } catch (err) {
-    return err;
-  }
-};
-
-const uploadFiles = async (
-  files,
-  cwd,
-  device,
-  CSRFToken,
-  totalSize,
-  setTrackFilesProgress,
-  setFilesStatus
-) => {
-  let eta = Infinity;
-  const filesProgress = { uploaded: 0 };
-  const ETA = (timeStarted) => {
-    const timeElapsed = new Date() - timeStarted;
-    const uploadSpeed = filesProgress.uploaded / (timeElapsed / 1000);
-    const time = (totalSize - filesProgress.uploaded) / uploadSpeed;
-    eta = formatSeconds(time);
-    setFilesStatus((prev) => ({ ...prev, eta }));
-  };
-  const timeStarted = new Date();
-  const timer = setInterval(ETA, 1000, timeStarted);
-  try {
-    setFilesStatus((prev) => ({ ...prev, total: files.length, processed: 0 }));
-
-    const promises = [];
-    for (const file of files) {
-      promises.push(async () => {
-        try {
-          await uploadFile(
-            file,
-            cwd,
-            file.modified,
-            device,
-            CSRFToken,
-            filesProgress,
-            setTrackFilesProgress,
-            setFilesStatus
-          );
-          setFilesStatus((prev) => ({
-            ...prev,
-            processed: prev.processed + 1,
-          }));
-        } catch (err) {
-          console.log(err);
-        }
-      });
-    }
-
-    await async.parallelLimit(promises, 10);
-    clearInterval(timer);
-  } catch (err) {
-    console.log(err);
-  }
-};
-
 function FilesUpload({ setUpload }) {
   const [files, setFiles] = useState([]);
+  const filesMetaData = useRef({});
+
   const [pwd, setPWD] = useState("/");
   const [device, setDevice] = useState("/");
   const [filesToUpload, setFilesToUpload] = useState([]);
@@ -178,7 +58,7 @@ function FilesUpload({ setUpload }) {
     if (
       path[0] === "home" &&
       filesToUpload.length > 0 &&
-      filesStatus.processed % 10 === 0
+      (filesStatus.processed % 10 === 0 || filesStatus.total <= 10)
     ) {
       console.log("10 files uploaded");
       let homedir;
@@ -218,56 +98,108 @@ function FilesUpload({ setUpload }) {
         })
         .catch((err) => console.log(err));
     }
-  }, [filesStatus.processed]);
+  }, [
+    CSRFToken,
+    filesStatus.processed,
+    filesStatus.total,
+    filesToUpload.length,
+    setData,
+    subpath,
+  ]);
+
   useEffect(() => {
     if (files.length > 0) {
-      findFilesToUpload(
-        pwd,
-        files,
-        device,
-        setTrackFilesProgress,
-        setCSRFToken,
-        setFilesStatus
-      )
-        .then((files) => {
-          setFilesToUpload(files);
+      console.log("inside the findFilesToUpload");
+      const worker = new Worker(new URL("../worker.js", import.meta.url), {
+        type: "module",
+      });
+      worker.postMessage({ mode: "init", files, pwd, device });
+      worker.onmessage = ({ data }) => {
+        const { mode } = data;
+        if (mode === "filesToUpload") {
+          const {
+            CSRFToken,
+            trackFilesProgress,
+            totalSize,
+            total,
+            toBeUploaded,
+            metadata,
+          } = data;
+          setCSRFToken(CSRFToken);
+          setTrackFilesProgress(() => trackFilesProgress);
+          setFilesStatus((prev) => ({
+            ...prev,
+            totalSize: totalSize,
+            total: total,
+          }));
+          filesMetaData.current = metadata;
+          setFilesToUpload(toBeUploaded);
           setFiles([]);
-        })
-        .catch((err) => {
-          setFilesToUpload([]);
-          setFiles([]);
-          console.log(err);
-        });
+          worker.terminate();
+        }
+      };
+      worker.onerror = (e) => {
+        setFilesToUpload([]);
+        setFiles([]);
+        console.error(e);
+        worker.terminate();
+      };
     }
-  }, [files]);
+  }, [device, files, pwd]);
+
   useEffect(() => {
     setPreparingFiles(false);
     if (filesToUpload.length > 0) {
       setUpload("file");
       setShowProgress(true);
       setUploadCompleted(false);
-      uploadFiles(
+      const worker = new Worker(new URL("../worker.js", import.meta.url), {
+        type: "module",
+      });
+      worker.postMessage({
+        mode: "upload",
         filesToUpload,
+        metadata: filesMetaData.current,
         pwd,
         device,
         CSRFToken,
-        filesStatus.totalSize,
-        setTrackFilesProgress,
-        setFilesStatus
-      )
-        .then(() => {
-          //   setUpload(null);
+        total: filesStatus.totalSize,
+        trackFilesProgress,
+        filesStatus,
+      });
+      worker.onmessage = ({ data }) => {
+        const { mode } = data;
+        if (mode === "filesStatus_eta") {
+          const { eta } = data;
+          setFilesStatus((prev) => ({ ...prev, eta }));
+        } else if (mode === "filesStatus_total") {
+          const { total } = data;
+          setFilesStatus((prev) => ({ ...prev, total }));
+        } else if (mode === "filesStatus_processed") {
+          const { processed } = data;
+          setFilesStatus((prev) => ({ ...prev, processed }));
+        } else if (mode === "filesStatus_uploaded") {
+          const { uploaded } = data;
+          setFilesStatus((prev) => ({ ...prev, uploaded }));
+        } else if (mode === "uploadInitiated") {
+          const { uploadStarted } = data;
+          // setUploadInitiated(uploadStarted);
+        } else if (mode === "uploadProgress") {
+          const { fileName, fileBody } = data;
+          setTrackFilesProgress((prev) => {
+            prev.set(fileName, fileBody);
+            return prev;
+          });
+        } else if (mode === "finish") {
           setFilesToUpload([]);
           setUploadCompleted(true);
           console.log("file upload complete");
-          // navigate(0);
-        })
-        .catch((err) => {
-          //   setUpload(null);
-          setFilesToUpload([]);
-          setUploadCompleted(true);
-          console.log(err);
-        });
+          worker.terminate();
+        }
+      };
+      worker.onerror = (e) => {
+        console.error(e);
+      };
     }
   }, [filesToUpload]);
 

@@ -5,6 +5,7 @@ const fetchFilesURL = `/app/getCurrentDirFiles`;
 const deleteItemsURL = "/app/delete";
 const filesFoldersURL = `/app/browseFolder`;
 const downloadURL = `/app/downloadFile`;
+const get_download_zip = `/app/get_download_zip`;
 const csrftokenURL = `/app/csrftoken`;
 const downloadItemsURL = "/app/downloadFolders";
 const devicename = "DESKTOP-10RSGE8";
@@ -23,4 +24,5 @@ export {
   filesFoldersURL,
   deleteItemsURL,
   downloadItemsURL,
+  get_download_zip,
 };

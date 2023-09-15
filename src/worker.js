@@ -35,7 +35,7 @@ const findFilesToUpload = async (cwd, filesList, device) => {
     files.forEach((file) => (totalSize += file.size));
     const trackFilesProgress = new Map(
       files.map((file) => [
-        file.webkitRelativePath,
+        file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
         {
           name: file.name,
           progress: 0,
@@ -144,47 +144,6 @@ const uploadFiles = async (
         console.log(err);
       }
     });
-
-    // const promises = [];
-    // let idx = 0;
-    // for (const file of files) {
-    //   // eslint-disable-next-line no-loop-func
-    //   promises.push(
-    //     // eslint-disable-next-line no-loop-func
-    //     async () => {
-    //       try {
-    //         await uploadFile(
-    //           file,
-    //           cwd,
-    //           file.modified,
-    //           device,
-    //           CSRFToken,
-    //           filesProgress,
-    //           trackFilesProgress,
-    //           filesStatus
-    //         );
-    //         filesStatus = {
-    //           ...filesStatus,
-    //           processed: filesStatus.processed + 1,
-    //         };
-    //         postMessage({
-    //           mode: "filesStatus_processed",
-    //           processed: filesStatus.processed,
-    //         });
-
-    //         if (idx === 0) {
-    //           uploadStarted = true;
-    //           postMessage({ mode: "uploadInitiated", uploadStarted });
-    //         }
-    //         idx++;
-    //       } catch (err) {
-    //         console.log(err);
-    //       }
-    //     }
-    //   );
-    // }
-    // console.log(promises.length);
-    // await async.parallelLimit(promises, 10);
     clearInterval(timer);
     postMessage({ mode: "finish" });
   } catch (err) {
