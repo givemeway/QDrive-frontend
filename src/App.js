@@ -4,6 +4,7 @@ import HomePage from "./components/Homepage";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
+import Shared from "./components/SharedItems";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/sh/*" element={<Shared />} />
       </Routes>
     </div>
   );

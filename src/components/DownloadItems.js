@@ -74,7 +74,7 @@ const Download = () => {
         .then((data) => {
           const { key } = data;
           window.open(
-            `https://localhost:3001/app/downloadFolders?key=${key}`,
+            `https://localhost:3001/app/downloadItems?key=${key}&dl=1`,
             "_parent"
           );
         })

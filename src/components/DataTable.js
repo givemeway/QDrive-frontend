@@ -50,8 +50,11 @@ export default React.memo(function DataGridTable() {
                     }}
                   >
                     <FolderOpenIcon
-                      color="primary"
-                      sx={{ width: 50, height: 50 }}
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        color: "#A1C9F7",
+                      }}
                     />
 
                     <Typography sx={{ fontSize: "1.25rem" }}>
@@ -120,7 +123,13 @@ export default React.memo(function DataGridTable() {
                   "&:hover": { backgroundColor: "transparent" },
                 }}
               >
-                <FileOpenIcon color="primary" sx={{ width: 50, height: 50 }} />
+                <FileOpenIcon
+                  sx={{
+                    width: 50,
+                    height: 50,
+                    color: "#A1C9F7",
+                  }}
+                />
 
                 <Typography align="right" sx={{ fontSize: "1.25rem" }}>
                   {cellValues.row.name}
