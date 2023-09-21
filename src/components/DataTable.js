@@ -1,5 +1,6 @@
 import FolderOpenIcon from "@mui/icons-material/FolderOpenRounded";
 import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
+import FolderIcon from "@mui/icons-material/FolderRounded";
 import { DataGrid, gridRowsLoadingSelector } from "@mui/x-data-grid";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -49,7 +50,7 @@ export default React.memo(function DataGridTable() {
                       color: "rgb(128, 128, 128)",
                     }}
                   >
-                    <FolderOpenIcon
+                    <FolderIcon
                       sx={{
                         width: 50,
                         height: 50,
@@ -193,7 +194,12 @@ export default React.memo(function DataGridTable() {
         files.push({ id: item[1], path: item[2], file: item[3] });
       }
       if (item[0] === "folder") {
-        folders.push({ id: item[1], path: item[2], folder: item[3] });
+        folders.push({
+          id: item[1],
+          path: item[2],
+          folder: item[3],
+          uuid: item[4],
+        });
       }
     });
     setItemsSelection((prev) => ({
@@ -212,6 +218,7 @@ export default React.memo(function DataGridTable() {
       )};${file.filename}`,
       name: file.filename,
       size: formatBytes(file.size),
+      dir: `${file.device}/${file.directory}`,
       path: `${downloadURL}?device=${encodeURIComponent(
         file.device
       )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
@@ -227,7 +234,7 @@ export default React.memo(function DataGridTable() {
     rows = [
       ...rows,
       ...data.folders.map((folder) => ({
-        id: `folder;${folder.id};${folder.path};${folder.folder}`,
+        id: `folder;${folder.id};${folder.path};${folder.folder};${folder.uuid}`,
         name: folder.folder,
         size: "--",
         path: folder.path,

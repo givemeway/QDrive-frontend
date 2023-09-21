@@ -8,6 +8,7 @@ const downloadURL = `/app/downloadFile`;
 const get_download_zip = `/app/get_download_zip`;
 const csrftokenURL = `/app/csrftoken`;
 const downloadItemsURL = "/app/downloadItems";
+const getShareLinkURL = "/app/createShare";
 const devicename = "DESKTOP-10RSGE8";
 const username = "sandeep.kumar@idriveinc.com";
 const cwd = "/";
@@ -25,4 +26,6 @@ export {
   deleteItemsURL,
   downloadItemsURL,
   get_download_zip,
+  getShareLinkURL,
+  host,
 };

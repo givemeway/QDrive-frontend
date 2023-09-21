@@ -5,13 +5,13 @@ import { Box, Button, Divider, Stack } from "@mui/material";
 import React, { useState, useContext } from "react";
 
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
-import ShareIcon from "@mui/icons-material/ShareRounded";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
 import DownloadItems from "./DownloadItems.js";
 import { UploadContext, ItemSelectionContext } from "./Context.js";
+import Share from "./Share.js";
 import MoveItems from "./MoveItems.js";
 import RenameItem from "./RenameItem.js";
 import CopyItems from "./CopyItems.js";
@@ -77,12 +77,7 @@ export default React.memo(function UploadMenu() {
               <Divider orientation="vertical" />
               <CopyItems />
               <Divider orientation="vertical" />
-              <CustomButton>
-                <ShareIcon
-                  color="primary"
-                  sx={{ cursor: "pointer", fontSize: 25 }}
-                />
-              </CustomButton>
+              <Share />
               <Divider orientation="vertical" />
               <DeleteItems />
               <Divider orientation="vertical" />

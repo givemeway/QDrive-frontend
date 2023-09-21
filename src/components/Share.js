@@ -1,0 +1,266 @@
+import Header from "./HomePageHeader";
+import {
+  Button,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  ListItemButton,
+  Link,
+  CircularProgress,
+  TextField,
+  Stack,
+  Snackbar,
+} from "@mui/material";
+import FolderIcon from "@mui/icons-material/FolderRounded";
+import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
+import ShareIcon from "@mui/icons-material/ShareRounded";
+import { ItemSelectionContext } from "./Context";
+import { useContext, useRef, useEffect, useState } from "react";
+import { csrftokenURL, getShareLinkURL, host } from "../config";
+import { Modal, Box, Typography } from "@mui/material";
+import { FixedSizeList } from "react-window";
+async function fetchCSRFToken(csrfurl) {
+  const response = await fetch(csrfurl);
+  const { CSRFToken } = await response.json();
+  return CSRFToken;
+}
+
+export default function Share() {
+  const { fileIds, directories } = useContext(ItemSelectionContext);
+  const [CSRFToken, setCSRFToken] = useState("");
+  const [shareURL, setShareURL] = useState("");
+  const [share, setShare] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [snackbarOpen, setsnakbarOpen] = useState(false);
+  const handleClose = () => setOpen(false);
+  const items = useRef([]);
+
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    overflow: "auto",
+    bgcolor: "background.paper",
+    border: "2px solid #6EA5CE",
+    boxShadow: 24,
+    p: 4,
+  };
+
+  function renderRows(props) {
+    const { index, style } = props;
+
+    return (
+      <ListItem
+        style={style}
+        key={items.current[index].id}
+        component="div"
+        disablePadding
+      >
+        <ListItemIcon>
+          {items.current[index].type === "file" && (
+            <FileOpenIcon sx={{ color: "#A1C9F7", fontSize: 30 }} />
+          )}
+          {items.current[index].type === "folder" && (
+            <FolderIcon sx={{ color: "#A1C9F7", fontSize: 30 }} />
+          )}
+        </ListItemIcon>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            gap: 0,
+            alignItems: "flex-start",
+          }}
+        >
+          <ListItemText primary={`${items.current[index].name}`} />
+        </Box>
+      </ListItem>
+    );
+  }
+
+  const createShare = () => {
+    if (items.current.length === 1) {
+      let url;
+      if (items.current[0].type === "file") {
+        url = `${host}/sh/sh?k=${items.current[0].id}&t=fi&dl=0`;
+      } else {
+        url = `${host}/sh/sh?k=${items.current[0].id}&t=fo&dl=0`;
+      }
+      setShareURL(url);
+    } else {
+      setShare(true);
+      setIsGenerating(1);
+    }
+  };
+
+  const copyLink = async (txt) => {
+    await navigator.clipboard.writeText(txt);
+    handleClose();
+    setIsGenerating(3);
+    setsnakbarOpen(true);
+  };
+
+  const showShareWindow = () => {
+    setOpen(true);
+    items.current = [
+      ...fileIds.map((file) => ({
+        id: file.id,
+        name: file.file,
+        path: file.dir,
+        type: "file",
+      })),
+      ...directories.map((folder) => ({
+        id: folder.uuid,
+        name: folder.folder,
+        path: folder.path,
+        type: "folder",
+      })),
+    ];
+  };
+
+  useEffect(() => {
+    if (shareURL.length > 0) {
+      setIsGenerating(2);
+    }
+  }, [shareURL]);
+
+  useEffect(() => {
+    console.log("click triggered");
+    fetchCSRFToken(csrftokenURL)
+      .then((csrftoken) => {
+        setCSRFToken(csrftoken);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  useEffect(() => {
+    if (share & (CSRFToken !== "")) {
+      const headers = {
+        "X-CSRF-Token": CSRFToken,
+        "Content-Type": "application/json",
+      };
+      const body = {
+        files: fileIds,
+        directories: directories,
+      };
+      const options = {
+        method: "POST",
+        credentials: "include",
+        headers: headers,
+        body: JSON.stringify(body),
+      };
+
+      fetch(getShareLinkURL, options)
+        .then((res) => res.json())
+        .then((data) => {
+          const { url } = data;
+          setShareURL(url);
+          setIsGenerating(2);
+          console.log(url, isGenerating);
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [share]);
+
+  return (
+    <>
+      <Button
+        onClick={() => showShareWindow()}
+        variant="outlined"
+        disableRipple
+        sx={{
+          border: "none",
+          boxSizing: "border-box",
+          "&:hover": {
+            backgroundColor: "#EFF3FA",
+            border: "none",
+          },
+        }}
+      >
+        <ShareIcon color="primary" sx={{ cursor: "pointer", fontSize: 25 }} />
+      </Button>
+      {open && (
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography variant="h6" component="h2">
+              Share
+            </Typography>
+            <Divider orientation="horizontal" />
+            <FixedSizeList
+              itemCount={items.current.length}
+              itemSize={50}
+              height={150}
+              width={"100%"}
+            >
+              {renderRows}
+            </FixedSizeList>
+            <Divider orientation="horizontal" />
+            {isGenerating === 0 && (
+              <Link
+                variant={"a"}
+                onClick={createShare}
+                sx={{ cursor: "pointer" }}
+                underline="none"
+              >
+                Create Link
+              </Link>
+            )}
+            {isGenerating === 1 && (
+              <Box
+                display={"flex"}
+                flexDirection={"row"}
+                justifyContent={"flex-start"}
+                alignItems={"center"}
+              >
+                <CircularProgress />
+                <Typography>Generating Link</Typography>
+              </Box>
+            )}
+            {isGenerating === 2 && shareURL.length > 0 && (
+              <Stack>
+                <Link
+                  variant={"a"}
+                  sx={{ cursor: "pointer" }}
+                  underline="none"
+                  onClick={() => {
+                    copyLink(shareURL);
+                  }}
+                >
+                  Copy Link
+                </Link>
+                <TextField
+                  value={shareURL}
+                  placeholder={shareURL}
+                  variant="outlined"
+                  size="small"
+                ></TextField>
+              </Stack>
+            )}
+          </Box>
+        </Modal>
+      )}
+      {isGenerating === 3 && (
+        <Snackbar
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          autoHideDuration={6000}
+          open={snackbarOpen}
+          onClose={() => {
+            setsnakbarOpen(false);
+          }}
+          message="Link Copied to Clipboard!"
+        />
+      )}
+    </>
+  );
+}
