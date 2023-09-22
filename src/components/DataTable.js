@@ -39,6 +39,7 @@ export default React.memo(function DataGridTable() {
                 >
                   <Link
                     to={"/dashboard/home" + cellValues.row.path}
+                    // to={"/sh/sh" + cellValues.row.path}
                     style={{
                       textDecoration: "none",
                       display: "flex",
@@ -210,6 +211,7 @@ export default React.memo(function DataGridTable() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    console.log(data);
     rows = data.files.map((file) => ({
       id: `file;${file.uuid};device=${encodeURIComponent(
         file.device
