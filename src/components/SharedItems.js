@@ -23,7 +23,7 @@ export default function Shared() {
   const [breadCrumb, setBreadCrumb] = useState(["/"]);
   const [data, setData] = useState({});
   const [dataLoaded, setDataLoaded] = useState(false);
-  const { type, shareId, nav } = useParams();
+  const { type, shareId, "*": nav } = useParams();
   console.log(type, shareId, nav);
   const queryParams = new URLSearchParams(location.search);
   const itemID = queryParams.get("k");
@@ -38,7 +38,8 @@ export default function Shared() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const url =
-      getSharedItemsURL + `?id=${shareId}&k=${itemID}&t=${type}&dl=${dl}`;
+      getSharedItemsURL +
+      `?id=${shareId}&k=${itemID}&t=${type}&dl=${dl}&nav=${nav}`;
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
