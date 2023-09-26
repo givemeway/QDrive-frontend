@@ -212,6 +212,7 @@ export default React.memo(function DataGridTable() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     console.log(data);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     rows = data.files.map((file) => ({
       id: `file;${file.uuid};device=${encodeURIComponent(
         file.device

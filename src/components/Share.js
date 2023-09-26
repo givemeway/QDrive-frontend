@@ -29,6 +29,7 @@ async function fetchCSRFToken(csrfurl) {
 
 export default function Share() {
   const { fileIds, directories } = useContext(ItemSelectionContext);
+  const [type, setType] = useState("");
   const [CSRFToken, setCSRFToken] = useState("");
   const [shareURL, setShareURL] = useState("");
   const [share, setShare] = useState(false);
@@ -86,14 +87,17 @@ export default function Share() {
 
   const createShare = () => {
     if (items.current.length === 1) {
-      let url;
       if (items.current[0].type === "file") {
-        url = `${host}/sh/sh?k=${items.current[0].id}&t=fi&dl=0`;
-      } else {
-        url = `${host}/sh/sh?k=${items.current[0].id}&t=fo&dl=0`;
+        setType("fi");
+        setShare(true);
+        setIsGenerating(1);
+      } else if (items.current[0].type === "folder") {
+        setType("fo");
+        setShare(true);
+        setIsGenerating(1);
       }
-      setShareURL(url);
     } else {
+      setType("t");
       setShare(true);
       setIsGenerating(1);
     }
@@ -112,13 +116,11 @@ export default function Share() {
       ...fileIds.map((file) => ({
         id: file.id,
         name: file.file,
-        path: file.dir,
         type: "file",
       })),
       ...directories.map((folder) => ({
         id: folder.uuid,
         name: folder.folder,
-        path: folder.path,
         type: "folder",
       })),
     ];
@@ -140,7 +142,7 @@ export default function Share() {
   }, []);
 
   useEffect(() => {
-    if (share & (CSRFToken !== "")) {
+    if (share && CSRFToken !== "" && type !== "") {
       const headers = {
         "X-CSRF-Token": CSRFToken,
         "Content-Type": "application/json",
@@ -149,6 +151,7 @@ export default function Share() {
         files: fileIds,
         directories: directories,
       };
+      console.log(body);
       const options = {
         method: "POST",
         credentials: "include",
@@ -156,7 +159,7 @@ export default function Share() {
         body: JSON.stringify(body),
       };
 
-      fetch(getShareLinkURL, options)
+      fetch(getShareLinkURL + `/?t=${type}`, options)
         .then((res) => res.json())
         .then((data) => {
           const { url } = data;

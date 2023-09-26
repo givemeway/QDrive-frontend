@@ -23,23 +23,22 @@ export default function Shared() {
   const [breadCrumb, setBreadCrumb] = useState(["/"]);
   const [data, setData] = useState({});
   const [dataLoaded, setDataLoaded] = useState(false);
-
-  const params = useParams();
-  const subpath = params["*"];
+  const { type, shareId, nav } = useParams();
+  console.log(type, shareId, nav);
   const queryParams = new URLSearchParams(location.search);
-  const shareID = queryParams.get("k");
+  const itemID = queryParams.get("k");
   const dl = queryParams.get("dl");
-  const type = queryParams.get("t");
 
   const [itemsSelected, setItemsSelection] = useState({
     fileIds: [],
     directories: [],
   });
 
-  console.log(shareID, dl, type);
+  console.log(itemID, dl, type);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const url = getSharedItemsURL + `/sh?k=${shareID}&t=${type}&dl=${dl}`;
+    const url =
+      getSharedItemsURL + `?id=${shareId}&k=${itemID}&t=${type}&dl=${dl}`;
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
@@ -50,11 +49,11 @@ export default function Shared() {
         setDataLoaded(true);
       })
       .catch((err) => console.log(err));
-  }, [shareID]);
+  }, [itemID]);
 
   // useEffect(() => {
   //   const path = subpath.split("/");
-  //   if (path[0] === "sh") {
+  //   if (path[0] === "fo") {
   //     let homedir;
   //     let curDir;
   //     let breadCrumbQueue;
@@ -100,9 +99,9 @@ export default function Shared() {
   //     });
   //   }
   // }, [subpath]);
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
+  // useEffect(() => {
+  //   console.log(data);
+  // }, [data]);
   return (
     <>
       <Header />
