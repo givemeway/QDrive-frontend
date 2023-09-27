@@ -13,7 +13,7 @@ import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
 import { ItemSelectionContext, UploadFolderContenxt } from "./Context.js";
 
-export default React.memo(function DataGridTable() {
+export default React.memo(function DataGridTable({ layout, nav, loading }) {
   let rows = [];
   const [newRows, setNewRows] = React.useState([]);
   const [contextMenu, setContextMenu] = React.useState(null);
@@ -22,6 +22,13 @@ export default React.memo(function DataGridTable() {
   const data = useContext(UploadFolderContenxt);
 
   console.log("table rendered");
+  let path;
+  if (layout === "dashboard") {
+    path = "/dashboard/home";
+  } else {
+    path = layout;
+  }
+  console.log(nav);
   const columns = [
     {
       field: "name",
@@ -38,8 +45,14 @@ export default React.memo(function DataGridTable() {
                   style={{ cursor: "context-menu" }}
                 >
                   <Link
-                    to={"/dashboard/home" + cellValues.row.path}
-                    // to={"/sh/sh" + cellValues.row.path}
+                    // to={dir + cellValues.row.path}
+                    to={
+                      layout === "dashboard"
+                        ? path + cellValues.row.path
+                        : cellValues.row.path.split(nav)[1] === ""
+                        ? path + "/h"
+                        : path + "/h" + cellValues.row.path.split(nav)[1]
+                    }
                     style={{
                       textDecoration: "none",
                       display: "flex",
@@ -211,43 +224,46 @@ export default React.memo(function DataGridTable() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    console.log(data);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    rows = data.files.map((file) => ({
-      id: `file;${file.uuid};device=${encodeURIComponent(
-        file.device
-      )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
-        file.filename
-      )};${file.filename}`,
-      name: file.filename,
-      size: formatBytes(file.size),
-      dir: `${file.device}/${file.directory}`,
-      path: `${downloadURL}?device=${encodeURIComponent(
-        file.device
-      )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
-        file.filename
-      )}&uuid=${encodeURIComponent(file.uuid)}`,
-      url: `https://localhost:3001${downloadURL}?file=${encodeURIComponent(
-        file.filename
-      )}&uuid=${encodeURIComponent(file.uuid)}`,
-      versions: file.versions,
-      modified: file.last_modified,
-      item: "file",
-    }));
-    rows = [
-      ...rows,
-      ...data.folders.map((folder) => ({
-        id: `folder;${folder.id};${folder.path};${folder.folder};${folder.uuid}`,
-        name: folder.folder,
-        size: "--",
-        path: folder.path,
-        versions: "--",
-        modified: "--",
-        item: "folder",
-      })),
-    ];
+    if (!loading) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      rows = data.files.map((file) => ({
+        id: `file;${file.uuid};device=${encodeURIComponent(
+          file.device
+        )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
+          file.filename
+        )};${file.filename}`,
+        name: file.filename,
+        size: formatBytes(file.size),
+        dir: `${file.device}/${file.directory}`,
+        path: `${downloadURL}?device=${encodeURIComponent(
+          file.device
+        )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
+          file.filename
+        )}&uuid=${encodeURIComponent(file.uuid)}`,
+        url: `https://localhost:3001${downloadURL}?file=${encodeURIComponent(
+          file.filename
+        )}&uuid=${encodeURIComponent(file.uuid)}`,
+        versions: file.versions,
+        modified: file.last_modified,
+        item: "file",
+      }));
+      rows = [
+        ...rows,
+        ...data.folders.map((folder) => ({
+          id: `folder;${folder.id};${folder.path};${folder.folder};${folder.uuid}`,
+          name: folder.folder,
+          size: "--",
+          path: folder.path,
+          versions: "--",
+          modified: "--",
+          item: "folder",
+        })),
+      ];
 
-    setNewRows(rows);
+      setNewRows(rows);
+    } else {
+      setNewRows([]);
+    }
   }, [data]);
   return (
     <Box sx={{ height: "100%", width: "100%" }}>
@@ -264,11 +280,23 @@ export default React.memo(function DataGridTable() {
         pageSizeOptions={[5, 10, 15, 20, 50, 100]}
         checkboxSelection
         disableRowSelectionOnClick
-        rowHeight={75}
+        rowHeight={60}
+        loading={loading}
         onRowSelectionModelChange={(newRowSelectionModel) => {
           setRowSelectionModel(newRowSelectionModel);
         }}
         rowSelectionModel={rowSelectionModel}
+        // sx={{
+        //   ".MuiDataGrid-cellCheckbox": {
+        //     visibility: "hidden",
+        //   },
+        //   "&:hover .MuiDataGrid-cellCheckbox": {
+        //     visibility: "visible",
+        //   },
+        //   ".datagrid-row-hover .MuiDataGrid-cellCheckbox": {
+        //     visibility: "visible",
+        //   },
+        // }}
       />
     </Box>
   );

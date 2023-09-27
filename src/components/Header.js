@@ -21,7 +21,7 @@ const Header = ({ queue, searchValue, search }) => {
       <AvatarMenu />
       <Search searchValue={searchValue} />
       {showBreadCrumb ? (
-        <BreadCrumb queue={queue} />
+        <BreadCrumb queue={queue} layout={"dashboard"} />
       ) : (
         <Box
           display="flex"

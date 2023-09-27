@@ -11,7 +11,7 @@ export default React.memo(function MainPanel() {
       flexDirection="column"
       sx={{ height: "100%", width: "100%" }}
     >
-      <Table />
+      <Table layout={"dashboard"} />
       <DeleteSnackBar />
     </Stack>
   );

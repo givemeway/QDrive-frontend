@@ -4,7 +4,8 @@ import HomePage from "./components/Homepage";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
-import Shared from "./components/SharedItems";
+import Shared from "./components/SharedFolder";
+import Transfer from "./components/Transfer";
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/register" element={<Register />} />
         <Route path="/sh/:type/:shareId/*" element={<Shared />} />
-        <Route path="/sh/:type/:shareId" element={<Shared />} />
+        <Route path="/sh/t/:shareId/*" element={<Transfer />} />
       </Routes>
     </div>
   );

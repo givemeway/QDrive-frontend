@@ -5,7 +5,6 @@ import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Chip from "@mui/material/Chip";
 import { Link } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   const backgroundColor =
@@ -28,30 +27,15 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   };
 }); // TypeScript only: need a type cast here because https://github.com/Microsoft/TypeScript/issues/26591
 
-function handleClick(event) {
-  event.preventDefault();
-}
-
-export default function CustomizedBreadcrumbs({ queue }) {
+export default function CustomizedBreadcrumbs({ queue, layout }) {
   let label;
-  let link = "/dashboard/home";
-  // let link = "/sh/sh";
-
+  let link;
+  if (layout === "dashboard") {
+    link = "/dashboard/home";
+  } else {
+    link = layout + "/h";
+  }
   return (
-    // <div
-    //   role="presentation"
-    //   onClick={handleClick}
-    // style={{
-    //   display: "flex",
-    //   flexDirection: "row",
-    //   justifyContent: "flex-start",
-    //   alignItems: "center",
-    //   gap: 2,
-    //   height: "33%",
-    //   margin: 0,
-    //   padding: 0,
-    // }}
-    // >
     <Breadcrumbs
       aria-label="breadcrumb"
       sx={{
@@ -65,12 +49,15 @@ export default function CustomizedBreadcrumbs({ queue }) {
         padding: 0,
       }}
     >
-      {queue.map((path) => {
-        if (path === "/") {
+      {queue.map((dir, idx) => {
+        if (dir === "/") {
           label = "Home";
         } else {
-          label = path;
-          link += `/${path}`;
+          label = dir;
+          if (layout !== "dashboard" && idx === 0) {
+          } else {
+            link += `/${dir}`;
+          }
         }
 
         return (
@@ -84,6 +71,5 @@ export default function CustomizedBreadcrumbs({ queue }) {
         );
       })}
     </Breadcrumbs>
-    // </div>
   );
 }
