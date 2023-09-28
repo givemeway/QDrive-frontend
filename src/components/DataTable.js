@@ -13,6 +13,27 @@ import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
 import { ItemSelectionContext, UploadFolderContenxt } from "./Context.js";
 
+function ensureStartsWithSlash(input) {
+  return input.startsWith("/") ? input : "/" + input;
+}
+
+function generateLink(url, folderPath, layout, nav, id) {
+  if (layout === "dashboard") return url + folderPath;
+  if (layout === "share") {
+    const dir = folderPath.split(nav)[1];
+    return dir === "" ? url + "/h" : url + "/h" + dir;
+  }
+  if (layout === "transfer") {
+    let dir = folderPath.split(nav)[1];
+    if (nav === "/") {
+      dir = folderPath.split(nav).slice(1).join("/");
+    }
+    return dir === ""
+      ? url + "/h" + `?k=${id}`
+      : url + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
+  }
+}
+
 export default React.memo(function DataGridTable({
   layout,
   path,
@@ -27,13 +48,6 @@ export default React.memo(function DataGridTable({
   const data = useContext(UploadFolderContenxt);
 
   console.log("table rendered");
-  // let path;
-  // if (layout === "dashboard") {
-  //   path = "/dashboard/home";
-  // } else {
-  //   path = layout;
-  // }
-  console.log(nav);
   const columns = [
     {
       field: "name",
@@ -50,21 +64,13 @@ export default React.memo(function DataGridTable({
                   style={{ cursor: "context-menu" }}
                 >
                   <Link
-                    // to={dir + cellValues.row.path}
-                    to={
-                      layout === "dashboard"
-                        ? path + cellValues.row.path
-                        : layout === "share"
-                        ? cellValues.row.path.split(nav)[1] === ""
-                          ? path + "/h"
-                          : path + "/h" + cellValues.row.path.split(nav)[1]
-                        : cellValues.row.path.split(nav)[1] === ""
-                        ? path + "/h"
-                        : path +
-                          "/h" +
-                          cellValues.row.path.split(nav)[1] +
-                          `?k=${cellValues.row.id.split(";")[4]}`
-                    }
+                    to={generateLink(
+                      path,
+                      cellValues.row.path,
+                      layout,
+                      nav,
+                      cellValues.row.id.split(";")[4]
+                    )}
                     style={{
                       textDecoration: "none",
                       display: "flex",
@@ -109,34 +115,10 @@ export default React.memo(function DataGridTable({
                 </Menu>
               </>
             ) : (
-              // <Button
-              //   onClick={() => download(cellValues.row.path)}
-              //   fullWidth
-              //   disableRipple
-              //   sx={{
-              //     textDecoration: "none",
-              //     textTransform: "none",
-              //     display: "flex",
-              //     flexDirection: "row",
-              //     justifyContent: "flex-start",
-              //     gap: 2,
-              //     alignItems: "center",
-              //     fontSize: "1.5rem",
-              //     color: "rgb(128, 128, 128)",
-              //     "&:hover": { backgroundColor: "transparent" },
-              //   }}
-              // >
-              //   <FileOpenIcon color="primary" sx={{ width: 50, height: 50 }} />
-
-              //   <Typography align="right" sx={{ fontSize: "1.25rem" }}>
-              //     {cellValues.row.name}
-              //   </Typography>
-              // </Button>
               <Atag
                 href={cellValues.row.url}
                 rel="noreferrer"
                 target="_blank"
-                // onClick={() => download(cellValues.row.path)}
                 sx={{
                   textDecoration: "none",
                   textTransform: "none",

@@ -62,8 +62,8 @@ export default function Shared() {
       {!invalidPage && type !== "fi" && dirNav.length > 0 && (
         <BreadCrumb
           queue={breadCrumb}
-          layout={`/sh/fo/${shareId}`}
-          nav={dirNav}
+          link={`/sh/fo/${shareId}/h`}
+          layout={"share"}
         />
       )}
       <Box sx={{ height: 800 }}>

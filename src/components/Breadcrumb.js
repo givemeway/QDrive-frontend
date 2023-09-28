@@ -6,6 +6,11 @@ import Chip from "@mui/material/Chip";
 import { Link } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 
+const ensureToAddKeyToURLString = (layout, link, entry) => {
+  if (layout === "transfer" && entry[1] === "/") return link;
+  return layout === "transfer" ? (link += `?k=${entry[0]}`) : link;
+};
+
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   const backgroundColor =
     theme.palette.mode === "light"
@@ -27,14 +32,8 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   };
 }); // TypeScript only: need a type cast here because https://github.com/Microsoft/TypeScript/issues/26591
 
-export default function CustomizedBreadcrumbs({ queue, layout }) {
+export default function CustomizedBreadcrumbs({ queue, layout, link }) {
   let label;
-  let link;
-  if (layout === "dashboard") {
-    link = "/dashboard/home";
-  } else {
-    link = layout + "/h";
-  }
   return (
     <Breadcrumbs
       aria-label="breadcrumb"
@@ -49,27 +48,44 @@ export default function CustomizedBreadcrumbs({ queue, layout }) {
         padding: 0,
       }}
     >
-      {queue.map((dir, idx) => {
-        if (dir === "/") {
-          label = "Home";
-        } else {
-          label = dir;
-          if (layout !== "dashboard" && idx === 0) {
+      {(layout === "share" || layout == "dashboard") &&
+        queue.map((dir, idx) => {
+          if (dir === "/") {
+            label = "Home";
           } else {
-            link += `/${dir}`;
+            label = dir;
+            if (layout !== "share" || idx !== 0) link += `/${dir}`;
           }
-        }
 
-        return (
-          <StyledBreadcrumb
-            component={Link}
-            to={link}
-            label={label}
-            key={link}
-            icon={label === "Home" ? <HomeIcon fontSize="small" /> : <></>}
-          />
-        );
-      })}
+          return (
+            <StyledBreadcrumb
+              component={Link}
+              to={link}
+              label={label}
+              key={link}
+              icon={label === "Home" ? <HomeIcon fontSize="small" /> : <></>}
+            />
+          );
+        })}
+
+      {layout === "transfer" &&
+        Array.from(queue).map((entry) => {
+          if (entry[1] === "/") label = "Home";
+          else {
+            label = entry[1];
+            link += `/${entry[1]}`;
+          }
+
+          return (
+            <StyledBreadcrumb
+              component={Link}
+              to={ensureToAddKeyToURLString(layout, link, entry)}
+              label={label}
+              key={link}
+              icon={label === "Home" ? <HomeIcon fontSize="small" /> : <></>}
+            />
+          );
+        })}
     </Breadcrumbs>
   );
 }
