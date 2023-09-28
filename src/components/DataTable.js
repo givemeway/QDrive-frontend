@@ -13,7 +13,12 @@ import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
 import { ItemSelectionContext, UploadFolderContenxt } from "./Context.js";
 
-export default React.memo(function DataGridTable({ layout, nav, loading }) {
+export default React.memo(function DataGridTable({
+  layout,
+  path,
+  nav,
+  loading,
+}) {
   let rows = [];
   const [newRows, setNewRows] = React.useState([]);
   const [contextMenu, setContextMenu] = React.useState(null);
@@ -22,12 +27,12 @@ export default React.memo(function DataGridTable({ layout, nav, loading }) {
   const data = useContext(UploadFolderContenxt);
 
   console.log("table rendered");
-  let path;
-  if (layout === "dashboard") {
-    path = "/dashboard/home";
-  } else {
-    path = layout;
-  }
+  // let path;
+  // if (layout === "dashboard") {
+  //   path = "/dashboard/home";
+  // } else {
+  //   path = layout;
+  // }
   console.log(nav);
   const columns = [
     {
@@ -49,9 +54,16 @@ export default React.memo(function DataGridTable({ layout, nav, loading }) {
                     to={
                       layout === "dashboard"
                         ? path + cellValues.row.path
+                        : layout === "share"
+                        ? cellValues.row.path.split(nav)[1] === ""
+                          ? path + "/h"
+                          : path + "/h" + cellValues.row.path.split(nav)[1]
                         : cellValues.row.path.split(nav)[1] === ""
                         ? path + "/h"
-                        : path + "/h" + cellValues.row.path.split(nav)[1]
+                        : path +
+                          "/h" +
+                          cellValues.row.path.split(nav)[1] +
+                          `?k=${cellValues.row.id.split(";")[4]}`
                     }
                     style={{
                       textDecoration: "none",

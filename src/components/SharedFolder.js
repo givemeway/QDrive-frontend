@@ -72,7 +72,12 @@ export default function Shared() {
             <ItemSelectionContext.Provider
               value={{ itemsSelected, setItemsSelection }}
             >
-              <Table layout={`/sh/fo/${shareId}`} nav={dirNav} loading={true} />
+              <Table
+                layout={"share"}
+                path={`/sh/fo/${shareId}`}
+                nav={dirNav}
+                loading={true}
+              />
             </ItemSelectionContext.Provider>
           </UploadFolderContenxt.Provider>
         )}
@@ -82,7 +87,8 @@ export default function Shared() {
               value={{ itemsSelected, setItemsSelection }}
             >
               <Table
-                layout={`/sh/fo/${shareId}`}
+                layout={"share"}
+                path={`/sh/fo/${shareId}`}
                 nav={dirNav}
                 loading={false}
               />

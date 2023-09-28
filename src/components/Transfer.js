@@ -17,7 +17,7 @@ export default function Transfer() {
   let { shareId, "*": nav } = useParams();
   console.log(shareId, nav);
   const [dirNav, setDirNav] = useState("");
-  const share = useRef({ nav: "h", itemId: "" });
+  const share = useRef({ nav: "h", itemId: "", nav_tracking: 0 });
   const [itemsSelected, setItemsSelection] = useState({
     fileIds: [],
     directories: [],
@@ -27,15 +27,25 @@ export default function Transfer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     setDataLoaded(false);
     console.log(shareId, nav, " inside the transfer");
+    const params = new URLSearchParams(location.search);
+    const k = params.get("k");
+    if (k !== null) {
+      share.current.nav_tracking = 1;
+      share.current.itemId = k;
+    } else {
+      share.current.nav_tracking = 0;
+      share.current.itemId = null;
+    }
     const url =
       getSharedItemsURL +
-      `?id=${shareId}&t=t&nav=${nav}&nav_tracking=1&k=${share.current.itemId}`;
-
+      `?id=${shareId}&t=t&nav=${nav}&nav_tracking=${share.current.nav_tracking}&k=${share.current.itemId}`;
+    console.log(url);
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
         const { files, directories, home, path } = data;
         console.log(data);
+        console.log(path);
         setDirNav(path);
         setBreadCrumb(() => [home, ...nav.split("/").slice(1)]);
         setData({ files, folders: directories });
@@ -60,7 +70,12 @@ export default function Transfer() {
             <ItemSelectionContext.Provider
               value={{ itemsSelected, setItemsSelection }}
             >
-              <Table layout={`/sh/t/${shareId}`} nav={dirNav} loading={true} />
+              <Table
+                layout={"transfer"}
+                path={`/sh/t/${shareId}`}
+                nav={dirNav}
+                loading={true}
+              />
             </ItemSelectionContext.Provider>
           </UploadFolderContenxt.Provider>
         )}
@@ -69,7 +84,12 @@ export default function Transfer() {
             <ItemSelectionContext.Provider
               value={{ itemsSelected, setItemsSelection }}
             >
-              <Table layout={`/sh/t/${shareId}`} nav={dirNav} loading={false} />
+              <Table
+                layout={"transfer"}
+                path={`/sh/t/${shareId}`}
+                nav={dirNav}
+                loading={false}
+              />
             </ItemSelectionContext.Provider>
           </UploadFolderContenxt.Provider>
         )}
