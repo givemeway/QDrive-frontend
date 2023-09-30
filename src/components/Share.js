@@ -169,6 +169,7 @@ export default function Share() {
         })
         .catch((err) => console.error(err));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [share]);
 
   return (
