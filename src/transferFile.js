@@ -120,6 +120,7 @@ const uploadFile = (
 
       if (modified) {
         fileStat.uuid = file.uuid;
+        fileStat.version = file.version;
       }
 
       const timeStarted = new Date();

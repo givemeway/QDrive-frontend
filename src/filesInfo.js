@@ -47,11 +47,15 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
         files[file.directory][fileName].hash.add(file.hashvalue);
         files[file.directory][fileName].lmd.add(file.last_modified);
         files[file.directory][fileName].uuid = file.origin;
+        if (files[file.directory][fileName].version < file.versions) {
+          files[file.directory][fileName].version = file.versions;
+        }
       } else {
         files[file.directory][fileName] = new Object();
         files[file.directory][fileName].uuid = file.origin;
         files[file.directory][fileName].hash = new Set();
         files[file.directory][fileName].lmd = new Set();
+        files[file.directory][fileName].version = file.versions;
         files[file.directory][fileName].lmd.add(file.last_modified);
         files[file.directory][fileName].hash.add(file.hashvalue);
       }
@@ -61,6 +65,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
       files[file.directory][fileName].uuid = file.origin;
       files[file.directory][fileName].hash = new Set();
       files[file.directory][fileName].lmd = new Set();
+      files[file.directory][fileName].version = file.versions;
       files[file.directory][fileName].lmd.add(file.last_modified);
       files[file.directory][fileName].hash.add(file.hashvalue);
     }
@@ -86,6 +91,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
         file.modified = false;
         file.id = idx;
         file.progress = 0;
+        file.version = 1;
         filesToUpload.push(file);
       } else {
         const localFileHash = await hashFile(file);
@@ -95,6 +101,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
           file.hash = localFileHash;
           file.id = idx;
           file.uuid = files[dirName][file.name]["uuid"];
+          file.version = files[dirName][file.name]["version"] + 1;
           file.progress = 0;
           filesToUpload.push(file);
         }
@@ -103,6 +110,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
       file.modified = false;
       file.id = idx;
       file.progress = 0;
+      file.version = 1;
       filesToUpload.push(file);
     }
   }

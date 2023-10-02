@@ -1,89 +1,20 @@
-import FolderOpenIcon from "@mui/icons-material/FolderOpenRounded";
 import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
 import FolderIcon from "@mui/icons-material/FolderRounded";
-import { DataGrid, gridRowsLoadingSelector } from "@mui/x-data-grid";
+import { DataGrid } from "@mui/x-data-grid";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import React, { useEffect, useContext } from "react";
-import { Button, Typography, Box } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
-import { download } from "../downloadFile.js";
-import { formatBytes } from "../util.js";
-import { downloadURL } from "../config.js";
 import { ItemSelectionContext, UploadFolderContenxt } from "./Context.js";
-
-const style = {
-  textDecoration: "none",
-  textTransform: "none",
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "flex-start",
-  gap: 2,
-  alignItems: "center",
-  fontSize: "1.5rem",
-  color: "rgb(128, 128, 128)",
-  "&:hover": { backgroundColor: "transparent" },
-  width: "100%",
-};
-
-const typoGraphyStyle = {
-  fontSize: "1.25rem",
-  flexGrow: 1,
-  textAlign: "left",
-};
-
-const iconStyle = {
-  width: 50,
-  height: 50,
-  color: "#A1C9F7",
-};
-
-const buildCellValueForFile = (file) => {
-  return {
-    id: `file;${file.uuid};device=${encodeURIComponent(
-      file.device
-    )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
-      file.filename
-    )};${file.filename}`,
-    name: file.filename,
-    size: formatBytes(file.size),
-    dir: `${file.device}/${file.directory}`,
-    path: `${downloadURL}?device=${encodeURIComponent(
-      file.device
-    )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
-      file.filename
-    )}&uuid=${encodeURIComponent(file.uuid)}`,
-    url: `https://localhost:3001${downloadURL}?file=${encodeURIComponent(
-      file.filename
-    )}&uuid=${encodeURIComponent(file.uuid)}`,
-    origin: file.origin,
-    versions: file.versions,
-    modified: file.last_modified,
-    item: "file",
-  };
-};
-
-function ensureStartsWithSlash(input) {
-  return input.startsWith("/") ? input : "/" + input;
-}
-
-function generateLink(url, folderPath, layout, nav, id) {
-  if (layout === "dashboard") return url + folderPath;
-  if (layout === "share") {
-    const dir = folderPath.split(nav)[1];
-    return dir === "" ? url + "/h" : url + "/h" + dir;
-  }
-  if (layout === "transfer") {
-    let dir = folderPath.split(nav)[1];
-    if (nav === "/") {
-      dir = folderPath.split(nav).slice(1).join("/");
-    }
-    return dir === ""
-      ? url + `/h?k=${id}`
-      : url + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
-  }
-}
+import {
+  generateLink,
+  style,
+  iconStyle,
+  typoGraphyStyle,
+  buildCellValueForFile,
+} from "./DataTable.js";
 
 export default React.memo(function DataGridTable({
   layout,
@@ -188,26 +119,19 @@ export default React.memo(function DataGridTable({
                       : undefined
                   }
                 >
-                  {versionedFiles.current.hasOwnProperty(
-                    cellValues.row.origin
-                  ) ? (
-                    <>
-                      <MenuItem onClick={handleClose}>Move</MenuItem>
-                      <MenuItem onClick={handleClose}>Copy</MenuItem>
-                      <MenuItem onClick={handleClose}>Rename</MenuItem>
-                      <MenuItem onClick={handleClose}>Delete</MenuItem>
-                      <MenuItem onClick={handleClose}>Share</MenuItem>
-                      <MenuItem onClick={handleClose}>Versions</MenuItem>
-                    </>
-                  ) : (
-                    <>
-                      <MenuItem onClick={handleClose}>Move</MenuItem>
-                      <MenuItem onClick={handleClose}>Copy</MenuItem>
-                      <MenuItem onClick={handleClose}>Rename</MenuItem>
-                      <MenuItem onClick={handleClose}>Delete</MenuItem>
-                      <MenuItem onClick={handleClose}>Share</MenuItem>
-                    </>
-                  )}
+                  <MenuItem onClick={handleClose}>Move</MenuItem>
+                  <MenuItem onClick={handleClose}>Copy</MenuItem>
+                  <MenuItem onClick={handleClose}>Rename</MenuItem>
+                  <MenuItem onClick={handleClose}>Delete</MenuItem>
+                  <MenuItem onClick={handleClose}>Share</MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      const original = cellValues.row.origin;
+                      return display_file_versions(original);
+                    }}
+                  >
+                    Versions
+                  </MenuItem>
                 </Menu>
               </>
             )}
@@ -318,7 +242,6 @@ export default React.memo(function DataGridTable({
         }
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
-
       // eslint-disable-next-line react-hooks/exhaustive-deps
       rows = Array.from(filteredFiles.current).map((file) => file[1]);
 

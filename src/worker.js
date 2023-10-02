@@ -56,6 +56,7 @@ const findFilesToUpload = async (cwd, filesList, device) => {
       metadata[file.webkitRelativePath]["id"] = file.id;
       metadata[file.webkitRelativePath]["uuid"] = file.uuid;
       metadata[file.webkitRelativePath]["progress"] = file.progress;
+      metadata[file.webkitRelativePath]["version"] = file.version;
     });
 
     postMessage({
@@ -94,6 +95,7 @@ const uploadFiles = async (
       file.progress = metadata[file.webkitRelativePath]["progress"];
       file.id = metadata[file.webkitRelativePath]["id"];
       file.uuid = metadata[file.webkitRelativePath]["uuid"];
+      file.version = metadata[file.webkitRelativePath]["version"];
       newFiles.push(file);
     }
   }
