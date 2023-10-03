@@ -1,11 +1,15 @@
 import FolderOpenIcon from "@mui/icons-material/FolderOpenRounded";
 import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
 import FolderIcon from "@mui/icons-material/FolderRounded";
-import { DataGrid, gridRowsLoadingSelector } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  gridRowsLoadingSelector,
+  useGridApiRef,
+} from "@mui/x-data-grid";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import React, { useEffect, useContext } from "react";
-import { Button, Typography, Box } from "@mui/material";
+import { Button, Typography, Box, Stack, Divider } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
 import { download } from "../downloadFile.js";
@@ -92,10 +96,14 @@ export default React.memo(function DataGridTable({
   loading,
 }) {
   let rows = [];
+  const folderContext = ["Move", "Copy", "Rename", "Share", "Details"];
+
   const [newRows, setNewRows] = React.useState([]);
   const [folderContextMenu, setFolderContextMenu] = React.useState(null);
-  const [fileContextMenu, setFileContextMenu] = React.useState(null);
+  const checkBoxSelection = React.useRef(false);
+  const rowClick = React.useRef(false);
 
+  const [coords, setCoords] = React.useState({ x: 0, y: 0 });
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const filteredFiles = React.useRef(new Map([]));
   const versionedFiles = React.useRef({});
@@ -103,6 +111,7 @@ export default React.memo(function DataGridTable({
   const data = useContext(UploadFolderContenxt);
 
   console.log("table rendered");
+
   const columns = [
     {
       field: "name",
@@ -148,19 +157,18 @@ export default React.memo(function DataGridTable({
                       : undefined
                   }
                 >
-                  <MenuItem onClick={handleClose}>Move</MenuItem>
-                  <MenuItem onClick={handleClose}>Copy</MenuItem>
-                  <MenuItem onClick={handleClose}>Rename</MenuItem>
-                  <MenuItem onClick={handleClose}>Delete</MenuItem>
-                  <MenuItem onClick={handleClose}>Share</MenuItem>
-                  <MenuItem onClick={handleClose}>Details</MenuItem>
+                  {folderContext.map((context) => (
+                    <MenuItem onClick={handleClose} key={context}>
+                      context
+                    </MenuItem>
+                  ))}
                 </Menu>
               </>
             ) : (
               <>
                 <div
                   onContextMenu={handleFileContextMenu}
-                  style={{ cursor: "context-menu", width: "100%" }}
+                  style={{ cursor: "context-menu" }}
                 >
                   <Atag
                     href={cellValues.row.url}
@@ -174,41 +182,58 @@ export default React.memo(function DataGridTable({
                       {cellValues.row.name}
                     </Typography>
                   </Atag>
-                </div>
-                <Menu
-                  open={fileContextMenu !== null}
-                  onClose={handleClose}
-                  anchorReference="anchorPosition"
-                  anchorPosition={
-                    fileContextMenu !== null
-                      ? {
-                          top: fileContextMenu.mouseY,
-                          left: fileContextMenu.mouseX,
-                        }
-                      : undefined
-                  }
-                >
-                  {versionedFiles.current.hasOwnProperty(
-                    cellValues.row.origin
-                  ) ? (
-                    <>
-                      <MenuItem onClick={handleClose}>Move</MenuItem>
-                      <MenuItem onClick={handleClose}>Copy</MenuItem>
-                      <MenuItem onClick={handleClose}>Rename</MenuItem>
-                      <MenuItem onClick={handleClose}>Delete</MenuItem>
-                      <MenuItem onClick={handleClose}>Share</MenuItem>
-                      <MenuItem onClick={handleClose}>Versions</MenuItem>
-                    </>
-                  ) : (
-                    <>
-                      <MenuItem onClick={handleClose}>Move</MenuItem>
-                      <MenuItem onClick={handleClose}>Copy</MenuItem>
-                      <MenuItem onClick={handleClose}>Rename</MenuItem>
-                      <MenuItem onClick={handleClose}>Delete</MenuItem>
-                      <MenuItem onClick={handleClose}>Share</MenuItem>
-                    </>
+                  {coords.x !== 0 && coords.y !== 0 && (
+                    <Stack
+                      sx={{
+                        position: "fixed",
+                        top: coords.y,
+                        left: coords.x,
+                        display: "flex",
+                        flexDirection: "column",
+                        background: "#F5EFE5",
+                        border: "1px solid #BBB5AE",
+                        boxSizing: "border-box",
+                        zIndex: 100,
+                      }}
+                    >
+                      <Button
+                        sx={{ ...style, fontSize: 20 }}
+                        variant="text"
+                        onClick={handleClose}
+                      >
+                        Move
+                      </Button>
+                      <Button
+                        sx={{ ...style, fontSize: 20 }}
+                        variant="text"
+                        onClick={handleClose}
+                      >
+                        Copy
+                      </Button>
+                      <Button
+                        sx={{ ...style, fontSize: 20 }}
+                        variant="text"
+                        onClick={handleClose}
+                      >
+                        Rename
+                      </Button>
+                      <Button
+                        sx={{ ...style, fontSize: 20 }}
+                        variant="text"
+                        onClick={handleClose}
+                      >
+                        Share
+                      </Button>
+                      <Button
+                        sx={{ ...style, fontSize: 20 }}
+                        variant="text"
+                        onClick={handleClose}
+                      >
+                        Versions
+                      </Button>
+                    </Stack>
                   )}
-                </Menu>
+                </div>
               </>
             )}
           </>
@@ -239,11 +264,12 @@ export default React.memo(function DataGridTable({
 
   const handleFolderContextMenu = (event) => {
     event.preventDefault();
+    console.log(event.row);
     setFolderContextMenu(
       folderContextMenu === null
         ? {
             mouseX: event.clientX + 2,
-            mouseY: event.clientY - 6,
+            mouseY: event.clientY,
           }
         : null
     );
@@ -251,26 +277,33 @@ export default React.memo(function DataGridTable({
 
   const handleFileContextMenu = (event) => {
     event.preventDefault();
-    setFileContextMenu(
-      fileContextMenu === null
-        ? {
-            mouseX: event.clientX + 2,
-            mouseY: event.clientY - 6,
-          }
-        : null
-    );
+
+    setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
   };
 
   const handleClose = () => {
     setFolderContextMenu(null);
-    setFileContextMenu(null);
+    setCoords({ x: 0, y: 0 });
   };
 
-  const display_file_versions = (e) => {
-    console.log(e);
-    console.log(versionedFiles.current);
-    console.log(versionedFiles.current[e]);
+  const rowClicked = (params, event, details) => {
+    console.log(params.id);
+    rowClick.current = false;
+    setRowSelectionModel((prev) => {
+      if (prev.includes(params.id)) {
+        console.log("inside three");
+        rowClick.current = true;
+        return [];
+      } else {
+        console.log("inside four");
+        rowClick.current = true;
+        return [params.id];
+      }
+    });
   };
+  useEffect(() => {
+    console.log(rowSelectionModel);
+  }, [rowSelectionModel]);
 
   useEffect(() => {
     const files = [];
@@ -354,14 +387,24 @@ export default React.memo(function DataGridTable({
         }}
         pageSizeOptions={[5, 10, 15, 20, 50, 100]}
         checkboxSelection
-        disableRowSelectionOnClick
-        // rowHeight={60}
         loading={loading}
+        disableVirtualization={false}
+        onRowClick={rowClicked}
         onRowSelectionModelChange={(newRowSelectionModel) => {
-          setRowSelectionModel(newRowSelectionModel);
+          console.log(newRowSelectionModel);
+
+          if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
         }}
         rowSelectionModel={rowSelectionModel}
         density={"comfortable"}
+        sx={{
+          "& .MuiDataGrid-cell:focus-within": {
+            outline: "none !important",
+          },
+          "& .MuiDataGrid-cell": {
+            borderBottom: "none",
+          },
+        }}
       />
     </Box>
   );
