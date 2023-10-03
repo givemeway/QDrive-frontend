@@ -25,10 +25,37 @@ const style = {
   justifyContent: "flex-start",
   gap: 2,
   alignItems: "center",
-  fontSize: "1.5rem",
+  fontSize: "1.1rem",
   color: "rgb(128, 128, 128)",
   "&:hover": { backgroundColor: "transparent" },
   width: "100%",
+};
+
+const overlayButtonStyle = {
+  textDecoration: "none",
+  textTransform: "none",
+  display: "flex",
+  flexDirection: "row",
+  justifyContent: "flex-start",
+  gap: 2,
+  alignItems: "center",
+  fontSize: "1.1rem",
+  color: "rgb(128, 128, 128)",
+  "&:hover": { backgroundColor: "#F5EFE5" },
+  width: "100%",
+};
+
+const overlayStyle = {
+  position: "absolute",
+
+  display: "flex",
+  flexDirection: "column",
+  background: "#FFFFFF",
+  border: "1px solid #CCCCCC",
+  boxSizing: "border-box",
+  zIndex: 100,
+  height: 250,
+  width: 100,
 };
 
 const typoGraphyStyle = {
@@ -122,119 +149,35 @@ export default React.memo(function DataGridTable({
         return (
           <>
             {cellValues.row.item === "folder" ? (
-              <>
-                <div
-                  onContextMenu={handleFolderContextMenu}
-                  style={{ cursor: "context-menu", width: "100%" }}
-                >
-                  <Link
-                    to={generateLink(
-                      path,
-                      cellValues.row.path,
-                      layout,
-                      nav,
-                      cellValues.row.id.split(";")[4]
-                    )}
-                    style={{ ...style, marginLeft: 10, gap: 15 }}
-                  >
-                    <FolderIcon sx={iconStyle} />
+              <Link
+                to={generateLink(
+                  path,
+                  cellValues.row.path,
+                  layout,
+                  nav,
+                  cellValues.row.id.split(";")[4]
+                )}
+                style={{ ...style, marginLeft: 10, gap: 15 }}
+              >
+                <FolderIcon sx={iconStyle} />
 
-                    <Typography sx={typoGraphyStyle}>
-                      {cellValues.row.name}
-                    </Typography>
-                  </Link>
-                </div>
-                <Menu
-                  open={folderContextMenu !== null}
-                  onClose={handleClose}
-                  anchorReference="anchorPosition"
-                  anchorPosition={
-                    folderContextMenu !== null
-                      ? {
-                          top: folderContextMenu.mouseY,
-                          left: folderContextMenu.mouseX,
-                        }
-                      : undefined
-                  }
-                >
-                  {folderContext.map((context) => (
-                    <MenuItem onClick={handleClose} key={context}>
-                      context
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </>
+                <Typography sx={typoGraphyStyle}>
+                  {cellValues.row.name}
+                </Typography>
+              </Link>
             ) : (
-              <>
-                <div
-                  onContextMenu={handleFileContextMenu}
-                  style={{ cursor: "context-menu" }}
-                >
-                  <Atag
-                    href={cellValues.row.url}
-                    rel="noreferrer"
-                    target="_blank"
-                    sx={style}
-                  >
-                    <FileOpenIcon sx={iconStyle} />
+              <Atag
+                href={cellValues.row.url}
+                rel="noreferrer"
+                target="_blank"
+                sx={style}
+              >
+                <FileOpenIcon sx={iconStyle} />
 
-                    <Typography sx={typoGraphyStyle}>
-                      {cellValues.row.name}
-                    </Typography>
-                  </Atag>
-                  {coords.x !== 0 && coords.y !== 0 && (
-                    <Stack
-                      sx={{
-                        position: "fixed",
-                        top: coords.y,
-                        left: coords.x,
-                        display: "flex",
-                        flexDirection: "column",
-                        background: "#F5EFE5",
-                        border: "1px solid #BBB5AE",
-                        boxSizing: "border-box",
-                        zIndex: 100,
-                      }}
-                    >
-                      <Button
-                        sx={{ ...style, fontSize: 20 }}
-                        variant="text"
-                        onClick={handleClose}
-                      >
-                        Move
-                      </Button>
-                      <Button
-                        sx={{ ...style, fontSize: 20 }}
-                        variant="text"
-                        onClick={handleClose}
-                      >
-                        Copy
-                      </Button>
-                      <Button
-                        sx={{ ...style, fontSize: 20 }}
-                        variant="text"
-                        onClick={handleClose}
-                      >
-                        Rename
-                      </Button>
-                      <Button
-                        sx={{ ...style, fontSize: 20 }}
-                        variant="text"
-                        onClick={handleClose}
-                      >
-                        Share
-                      </Button>
-                      <Button
-                        sx={{ ...style, fontSize: 20 }}
-                        variant="text"
-                        onClick={handleClose}
-                      >
-                        Versions
-                      </Button>
-                    </Stack>
-                  )}
-                </div>
-              </>
+                <Typography sx={typoGraphyStyle}>
+                  {cellValues.row.name}
+                </Typography>
+              </Atag>
             )}
           </>
         );
@@ -277,7 +220,8 @@ export default React.memo(function DataGridTable({
 
   const handleFileContextMenu = (event) => {
     event.preventDefault();
-
+    console.log(event.clientX, event.clientY);
+    console.log(event.target);
     setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
   };
 
@@ -387,6 +331,12 @@ export default React.memo(function DataGridTable({
         }}
         pageSizeOptions={[5, 10, 15, 20, 50, 100]}
         checkboxSelection
+        slotProps={{
+          row: {
+            onContextMenu: handleFileContextMenu,
+            style: { cursor: "context-menu" },
+          },
+        }}
         loading={loading}
         disableVirtualization={false}
         onRowClick={rowClicked}
@@ -406,6 +356,25 @@ export default React.memo(function DataGridTable({
           },
         }}
       />
+      {coords.x !== 0 && coords.y !== 0 && (
+        <Stack sx={{ ...overlayStyle, top: coords.y, left: coords.x }}>
+          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+            Move
+          </Button>
+          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+            Copy
+          </Button>
+          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+            Rename
+          </Button>
+          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+            Share
+          </Button>
+          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+            Versions
+          </Button>
+        </Stack>
+      )}
     </Box>
   );
 });
