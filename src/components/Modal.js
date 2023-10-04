@@ -63,7 +63,7 @@ const fetchFoldersFromServer = async (path) => {
   return newFolders;
 };
 
-export default function CustomizedTreeView() {
+export default function CustomizedTreeView({ setStartMove }) {
   const [open, setOpen] = useState(true);
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
@@ -186,6 +186,12 @@ export default function CustomizedTreeView() {
     (async () => setFolders((await fetchFoldersFromServer("/")).folders))();
     setExpanded(["1"]);
   }, []);
+
+  useEffect(() => {
+    if (move.moved) {
+      setStartMove(false);
+    }
+  }, [move.moved]);
 
   const handleSelect = (event, nodeId) => {
     setNodeSelected(true);

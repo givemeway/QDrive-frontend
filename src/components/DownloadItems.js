@@ -28,12 +28,12 @@ async function fetchCSRFToken(csrfurl) {
   return CSRFToken;
 }
 
-const Download = () => {
+const Download = ({ startImmediate, setDownload }) => {
   const { fileIds, directories } = useContext(ItemSelectionContext);
   const [CSRFToken, setCSRFToken] = useState("");
   const [startDownload, setStartDownload] = useState(false);
   const [open, setOpen] = useState(false);
-
+  console.log("download items triggered");
   const handleClose = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -45,7 +45,10 @@ const Download = () => {
   };
   useEffect(() => {
     fetchCSRFToken(csrftokenURL)
-      .then((csrftoken) => setCSRFToken(csrftoken))
+      .then((csrftoken) => {
+        setCSRFToken(csrftoken);
+        if (startImmediate) setStartDownload(true);
+      })
       .catch((err) => console.log(err));
   }, []);
   useEffect(() => {
@@ -77,6 +80,7 @@ const Download = () => {
             `https://localhost:3001/app/downloadItems?key=${key}&dl=1`,
             "_parent"
           );
+          setDownload(false);
         })
         .catch((err) => console.error(err));
 

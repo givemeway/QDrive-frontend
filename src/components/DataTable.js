@@ -1,29 +1,25 @@
-import FolderOpenIcon from "@mui/icons-material/FolderOpenRounded";
-import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DeleteIcon from "@mui/icons-material/DeleteRounded";
-import ShareIcon from "@mui/icons-material/ShareRounded";
-import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
-import CopyAllIcon from "@mui/icons-material/CopyAll";
+import DownloadItems from "./DownloadItems";
 
 import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
 import FolderIcon from "@mui/icons-material/FolderRounded";
-import {
-  DataGrid,
-  gridRowsLoadingSelector,
-  useGridApiRef,
-} from "@mui/x-data-grid";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+import { DataGrid } from "@mui/x-data-grid";
+
 import React, { useEffect, useContext } from "react";
-import { Button, Typography, Box, Stack, Divider } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
-import { download } from "../downloadFile.js";
+
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
 import { ItemSelectionContext, UploadFolderContenxt } from "./Context.js";
 import Modal from "./Modal";
+import FileSelectionOverlayMenu from "./FileContext";
+import MUltipleSelectionOverlayMenu from "./MultipleSelectionContext";
+import FolderSelectionOverlayMenu from "./FolderContext";
+
+const multiple = "multiple";
+const file = "file";
+const folder = "folder";
 
 const style = {
   textDecoration: "none",
@@ -39,32 +35,6 @@ const flexRowStyle = {
   flexDirection: "row",
   justifyContent: "flex-start",
   alignItems: "center",
-};
-
-const overlayButtonStyle = {
-  textDecoration: "none",
-  textTransform: "none",
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "flex-start",
-  gap: 2,
-  alignItems: "center",
-  fontSize: "1.1rem",
-  color: "rgb(128, 128, 128)",
-  "&:hover": { backgroundColor: "#F5EFE5" },
-  width: "100%",
-};
-
-const overlayStyle = {
-  position: "absolute",
-  display: "flex",
-  flexDirection: "column",
-  background: "#FFFFFF",
-  border: "1px solid #CCCCCC",
-  boxSizing: "border-box",
-  zIndex: 100,
-  height: 250,
-  width: 150,
 };
 
 const typoGraphyStyle = {
@@ -194,37 +164,6 @@ const columnDef = (path, nav, layout) => {
   ];
 };
 
-const OverlayMenu = ({ moveItems, handleClose, coords }) => {
-  return (
-    <Stack sx={{ ...overlayStyle, top: coords.y, left: coords.x, gap: 0 }}>
-      <Button sx={overlayButtonStyle} variant="text" onClick={moveItems}>
-        <DriveFileMoveIcon />
-        Move
-      </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-        <ContentCopyIcon />
-        Copy
-      </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-        <DriveFileRenameOutlineIcon />
-        Rename
-      </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-        <ShareIcon />
-        Share
-      </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-        <DeleteIcon />
-        Delete
-      </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-        <CopyAllIcon />
-        Versions
-      </Button>
-    </Stack>
-  );
-};
-
 export default React.memo(function DataGridTable({
   layout,
   path,
@@ -233,39 +172,54 @@ export default React.memo(function DataGridTable({
 }) {
   let rows = [];
   const columns = columnDef(path, nav, layout);
-
   const [newRows, setNewRows] = React.useState([]);
-
   const rowClick = React.useRef(false);
-
   const [coords, setCoords] = React.useState({ x: 0, y: 0 });
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const filteredFiles = React.useRef(new Map([]));
   const versionedFiles = React.useRef({});
   const originFileId = React.useRef("");
+  const ref = React.useRef();
   const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
   const data = useContext(UploadFolderContenxt);
-  const [move, setMove] = React.useState(false);
+  const [startMove, setStartMove] = React.useState(false);
+  const [download, setDownload] = React.useState(false);
+  const [selectionType, setSelectionType] = React.useState("");
 
   console.log("table rendered");
 
-  const clickOnDataGrid = () => {
-    console.log("clicked on datagrid");
-  };
-  const handleFileContextMenu = (event) => {
+  const contextMenu = (event) => {
     event.preventDefault();
+    const type = event.currentTarget.getAttribute("data-id").split(";")[0];
+    const rowId = event.currentTarget.getAttribute("data-id");
 
-    originFileId.current = event.currentTarget
-      .getAttribute("data-id")
-      .split(";")[4];
-
+    console.log("triggered");
+    setRowSelectionModel((prev) => {
+      if (prev.length === 0 || prev.length === 1) {
+        setSelectionType(type);
+        return [rowId];
+      } else {
+        if (rowSelectionModel.includes(rowId)) {
+          setSelectionType(multiple);
+          return [...prev];
+        } else {
+          setSelectionType(type);
+          return [rowId];
+        }
+      }
+    });
     setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
-    setRowSelectionModel([event.currentTarget.getAttribute("data-id")]);
+
+    // originFileId.current = event.currentTarget
+    //   .getAttribute("data-id")
+    //   .split(";")[4];
+
+    // setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
+    // setRowSelectionModel([event.currentTarget.getAttribute("data-id")]);
   };
 
   const moveItems = () => {
-    // console.log(versionedFiles.current[originFileId.current]);
-    setMove(true);
+    setStartMove(true);
     setCoords({ x: 0, y: 0 });
   };
 
@@ -308,6 +262,10 @@ export default React.memo(function DataGridTable({
       directories: [...folders],
     }));
   }, [rowSelectionModel]);
+
+  useEffect(() => {
+    console.log(download);
+  }, [download]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -370,7 +328,7 @@ export default React.memo(function DataGridTable({
         checkboxSelection
         slotProps={{
           row: {
-            onContextMenu: handleFileContextMenu,
+            onContextMenu: contextMenu,
             style: { cursor: "context-menu" },
           },
         }}
@@ -392,16 +350,41 @@ export default React.memo(function DataGridTable({
           },
         }}
       />
-      {coords.x !== 0 && coords.y !== 0 && (
-        <OverlayMenu
+      {coords.x !== 0 && coords.y !== 0 && selectionType === file && (
+        <FileSelectionOverlayMenu
           handleClose={handleClose}
           moveItems={moveItems}
+          setDownload={setDownload}
           coords={coords}
+          reference={ref}
         />
       )}
-      {move && (
+      {coords.x !== 0 && coords.y !== 0 && selectionType === folder && (
+        <FolderSelectionOverlayMenu
+          handleClose={handleClose}
+          moveItems={moveItems}
+          setDownload={setDownload}
+          coords={coords}
+          reference={ref}
+        />
+      )}
+      {coords.x !== 0 && coords.y !== 0 && selectionType === multiple && (
+        <MUltipleSelectionOverlayMenu
+          handleClose={handleClose}
+          moveItems={moveItems}
+          setDownload={setDownload}
+          coords={coords}
+          reference={ref}
+        />
+      )}
+      {startMove && (
         <ItemSelectionContext.Provider value={itemsSelected}>
-          <Modal />
+          <Modal setStartMove={setStartMove} />
+        </ItemSelectionContext.Provider>
+      )}
+      {download && (
+        <ItemSelectionContext.Provider value={itemsSelected}>
+          <DownloadItems startImmediate={true} setDownload={setDownload} />
         </ItemSelectionContext.Provider>
       )}
     </Box>
