@@ -68,6 +68,7 @@ export default function CustomizedTreeView() {
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
   const { fileIds, directories } = useContext(ItemSelectionContext);
+  console.log("Modal rendered");
   const toPath = useRef("/");
   const [nodeSelected, setNodeSelected] = useState(false);
   const [openSnackbar, setOpenSnackBarOpen] = useState(false);

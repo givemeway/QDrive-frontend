@@ -1,4 +1,11 @@
 import FolderOpenIcon from "@mui/icons-material/FolderOpenRounded";
+import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
+import ShareIcon from "@mui/icons-material/ShareRounded";
+import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
+import CopyAllIcon from "@mui/icons-material/CopyAll";
+
 import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
 import FolderIcon from "@mui/icons-material/FolderRounded";
 import {
@@ -16,19 +23,22 @@ import { download } from "../downloadFile.js";
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
 import { ItemSelectionContext, UploadFolderContenxt } from "./Context.js";
+import Modal from "./Modal";
 
 const style = {
   textDecoration: "none",
   textTransform: "none",
+  fontSize: "1rem",
+  fontWeight: 300,
+  color: "rgb(128, 128, 128)",
+  "&:hover": { backgroundColor: "transparent" },
+};
+
+const flexRowStyle = {
   display: "flex",
   flexDirection: "row",
   justifyContent: "flex-start",
-  gap: 2,
   alignItems: "center",
-  fontSize: "1.1rem",
-  color: "rgb(128, 128, 128)",
-  "&:hover": { backgroundColor: "transparent" },
-  width: "100%",
 };
 
 const overlayButtonStyle = {
@@ -47,7 +57,6 @@ const overlayButtonStyle = {
 
 const overlayStyle = {
   position: "absolute",
-
   display: "flex",
   flexDirection: "column",
   background: "#FFFFFF",
@@ -55,7 +64,7 @@ const overlayStyle = {
   boxSizing: "border-box",
   zIndex: 100,
   height: 250,
-  width: 100,
+  width: 150,
 };
 
 const typoGraphyStyle = {
@@ -76,7 +85,7 @@ const buildCellValueForFile = (file) => {
       file.device
     )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
       file.filename
-    )};${file.filename}`,
+    )};${file.filename};${file.origin}`,
     name: file.filename,
     size: formatBytes(file.size),
     dir: `${file.device}/${file.directory}`,
@@ -115,31 +124,8 @@ function generateLink(url, folderPath, layout, nav, id) {
       : url + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
   }
 }
-
-export default React.memo(function DataGridTable({
-  layout,
-  path,
-  nav,
-  loading,
-}) {
-  let rows = [];
-  const folderContext = ["Move", "Copy", "Rename", "Share", "Details"];
-
-  const [newRows, setNewRows] = React.useState([]);
-  const [folderContextMenu, setFolderContextMenu] = React.useState(null);
-  const checkBoxSelection = React.useRef(false);
-  const rowClick = React.useRef(false);
-
-  const [coords, setCoords] = React.useState({ x: 0, y: 0 });
-  const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
-  const filteredFiles = React.useRef(new Map([]));
-  const versionedFiles = React.useRef({});
-  const { setItemsSelection } = useContext(ItemSelectionContext);
-  const data = useContext(UploadFolderContenxt);
-
-  console.log("table rendered");
-
-  const columns = [
+const columnDef = (path, nav, layout) => {
+  return [
     {
       field: "name",
       headerName: "Name",
@@ -149,35 +135,37 @@ export default React.memo(function DataGridTable({
         return (
           <>
             {cellValues.row.item === "folder" ? (
-              <Link
-                to={generateLink(
-                  path,
-                  cellValues.row.path,
-                  layout,
-                  nav,
-                  cellValues.row.id.split(";")[4]
-                )}
-                style={{ ...style, marginLeft: 10, gap: 15 }}
-              >
+              <Box sx={flexRowStyle}>
                 <FolderIcon sx={iconStyle} />
-
-                <Typography sx={typoGraphyStyle}>
-                  {cellValues.row.name}
-                </Typography>
-              </Link>
+                <Link
+                  to={generateLink(
+                    path,
+                    cellValues.row.path,
+                    layout,
+                    nav,
+                    cellValues.row.id.split(";")[4]
+                  )}
+                  style={{ ...style, gap: 15 }}
+                >
+                  <Typography sx={typoGraphyStyle}>
+                    {cellValues.row.name}
+                  </Typography>
+                </Link>
+              </Box>
             ) : (
-              <Atag
-                href={cellValues.row.url}
-                rel="noreferrer"
-                target="_blank"
-                sx={style}
-              >
+              <Box sx={flexRowStyle}>
                 <FileOpenIcon sx={iconStyle} />
-
-                <Typography sx={typoGraphyStyle}>
-                  {cellValues.row.name}
-                </Typography>
-              </Atag>
+                <Atag
+                  href={cellValues.row.url}
+                  rel="noreferrer"
+                  target="_blank"
+                  sx={style}
+                >
+                  <Typography sx={typoGraphyStyle}>
+                    {cellValues.row.name}
+                  </Typography>
+                </Atag>
+              </Box>
             )}
           </>
         );
@@ -204,50 +192,99 @@ export default React.memo(function DataGridTable({
       editable: false,
     },
   ];
+};
 
-  const handleFolderContextMenu = (event) => {
-    event.preventDefault();
-    console.log(event.row);
-    setFolderContextMenu(
-      folderContextMenu === null
-        ? {
-            mouseX: event.clientX + 2,
-            mouseY: event.clientY,
-          }
-        : null
-    );
+const OverlayMenu = ({ moveItems, handleClose, coords }) => {
+  return (
+    <Stack sx={{ ...overlayStyle, top: coords.y, left: coords.x, gap: 0 }}>
+      <Button sx={overlayButtonStyle} variant="text" onClick={moveItems}>
+        <DriveFileMoveIcon />
+        Move
+      </Button>
+      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+        <ContentCopyIcon />
+        Copy
+      </Button>
+      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+        <DriveFileRenameOutlineIcon />
+        Rename
+      </Button>
+      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+        <ShareIcon />
+        Share
+      </Button>
+      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+        <DeleteIcon />
+        Delete
+      </Button>
+      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+        <CopyAllIcon />
+        Versions
+      </Button>
+    </Stack>
+  );
+};
+
+export default React.memo(function DataGridTable({
+  layout,
+  path,
+  nav,
+  loading,
+}) {
+  let rows = [];
+  const columns = columnDef(path, nav, layout);
+
+  const [newRows, setNewRows] = React.useState([]);
+
+  const rowClick = React.useRef(false);
+
+  const [coords, setCoords] = React.useState({ x: 0, y: 0 });
+  const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
+  const filteredFiles = React.useRef(new Map([]));
+  const versionedFiles = React.useRef({});
+  const originFileId = React.useRef("");
+  const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
+  const data = useContext(UploadFolderContenxt);
+  const [move, setMove] = React.useState(false);
+
+  console.log("table rendered");
+
+  const clickOnDataGrid = () => {
+    console.log("clicked on datagrid");
   };
-
   const handleFileContextMenu = (event) => {
     event.preventDefault();
-    console.log(event.clientX, event.clientY);
-    console.log(event.target);
+
+    originFileId.current = event.currentTarget
+      .getAttribute("data-id")
+      .split(";")[4];
+
     setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
+    setRowSelectionModel([event.currentTarget.getAttribute("data-id")]);
+  };
+
+  const moveItems = () => {
+    // console.log(versionedFiles.current[originFileId.current]);
+    setMove(true);
+    setCoords({ x: 0, y: 0 });
   };
 
   const handleClose = () => {
-    setFolderContextMenu(null);
     setCoords({ x: 0, y: 0 });
   };
 
   const rowClicked = (params, event, details) => {
-    console.log(params.id);
     rowClick.current = false;
     setRowSelectionModel((prev) => {
-      if (prev.includes(params.id)) {
-        console.log("inside three");
+      if (prev.includes(params.id) && prev.length === 1) {
         rowClick.current = true;
         return [];
-      } else {
-        console.log("inside four");
+      } else if (prev.length >= 1) {
         rowClick.current = true;
         return [params.id];
       }
     });
   };
-  useEffect(() => {
-    console.log(rowSelectionModel);
-  }, [rowSelectionModel]);
 
   useEffect(() => {
     const files = [];
@@ -341,9 +378,8 @@ export default React.memo(function DataGridTable({
         disableVirtualization={false}
         onRowClick={rowClicked}
         onRowSelectionModelChange={(newRowSelectionModel) => {
-          console.log(newRowSelectionModel);
-
           if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
+          rowClick.current = false;
         }}
         rowSelectionModel={rowSelectionModel}
         density={"comfortable"}
@@ -357,23 +393,16 @@ export default React.memo(function DataGridTable({
         }}
       />
       {coords.x !== 0 && coords.y !== 0 && (
-        <Stack sx={{ ...overlayStyle, top: coords.y, left: coords.x }}>
-          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-            Move
-          </Button>
-          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-            Copy
-          </Button>
-          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-            Rename
-          </Button>
-          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-            Share
-          </Button>
-          <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-            Versions
-          </Button>
-        </Stack>
+        <OverlayMenu
+          handleClose={handleClose}
+          moveItems={moveItems}
+          coords={coords}
+        />
+      )}
+      {move && (
+        <ItemSelectionContext.Provider value={itemsSelected}>
+          <Modal />
+        </ItemSelectionContext.Provider>
       )}
     </Box>
   );
