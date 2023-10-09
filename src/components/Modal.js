@@ -19,6 +19,7 @@ import { ItemSelectionContext } from "./Context";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import IconExpandedTreeItem from "./CustomTreeItem";
+import { useLocation, useNavigate } from "react-router-dom";
 
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);
@@ -63,7 +64,7 @@ const fetchFoldersFromServer = async (path) => {
   return newFolders;
 };
 
-export default function CustomizedTreeView({ setStartMove }) {
+export default function CustomizedTreeView({ setStartMove, moveImmediate }) {
   const [open, setOpen] = useState(true);
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
@@ -189,7 +190,9 @@ export default function CustomizedTreeView({ setStartMove }) {
 
   useEffect(() => {
     if (move.moved) {
-      setStartMove(false);
+      if (moveImmediate === true) {
+        setStartMove(false);
+      }
     }
   }, [move.moved]);
 

@@ -11,15 +11,22 @@ import { Link as Atag } from "@mui/material";
 
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
-import { ItemSelectionContext, UploadFolderContenxt } from "./Context.js";
+import {
+  ItemSelectionContext,
+  PathContext,
+  UploadFolderContenxt,
+} from "./Context.js";
 import Modal from "./Modal";
-import FileSelectionOverlayMenu from "./FileContext";
-import MUltipleSelectionOverlayMenu from "./MultipleSelectionContext";
-import FolderSelectionOverlayMenu from "./FolderContext";
+import FileSelectionOverlayMenu from "./context/FileContext";
+import MUltipleSelectionOverlayMenu from "./context/MultipleSelectionContext";
+import FolderSelectionOverlayMenu from "./context/FolderContext";
+import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
+import Share from "./Share";
 
 const multiple = "multiple";
 const file = "file";
 const folder = "folder";
+const fileVersion = "fileVersion";
 
 const style = {
   textDecoration: "none",
@@ -175,6 +182,7 @@ export default React.memo(function DataGridTable({
   const [newRows, setNewRows] = React.useState([]);
   const rowClick = React.useRef(false);
   const [coords, setCoords] = React.useState({ x: 0, y: 0 });
+  const [openContext, setOpenContext] = React.useState(null);
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const filteredFiles = React.useRef(new Map([]));
   const versionedFiles = React.useRef({});
@@ -185,6 +193,7 @@ export default React.memo(function DataGridTable({
   const [startMove, setStartMove] = React.useState(false);
   const [download, setDownload] = React.useState(false);
   const [selectionType, setSelectionType] = React.useState("");
+  const [share, setShare] = React.useState(false);
 
   console.log("table rendered");
 
@@ -196,35 +205,48 @@ export default React.memo(function DataGridTable({
     console.log("triggered");
     setRowSelectionModel((prev) => {
       if (prev.length === 0 || prev.length === 1) {
-        setSelectionType(type);
+        const originId = (originFileId.current = event.currentTarget
+          .getAttribute("data-id")
+          .split(";")[4]);
+        const hasVersions = versionedFiles.current.hasOwnProperty(originId);
+        if (type === file && hasVersions) {
+          setSelectionType(fileVersion);
+        } else {
+          setSelectionType(type);
+        }
         return [rowId];
       } else {
         if (rowSelectionModel.includes(rowId)) {
           setSelectionType(multiple);
           return [...prev];
         } else {
-          setSelectionType(type);
+          const originId = (originFileId.current = event.currentTarget
+            .getAttribute("data-id")
+            .split(";")[4]);
+          const hasVersions = versionedFiles.current.hasOwnProperty(originId);
+          if (type === file && hasVersions) {
+            setSelectionType(fileVersion);
+          } else {
+            setSelectionType(type);
+          }
           return [rowId];
         }
       }
     });
+    setOpenContext(true);
     setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
-
-    // originFileId.current = event.currentTarget
-    //   .getAttribute("data-id")
-    //   .split(";")[4];
-
-    // setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
-    // setRowSelectionModel([event.currentTarget.getAttribute("data-id")]);
   };
+  useEffect(() => {
+    console.log("selection type: ", selectionType);
+  }, [selectionType]);
 
   const moveItems = () => {
     setStartMove(true);
-    setCoords({ x: 0, y: 0 });
+    setOpenContext(null);
   };
 
   const handleClose = () => {
-    setCoords({ x: 0, y: 0 });
+    setOpenContext(null);
   };
 
   const rowClicked = (params, event, details) => {
@@ -271,6 +293,7 @@ export default React.memo(function DataGridTable({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     if (!loading) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
+      versionedFiles.current = {};
       data.files.forEach((file) => {
         const fileItem = buildCellValueForFile(file);
 
@@ -297,12 +320,12 @@ export default React.memo(function DataGridTable({
       rows = [
         ...rows,
         ...data.folders.map((folder) => ({
-          id: `folder;${folder.id};${folder.path};${folder.folder};${folder.uuid}`,
+          id: `folder;${folder.uuid};${folder.path};${folder.folder};${folder.uuid}`,
           name: folder.folder,
           size: "--",
           path: folder.path,
           versions: "--",
-          modified: "--",
+          modified: folder.created_at,
           item: "folder",
         })),
       ];
@@ -350,41 +373,59 @@ export default React.memo(function DataGridTable({
           },
         }}
       />
-      {coords.x !== 0 && coords.y !== 0 && selectionType === file && (
+      {openContext && selectionType === file && (
         <FileSelectionOverlayMenu
           handleClose={handleClose}
           moveItems={moveItems}
           setDownload={setDownload}
           coords={coords}
+          setShare={setShare}
           reference={ref}
         />
       )}
-      {coords.x !== 0 && coords.y !== 0 && selectionType === folder && (
+      {openContext && selectionType === fileVersion && (
+        <FileVersionSelectionOverlayMenu
+          handleClose={handleClose}
+          moveItems={moveItems}
+          setDownload={setDownload}
+          coords={coords}
+          setShare={setShare}
+          reference={ref}
+        />
+      )}
+      {openContext && selectionType === folder && (
         <FolderSelectionOverlayMenu
           handleClose={handleClose}
           moveItems={moveItems}
           setDownload={setDownload}
           coords={coords}
+          setShare={setShare}
           reference={ref}
         />
       )}
-      {coords.x !== 0 && coords.y !== 0 && selectionType === multiple && (
+      {openContext && selectionType === multiple && (
         <MUltipleSelectionOverlayMenu
           handleClose={handleClose}
           moveItems={moveItems}
           setDownload={setDownload}
           coords={coords}
+          setShare={setShare}
           reference={ref}
         />
       )}
       {startMove && (
         <ItemSelectionContext.Provider value={itemsSelected}>
-          <Modal setStartMove={setStartMove} />
+          <Modal setStartMove={setStartMove} moveImmediate={true} />
         </ItemSelectionContext.Provider>
       )}
       {download && (
         <ItemSelectionContext.Provider value={itemsSelected}>
           <DownloadItems startImmediate={true} setDownload={setDownload} />
+        </ItemSelectionContext.Provider>
+      )}
+      {share && (
+        <ItemSelectionContext.Provider value={itemsSelected}>
+          <Share shareImmediate={true} />
         </ItemSelectionContext.Provider>
       )}
     </Box>

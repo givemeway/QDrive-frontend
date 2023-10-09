@@ -1,10 +1,12 @@
 import { Stack, Button } from "@mui/material";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
-import useOutSideClick from "./useOutsideClick";
+import useOutSideClick from "../useOutsideClick";
+import CopyAllIcon from "@mui/icons-material/CopyAll";
 
 const overlayStyle = {
   position: "absolute",
@@ -30,12 +32,13 @@ const overlayButtonStyle = {
   width: "100%",
 };
 
-const MUltipleSelectionOverlayMenu = ({
+const FileVersionSelectionOverlayMenu = ({
   moveItems,
   handleClose,
   coords,
   setDownload,
   reference,
+  setShare,
 }) => {
   useOutSideClick(reference, () => {
     handleClose();
@@ -50,8 +53,8 @@ const MUltipleSelectionOverlayMenu = ({
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          handleClose();
           moveItems();
+          handleClose();
         }}
       >
         <DriveFileMoveIcon />
@@ -62,6 +65,17 @@ const MUltipleSelectionOverlayMenu = ({
         Copy
       </Button>
       <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+        <DriveFileRenameOutlineIcon />
+        Rename
+      </Button>
+      <Button
+        sx={overlayButtonStyle}
+        variant="text"
+        onClick={() => {
+          handleClose();
+          setShare(true);
+        }}
+      >
         <ShareIcon />
         Share
       </Button>
@@ -73,15 +87,19 @@ const MUltipleSelectionOverlayMenu = ({
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          handleClose();
           setDownload(true);
+          handleClose();
         }}
       >
         <CloudDownloadIcon />
         Download
       </Button>
+      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+        <CopyAllIcon />
+        Versions
+      </Button>
     </Stack>
   );
 };
 
-export default MUltipleSelectionOverlayMenu;
+export default FileVersionSelectionOverlayMenu;

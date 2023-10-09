@@ -1,6 +1,6 @@
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import { useState, useContext } from "react";
-import { ItemSelectionContext } from "./Context";
+import { PathContext } from "./Context";
 
 import { Button } from "@mui/material";
 import Modal from "./Modal";

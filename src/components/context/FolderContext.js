@@ -5,8 +5,7 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
-import useOutSideClick from "./useOutsideClick";
-import CopyAllIcon from "@mui/icons-material/CopyAll";
+import useOutSideClick from "../useOutsideClick";
 
 const overlayStyle = {
   position: "absolute",
@@ -32,12 +31,13 @@ const overlayButtonStyle = {
   width: "100%",
 };
 
-const FileSelectionOverlayMenu = ({
+const FolderSelectionOverlayMenu = ({
   moveItems,
   handleClose,
   coords,
   setDownload,
   reference,
+  setShare,
 }) => {
   useOutSideClick(reference, () => {
     handleClose();
@@ -67,7 +67,14 @@ const FileSelectionOverlayMenu = ({
         <DriveFileRenameOutlineIcon />
         Rename
       </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+      <Button
+        sx={overlayButtonStyle}
+        variant="text"
+        onClick={() => {
+          handleClose();
+          setShare(true);
+        }}
+      >
         <ShareIcon />
         Share
       </Button>
@@ -79,19 +86,15 @@ const FileSelectionOverlayMenu = ({
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          setDownload(true);
           handleClose();
+          setDownload(true);
         }}
       >
         <CloudDownloadIcon />
         Download
       </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-        <CopyAllIcon />
-        Versions
-      </Button>
     </Stack>
   );
 };
 
-export default FileSelectionOverlayMenu;
+export default FolderSelectionOverlayMenu;

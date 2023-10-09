@@ -11,16 +11,9 @@ import {
 } from "@mui/material";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import CircularProgress from "@mui/material/CircularProgress";
-import LinearProgress from "@mui/material/LinearProgress";
 
 import { ItemSelectionContext } from "./Context";
-import { downloadItemsURL, csrftokenURL, get_download_zip } from "../config.js";
-
-import { styled } from "@mui/material/styles";
-
-const FullWidthLinearProgress = styled(LinearProgress)({
-  width: "100%",
-});
+import { csrftokenURL, get_download_zip } from "../config.js";
 
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);
@@ -47,7 +40,7 @@ const Download = ({ startImmediate, setDownload }) => {
     fetchCSRFToken(csrftokenURL)
       .then((csrftoken) => {
         setCSRFToken(csrftoken);
-        if (startImmediate) setStartDownload(true);
+        if (startImmediate === true) setStartDownload(true);
       })
       .catch((err) => console.log(err));
   }, []);

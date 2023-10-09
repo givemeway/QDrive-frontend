@@ -13,15 +13,13 @@ import {
   SnackBarContext,
 } from "./Context";
 
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { csrftokenURL, filesFoldersURL } from "../config";
 
-const url = "/app/browseFolder";
-const csrfurl = "/app/csrftoken";
-const searchURL = "/app/search";
+import React, { useEffect, useState, searchURL } from "react";
+import { useLocation, useParams } from "react-router-dom";
 
-async function fetchCSRFToken(csrfurl) {
-  const response = await fetch(csrfurl);
+async function fetchCSRFToken(csrftokenURL) {
+  const response = await fetch(csrftokenURL);
   const { CSRFToken } = await response.json();
   return CSRFToken;
 }
@@ -46,8 +44,9 @@ const Dashboard = () => {
   });
 
   const params = useParams();
+  const location = useLocation();
   const subpath = params["*"];
-  console.log("dashboard rendered");
+  console.log("dashboard rendered ", subpath);
   useEffect(() => {
     setDataLoaded(false);
     setIsSearch(false);
@@ -71,7 +70,7 @@ const Dashboard = () => {
         }
         homedir = path[1];
       }
-      fetchCSRFToken(csrfurl).then((csrftoken) => {
+      fetchCSRFToken(csrftokenURL).then((csrftoken) => {
         const headers = {
           "X-CSRF-Token": csrftoken,
           "Content-type": "application/x-www-form-urlencoded",
@@ -86,7 +85,7 @@ const Dashboard = () => {
           mode: "cors",
           headers: headers,
         };
-        fetch(url + "/", options)
+        fetch(filesFoldersURL + "/", options)
           .then((res) => res.json())
           .then((data) => {
             setData(() => {
@@ -160,7 +159,9 @@ const Dashboard = () => {
                   <ItemSelectionContext.Provider
                     value={{ itemsSelected, setItemsSelection }}
                   >
-                    <MainPanel />
+                    <PathContext.Provider value={location.pathname}>
+                      <MainPanel />
+                    </PathContext.Provider>
                   </ItemSelectionContext.Provider>
                 </UploadFolderContenxt.Provider>
               </SnackBarContext.Provider>

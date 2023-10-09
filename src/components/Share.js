@@ -27,7 +27,7 @@ async function fetchCSRFToken(csrfurl) {
   return CSRFToken;
 }
 
-export default function Share() {
+export default function Share({ shareImmediate }) {
   const { fileIds, directories } = useContext(ItemSelectionContext);
   const [type, setType] = useState("");
   const [CSRFToken, setCSRFToken] = useState("");
@@ -38,6 +38,7 @@ export default function Share() {
   const [snackbarOpen, setsnakbarOpen] = useState(false);
   const handleClose = () => setOpen(false);
   const items = useRef([]);
+  console.log(shareImmediate, "shareing");
 
   const style = {
     position: "absolute",
@@ -112,6 +113,16 @@ export default function Share() {
 
   const showShareWindow = () => {
     setOpen(true);
+  };
+
+  useEffect(() => {
+    if (shareURL.length > 0) {
+      setIsGenerating(2);
+    }
+  }, [shareURL]);
+
+  useEffect(() => {
+    console.log("click triggered");
     items.current = [
       ...fileIds.map((file) => ({
         id: file.id,
@@ -124,22 +135,15 @@ export default function Share() {
         type: "folder",
       })),
     ];
-  };
-
-  useEffect(() => {
-    if (shareURL.length > 0) {
-      setIsGenerating(2);
-    }
-  }, [shareURL]);
-
-  useEffect(() => {
-    console.log("click triggered");
     fetchCSRFToken(csrftokenURL)
       .then((csrftoken) => {
+        if (shareImmediate === true) {
+          setOpen(true);
+        }
         setCSRFToken(csrftoken);
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [shareImmediate]);
 
   useEffect(() => {
     if (share && CSRFToken !== "" && type !== "") {
