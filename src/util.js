@@ -43,6 +43,12 @@ const opts = {
   ],
 };
 
+async function fetchCSRFToken(csrfurl) {
+  const response = await fetch(csrfurl);
+  const { CSRFToken } = await response.json();
+  return CSRFToken;
+}
+
 function formatSeconds(seconds) {
   if (seconds === 0) return "0 Seconds";
   const units = ["seconds", "minutes", "hours", "days"];
@@ -202,4 +208,5 @@ export {
   saveFile,
   formatBytes,
   formatSeconds,
+  fetchCSRFToken,
 };
