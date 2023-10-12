@@ -4,6 +4,9 @@ import { PathContext } from "./Context";
 
 import { Button } from "@mui/material";
 import Modal from "./Modal";
+
+const MOVE = "move";
+
 export default function MoveItems() {
   const [open, setOpen] = useState(false);
 
@@ -27,7 +30,7 @@ export default function MoveItems() {
       >
         <DriveFileMoveIcon sx={{ cursor: "pointer", fontSize: 25 }} />
       </Button>
-      {open && <Modal />}
+      {open && <Modal mode={MOVE} />}
     </>
   );
 }

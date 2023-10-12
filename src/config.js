@@ -12,6 +12,7 @@ const downloadItemsURL = "/app/downloadItems";
 const getShareLinkURL = "/app/createShare";
 const getSharedItemsURL = "/app/sh";
 const moveItemsURL = "/app/moveItems";
+const copyItemsURL = "/app/copyItems";
 const searchURL = "/app/search";
 const renameURL = "/app/renameItem";
 const devicename = "DESKTOP-10RSGE8";
@@ -38,4 +39,5 @@ export {
   moveItemsURL,
   searchURL,
   renameURL,
+  copyItemsURL,
 };

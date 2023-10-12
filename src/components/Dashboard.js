@@ -14,9 +14,9 @@ import {
   EditContext,
 } from "./Context";
 
-import { csrftokenURL, filesFoldersURL } from "../config";
+import { csrftokenURL, filesFoldersURL, searchURL } from "../config";
 
-import React, { useEffect, useState, searchURL } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
 async function fetchCSRFToken(csrftokenURL) {
@@ -106,6 +106,7 @@ const Dashboard = () => {
     } else if (path[0] === "search") {
       const initiateSearch = async (value) => {
         try {
+          console.log(searchURL);
           const res = await axios.get(searchURL + `?search=${value}`);
           setData(res.data);
           setDataLoaded(true);
@@ -116,6 +117,7 @@ const Dashboard = () => {
         }
       };
       const param = path.slice(1)[0];
+      console.log(param);
       setIsSearch(true);
       setSearchValue(param);
       initiateSearch(param);

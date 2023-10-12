@@ -14,7 +14,12 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useEffect, useContext, useRef } from "react";
-import { csrftokenURL, getSubFoldersURL, moveItemsURL } from "../config";
+import {
+  copyItemsURL,
+  csrftokenURL,
+  getSubFoldersURL,
+  moveItemsURL,
+} from "../config";
 import { ItemSelectionContext } from "./Context";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -27,6 +32,8 @@ async function fetchCSRFToken(csrfurl) {
   return CSRFToken;
 }
 
+const MOVE = "move";
+const COPY = "copy";
 const style = {
   position: "absolute",
   display: "flex",
@@ -64,7 +71,11 @@ const fetchFoldersFromServer = async (path) => {
   return newFolders;
 };
 
-export default function CustomizedTreeView({ setStartMove, moveImmediate }) {
+export default function CustomizedTreeView({
+  setStartMove,
+  moveImmediate,
+  mode,
+}) {
   const [open, setOpen] = useState(true);
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
@@ -99,7 +110,10 @@ export default function CustomizedTreeView({ setStartMove, moveImmediate }) {
       folders: directories.length > 0 ? directories : null,
     };
     console.log(body);
-    const res = await axios.post(moveItemsURL + `?to=${toPath.current}`, body, {
+    let url;
+    if (mode === MOVE) url = moveItemsURL;
+    else if (mode === COPY) url = copyItemsURL;
+    const res = await axios.post(url + `?to=${toPath.current}`, body, {
       headers: headers,
     });
     console.log(res.data);
@@ -221,7 +235,8 @@ export default function CustomizedTreeView({ setStartMove, moveImmediate }) {
         >
           <Box sx={style}>
             <Typography variant="h6" component="h2">
-              Move {fileIds.length + directories.length} Item(s) to...
+              {mode === MOVE && <>Move </>} {mode === COPY && <>Copy </>}
+              {fileIds.length + directories.length} Item(s) to...
             </Typography>
             <Divider orientation="horizontal" />
             <TreeView
@@ -278,7 +293,7 @@ export default function CustomizedTreeView({ setStartMove, moveImmediate }) {
                 }}
                 onClick={() => handleSubmit(toPath)}
               >
-                Move
+                {mode === MOVE && <>Move </>} {mode === COPY && <>Copy </>}
               </Button>
             </Stack>
           </Box>
@@ -301,15 +316,21 @@ export default function CustomizedTreeView({ setStartMove, moveImmediate }) {
               {move.moving && <CircularProgress />}
               {move.moving && (
                 <Typography>
-                  Moving {fileIds.length + directories.length} items
+                  {mode === MOVE && <>Move </>} {mode === COPY && <>Copy </>}{" "}
+                  {fileIds.length + directories.length} items
                 </Typography>
               )}
               {move.moved && (
                 <>
-                  <Typography>Moved {move.movedItems} items</Typography>
+                  <Typography>
+                    {mode === MOVE && <>Moved </>}{" "}
+                    {mode === COPY && <>Copied </>} {move.movedItems} items
+                  </Typography>
                   {move.movedFailed > 0 && (
                     <Typography>
-                      Move Failed for {move.movedFailed} items
+                      {mode === MOVE && <>Move </>}{" "}
+                      {mode === COPY && <>Copy </>} Failed for{" "}
+                      {move.movedFailed} items
                     </Typography>
                   )}
                 </>

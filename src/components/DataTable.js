@@ -29,6 +29,8 @@ const multiple = "multiple";
 const file = "file";
 const folder = "folder";
 const fileVersion = "fileVersion";
+const MOVE = "move";
+const COPY = "copy";
 
 const style = {
   textDecoration: "none",
@@ -491,7 +493,7 @@ export default React.memo(function DataGridTable({
       )}
       {startMove && (
         <ItemSelectionContext.Provider value={itemsSelected}>
-          <Modal setStartMove={setStartMove} moveImmediate={true} />
+          <Modal setStartMove={setStartMove} moveImmediate={true} mode={MOVE} />
         </ItemSelectionContext.Provider>
       )}
       {download && (
