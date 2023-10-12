@@ -1,73 +1,62 @@
+/*global axios */
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import { Button } from "@mui/material";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { ItemSelectionContext } from "./Context";
 import { csrftokenURL, renameURL } from "../config";
 import { fetchCSRFToken } from "../util";
-export default function RenameItem({ val }) {
+import { EditContext } from "./Context";
+export default function RenameItem() {
   const { fileIds, directories } = useContext(ItemSelectionContext);
   const csrfToken = useRef("");
-  const [rename, setRename] = useState({
-    init: false,
-    renaming: false,
-    renamed: false,
-    success: false,
-    failed: [],
-  });
 
+  const { edit, setEdit } = useContext(EditContext);
   const handleClick = () => {
-    setRename((prev) => ({ ...prev, init: true, renaming: true }));
+    setEdit((prev) => ({ ...prev, editStart: true }));
   };
 
   useEffect(() => {
-    if (rename.init && csrfToken.current.length > 0) {
-      setRename((prev) => ({
-        ...prev,
-        init: true,
-        renamed: false,
-        renaming: true,
-      }));
+    if (edit.editing && edit.val && csrfToken.current.length > 0) {
       const headers = {
         "X-CSRF-Token": csrfToken.current,
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
       };
       let body = {};
       if (fileIds.length > 0) {
         body.type = "fi";
         body.uuid = fileIds[0].id;
-        body.to = val;
+        body.to = edit.val;
       } else {
         body.type = "fo";
         body.uuid = directories[0].uuid;
         let path_array = directories[0].path.split("/").slice(0, -1);
-        path_array.push(val);
+        path_array.push(edit.val);
         body.to = path_array.join("/");
       }
 
-      const options = {
-        method: "POST",
-        credentials: "include",
-        headers: headers,
-        body: body,
-      };
-      fetch(renameURL, options)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data);
-          setRename((prev) => ({
+      (async () => {
+        try {
+          const res = await axios.post(renameURL, body, { headers: headers });
+          console.log(res.data);
+          setEdit((prev) => ({
             ...prev,
-            init: false,
-            renamed: true,
-            renaming: false,
+            edited: true,
+            editStart: undefined,
+            editStop: undefined,
+            editing: false,
           }));
-        });
+        } catch (err) {
+          console.error(err);
+        }
+      })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rename.init]);
+  }, [edit]);
 
   useEffect(() => {
+    setEdit(false);
     fetchCSRFToken(csrftokenURL)
-      .then((csrfToken) => (csrfToken.current = csrfToken))
+      .then((token) => (csrfToken.current = token))
       .catch((err) => console.error(err));
   }, []);
 

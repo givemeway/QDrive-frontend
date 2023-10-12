@@ -1,39 +1,16 @@
-/* global forge */
-/* global axios */
-/* global async */
-import { Box, Button, Divider, Stack } from "@mui/material";
+import { Box, Divider, Stack } from "@mui/material";
 import React, { useState, useContext } from "react";
 
-import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
-import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
+import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
 import DownloadItems from "./DownloadItems.js";
-import { UploadContext, ItemSelectionContext, PathContext } from "./Context.js";
+import { UploadContext, ItemSelectionContext } from "./Context.js";
 import Share from "./Share.js";
 import MoveItems from "./MoveItems.js";
 import RenameItem from "./RenameItem.js";
 import CopyItems from "./CopyItems.js";
-
-function CustomButton({ children }) {
-  return (
-    <Button
-      variant="outlined"
-      disableRipple
-      sx={{
-        border: "none",
-        boxSizing: "border-box",
-        "&:hover": {
-          backgroundColor: "#EFF3FA",
-          border: "none",
-        },
-      }}
-    >
-      {children}
-    </Button>
-  );
-}
 
 export default React.memo(function UploadMenu() {
   const [upload, setUpload] = useState(null);
@@ -65,6 +42,12 @@ export default React.memo(function UploadMenu() {
           <UploadContext.Provider value={upload}>
             <FilesUpload setUpload={setUpload} />
           </UploadContext.Provider>
+          <Divider orientation="vertical" />
+
+          <CreateNewFolderIcon
+            color="primary"
+            sx={{ cursor: "pointer", fontSize: 25 }}
+          />
 
           <Divider orientation="vertical" />
           {(fileIds.length > 0 || directories.length > 0) && (
@@ -73,13 +56,16 @@ export default React.memo(function UploadMenu() {
               <Divider orientation="vertical" />
               <MoveItems />
               <Divider orientation="vertical" />
-              <RenameItem />
-              <Divider orientation="vertical" />
+              {fileIds.length + directories.length === 1 && <RenameItem />}
+              {fileIds.length + directories.length === 1 && (
+                <Divider orientation="vertical" />
+              )}
               <CopyItems />
               <Divider orientation="vertical" />
               <Share />
               <Divider orientation="vertical" />
               <DeleteItems />
+              <Divider orientation="vertical" />
               <Divider orientation="vertical" />
             </>
           )}

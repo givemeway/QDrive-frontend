@@ -8,10 +8,12 @@ import React, { useEffect, useContext } from "react";
 import { Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
+import { useGridApiRef } from "@mui/x-data-grid";
 
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
 import {
+  EditContext,
   ItemSelectionContext,
   PathContext,
   UploadFolderContenxt,
@@ -42,18 +44,24 @@ const flexRowStyle = {
   flexDirection: "row",
   justifyContent: "flex-start",
   alignItems: "center",
+  padding: 0,
+  margin: 0,
 };
 
 const typoGraphyStyle = {
-  fontSize: "1.25rem",
+  fontSize: "1rem",
   flexGrow: 1,
   textAlign: "left",
+  padding: 0,
+  margin: 0,
 };
 
 const iconStyle = {
-  width: 50,
-  height: 50,
+  width: 30,
+  height: 35,
   color: "#A1C9F7",
+  padding: 0,
+  margin: 0,
 };
 
 const buildCellValueForFile = (file) => {
@@ -64,6 +72,7 @@ const buildCellValueForFile = (file) => {
       file.filename
     )};${file.filename};${file.origin}`,
     name: file.filename,
+    icon: "file",
     size: formatBytes(file.size),
     dir: `${file.device}/${file.directory}`,
     path: `${downloadURL}?device=${encodeURIComponent(
@@ -104,16 +113,34 @@ function generateLink(url, folderPath, layout, nav, id) {
 const columnDef = (path, nav, layout) => {
   return [
     {
+      field: "icon",
+      headerName: "Type",
+      width: 30,
+      align: "center",
+      headerAlign: "left",
+      editable: false,
+      renderCell: (param) => {
+        <FolderIcon sx={iconStyle} />;
+        return param.row.item === "folder" ? (
+          <FolderIcon sx={iconStyle} />
+        ) : (
+          <FileOpenIcon sx={iconStyle} />
+        );
+      },
+    },
+    {
       field: "name",
       headerName: "Name",
       flex: 0.55,
+      align: "left",
+      headerAlign: "left",
       editable: true,
       renderCell: (cellValues) => {
         return (
           <>
             {cellValues.row.item === "folder" ? (
               <Box sx={flexRowStyle}>
-                <FolderIcon sx={iconStyle} />
+                {/* <FolderIcon sx={iconStyle} /> */}
                 <Link
                   to={generateLink(
                     path,
@@ -131,7 +158,7 @@ const columnDef = (path, nav, layout) => {
               </Box>
             ) : (
               <Box sx={flexRowStyle}>
-                <FileOpenIcon sx={iconStyle} />
+                {/* <FileOpenIcon sx={iconStyle} /> */}
                 <Atag
                   href={cellValues.row.url}
                   rel="noreferrer"
@@ -151,14 +178,18 @@ const columnDef = (path, nav, layout) => {
     {
       field: "size",
       headerName: "Size",
-      flex: 0.15,
+      headerAlign: "center",
+      align: "center",
+      flex: 0.1,
       editable: false,
     },
     {
       field: "versions",
+      headerAlign: "center",
       headerName: "Versions",
       type: "number",
-      flex: 0.15,
+      align: "center",
+      flex: 0.1,
       editable: false,
     },
     {
@@ -190,19 +221,20 @@ export default React.memo(function DataGridTable({
   const ref = React.useRef();
   const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
   const data = useContext(UploadFolderContenxt);
+  const { edit, setEdit } = useContext(EditContext);
   const [startMove, setStartMove] = React.useState(false);
   const [download, setDownload] = React.useState(false);
   const [selectionType, setSelectionType] = React.useState("");
   const [share, setShare] = React.useState(false);
+  const apiRef = useGridApiRef();
+  const gridRef = React.useRef();
+  const selectedToEdit = React.useRef();
 
   console.log("table rendered");
-
   const contextMenu = (event) => {
     event.preventDefault();
     const type = event.currentTarget.getAttribute("data-id").split(";")[0];
     const rowId = event.currentTarget.getAttribute("data-id");
-
-    console.log("triggered");
     setRowSelectionModel((prev) => {
       if (prev.length === 0 || prev.length === 1) {
         const originId = (originFileId.current = event.currentTarget
@@ -236,9 +268,6 @@ export default React.memo(function DataGridTable({
     setOpenContext(true);
     setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
   };
-  useEffect(() => {
-    console.log("selection type: ", selectionType);
-  }, [selectionType]);
 
   const moveItems = () => {
     setStartMove(true);
@@ -250,13 +279,17 @@ export default React.memo(function DataGridTable({
   };
 
   const rowClicked = (params, event, details) => {
+    selectedToEdit.current = params.id;
     rowClick.current = false;
+
     setRowSelectionModel((prev) => {
       if (prev.includes(params.id) && prev.length === 1) {
         rowClick.current = true;
+        selectedToEdit.current = undefined;
         return [];
       } else if (prev.length >= 1) {
         rowClick.current = true;
+        selectedToEdit.current = params.id;
         return [params.id];
       }
     });
@@ -283,11 +316,25 @@ export default React.memo(function DataGridTable({
       fileIds: [...files],
       directories: [...folders],
     }));
-  }, [rowSelectionModel]);
+  }, [rowSelectionModel, setItemsSelection]);
 
   useEffect(() => {
-    console.log(download);
-  }, [download]);
+    return apiRef.current.subscribeEvent("scrollPositionChange", () => {
+      const data = gridRef.current.querySelector(
+        ".MuiDataGrid-virtualScroller"
+      );
+      console.log(data.scrollTop + data.clientHeight, data.scrollHeight);
+    });
+  }, [apiRef]);
+
+  useEffect(() => {
+    if (selectedToEdit.current && edit.editStart) {
+      const params = { id: selectedToEdit.current, field: "name" };
+      apiRef.current.startCellEditMode(params);
+      setEdit((prev) => ({ ...prev, editing: true }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiRef, edit.editStart]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -321,6 +368,7 @@ export default React.memo(function DataGridTable({
         ...rows,
         ...data.folders.map((folder) => ({
           id: `folder;${folder.uuid};${folder.path};${folder.folder};${folder.uuid}`,
+          icon: "folder",
           name: folder.folder,
           size: "--",
           path: folder.path,
@@ -339,11 +387,13 @@ export default React.memo(function DataGridTable({
     <Box sx={{ height: "100%", width: "100%" }}>
       <DataGrid
         rows={newRows}
+        ref={gridRef}
+        apiRef={apiRef}
         columns={columns}
         initialState={{
           pagination: {
             paginationModel: {
-              pageSize: 10,
+              pageSize: 50,
             },
           },
         }}
@@ -358,18 +408,44 @@ export default React.memo(function DataGridTable({
         loading={loading}
         disableVirtualization={false}
         onRowClick={rowClicked}
+        processRowUpdate={(newRow) => {
+          setEdit((prev) => ({
+            ...prev,
+            val: newRow.name,
+            editStop: true,
+            editStart: false,
+          }));
+          return newRow;
+        }}
+        onProcessRowUpdateError={(err) => console.log(err)}
+        editMode="cell"
         onRowSelectionModelChange={(newRowSelectionModel) => {
+          if (newRowSelectionModel.length === 1)
+            selectedToEdit.current = newRowSelectionModel[0];
+          else selectedToEdit.current = undefined;
           if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
           rowClick.current = false;
         }}
         rowSelectionModel={rowSelectionModel}
-        density={"comfortable"}
+        // hideFooter={true}
+        rowHeight={40}
+        density={"standard"}
         sx={{
           "& .MuiDataGrid-cell:focus-within": {
             outline: "none !important",
           },
           "& .MuiDataGrid-cell": {
             borderBottom: "none",
+            marginLeft: 0,
+            marginRight: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+          },
+          "& .MuiDataGrid-cell--editing": {
+            // backgroundColor: "red",
+            border: "2px solid #0061FE",
+            fontSize: 20,
+            boxShadow: 4,
           },
         }}
       />

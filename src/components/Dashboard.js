@@ -11,6 +11,7 @@ import {
   ItemSelectionContext,
   UploadFolderContenxt,
   SnackBarContext,
+  EditContext,
 } from "./Context";
 
 import { csrftokenURL, filesFoldersURL } from "../config";
@@ -30,6 +31,13 @@ const Dashboard = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
+  const [edit, setEdit] = useState({
+    editStart: undefined,
+    editStop: undefined,
+    edited: undefined,
+    editing: undefined,
+    val: "",
+  });
   const [itemDeletion, setItemDeletion] = useState({
     isOpen: false,
     isDeleting: false,
@@ -132,7 +140,9 @@ const Dashboard = () => {
               <UploadFolderContenxt.Provider value={{ setData }}>
                 <ItemSelectionContext.Provider value={itemsSelected}>
                   <PathContext.Provider value={subpath}>
-                    <Menu />
+                    <EditContext.Provider value={{ edit, setEdit }}>
+                      <Menu />
+                    </EditContext.Provider>
                   </PathContext.Provider>
                 </ItemSelectionContext.Provider>
               </UploadFolderContenxt.Provider>
@@ -160,7 +170,9 @@ const Dashboard = () => {
                     value={{ itemsSelected, setItemsSelection }}
                   >
                     <PathContext.Provider value={location.pathname}>
-                      <MainPanel />
+                      <EditContext.Provider value={{ edit, setEdit }}>
+                        <MainPanel />
+                      </EditContext.Provider>
                     </PathContext.Provider>
                   </ItemSelectionContext.Provider>
                 </UploadFolderContenxt.Provider>
