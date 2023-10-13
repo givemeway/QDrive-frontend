@@ -34,9 +34,11 @@ const overlayButtonStyle = {
 
 const FileVersionSelectionOverlayMenu = ({
   moveItems,
+  copyItems,
   handleClose,
   coords,
   setDownload,
+  setActivity,
   reference,
   setShare,
 }) => {
@@ -60,7 +62,14 @@ const FileVersionSelectionOverlayMenu = ({
         <DriveFileMoveIcon />
         Move
       </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+      <Button
+        sx={overlayButtonStyle}
+        variant="text"
+        onClick={() => {
+          copyItems();
+          handleClose();
+        }}
+      >
         <ContentCopyIcon />
         Copy
       </Button>
@@ -94,7 +103,14 @@ const FileVersionSelectionOverlayMenu = ({
         <CloudDownloadIcon />
         Download
       </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+      <Button
+        sx={overlayButtonStyle}
+        variant="text"
+        onClick={() => {
+          setActivity(true);
+          handleClose();
+        }}
+      >
         <CopyAllIcon />
         Versions
       </Button>

@@ -9,6 +9,7 @@ import { Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
 import { useGridApiRef } from "@mui/x-data-grid";
+import Activity from "./FileActivity.js";
 
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
@@ -31,6 +32,13 @@ const folder = "folder";
 const fileVersion = "fileVersion";
 const MOVE = "move";
 const COPY = "copy";
+
+const gridContainerStyle = {
+  height: "100%",
+  width: "100%",
+  display: "flex",
+  flexDirection: "row",
+};
 
 const style = {
   textDecoration: "none",
@@ -225,9 +233,11 @@ export default React.memo(function DataGridTable({
   const data = useContext(UploadFolderContenxt);
   const { edit, setEdit } = useContext(EditContext);
   const [startMove, setStartMove] = React.useState(false);
+  const [startCopy, setStartCopy] = React.useState(false);
   const [download, setDownload] = React.useState(false);
   const [selectionType, setSelectionType] = React.useState("");
   const [share, setShare] = React.useState(false);
+  const [activity, setActivity] = React.useState(false);
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
@@ -273,6 +283,11 @@ export default React.memo(function DataGridTable({
 
   const moveItems = () => {
     setStartMove(true);
+    setOpenContext(null);
+  };
+
+  const copyItems = () => {
+    setStartCopy(true);
     setOpenContext(null);
   };
 
@@ -386,7 +401,7 @@ export default React.memo(function DataGridTable({
     }
   }, [data]);
   return (
-    <Box sx={{ height: "100%", width: "100%" }}>
+    <Box sx={gridContainerStyle}>
       <DataGrid
         rows={newRows}
         ref={gridRef}
@@ -455,6 +470,7 @@ export default React.memo(function DataGridTable({
         <FileSelectionOverlayMenu
           handleClose={handleClose}
           moveItems={moveItems}
+          copyItems={copyItems}
           setDownload={setDownload}
           coords={coords}
           setShare={setShare}
@@ -465,7 +481,9 @@ export default React.memo(function DataGridTable({
         <FileVersionSelectionOverlayMenu
           handleClose={handleClose}
           moveItems={moveItems}
+          copyItems={copyItems}
           setDownload={setDownload}
+          setActivity={setActivity}
           coords={coords}
           setShare={setShare}
           reference={ref}
@@ -475,6 +493,7 @@ export default React.memo(function DataGridTable({
         <FolderSelectionOverlayMenu
           handleClose={handleClose}
           moveItems={moveItems}
+          copyItems={copyItems}
           setDownload={setDownload}
           coords={coords}
           setShare={setShare}
@@ -485,6 +504,7 @@ export default React.memo(function DataGridTable({
         <MUltipleSelectionOverlayMenu
           handleClose={handleClose}
           moveItems={moveItems}
+          copyItems={copyItems}
           setDownload={setDownload}
           coords={coords}
           setShare={setShare}
@@ -496,6 +516,11 @@ export default React.memo(function DataGridTable({
           <Modal setStartMove={setStartMove} moveImmediate={true} mode={MOVE} />
         </ItemSelectionContext.Provider>
       )}
+      {startCopy && (
+        <ItemSelectionContext.Provider value={itemsSelected}>
+          <Modal setStartMove={setStartCopy} moveImmediate={true} mode={COPY} />
+        </ItemSelectionContext.Provider>
+      )}
       {download && (
         <ItemSelectionContext.Provider value={itemsSelected}>
           <DownloadItems startImmediate={true} setDownload={setDownload} />
@@ -505,6 +530,13 @@ export default React.memo(function DataGridTable({
         <ItemSelectionContext.Provider value={itemsSelected}>
           <Share shareImmediate={true} />
         </ItemSelectionContext.Provider>
+      )}
+      {activity && (
+        <Activity
+          versions={
+            versionedFiles.current[selectedToEdit.current.split(";")[4]]
+          }
+        />
       )}
     </Box>
   );

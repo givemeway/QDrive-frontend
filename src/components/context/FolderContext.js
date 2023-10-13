@@ -33,6 +33,7 @@ const overlayButtonStyle = {
 
 const FolderSelectionOverlayMenu = ({
   moveItems,
+  copyItems,
   handleClose,
   coords,
   setDownload,
@@ -59,7 +60,14 @@ const FolderSelectionOverlayMenu = ({
         <DriveFileMoveIcon />
         Move
       </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+      <Button
+        sx={overlayButtonStyle}
+        variant="text"
+        onClick={() => {
+          copyItems();
+          handleClose();
+        }}
+      >
         <ContentCopyIcon />
         Copy
       </Button>

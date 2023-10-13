@@ -8,7 +8,7 @@ export default React.memo(function MainPanel() {
   return (
     <Stack
       display="flex"
-      flexDirection="column"
+      flexDirection="row"
       sx={{ height: "100%", width: "100%" }}
     >
       <Table layout={"dashboard"} path={"/dashboard/home"} />
