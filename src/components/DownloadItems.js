@@ -1,16 +1,8 @@
 /* global axios */
 
 import React, { useState, useContext, useEffect } from "react";
-import {
-  Button,
-  Box,
-  Stack,
-  Snackbar,
-  SnackbarContent,
-  Typography,
-} from "@mui/material";
+import { Button } from "@mui/material";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
-import CircularProgress from "@mui/material/CircularProgress";
 
 import { ItemSelectionContext } from "./Context";
 import { csrftokenURL, get_download_zip } from "../config.js";
@@ -25,12 +17,9 @@ const Download = ({ startImmediate, setDownload }) => {
   const { fileIds, directories } = useContext(ItemSelectionContext);
   const [CSRFToken, setCSRFToken] = useState("");
   const [startDownload, setStartDownload] = useState(false);
-  const [open, setOpen] = useState(false);
+
   console.log("download items triggered");
-  const handleClose = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -74,42 +63,9 @@ const Download = ({ startImmediate, setDownload }) => {
             "_parent"
           );
           setDownload(false);
+          setStartDownload(false);
         })
         .catch((err) => console.error(err));
-
-      // (async () => {
-      //   let rs_src = fetch(downloadItemsURL, options).then(async (response) => {
-      //     console.log(response.body);
-      //     return response.body;
-      //   });
-
-      //   // create writable stream for file
-      //   const opts = {
-      //     suggestedName: "QDrive.zip",
-      //     types: [
-      //       {
-      //         description: "Zip Files",
-      //         accept: {
-      //           "application/zip": [".zip"],
-      //         },
-      //       },
-      //     ],
-      //   };
-      //   let ws_dest = window.showSaveFilePicker(opts).then((handle) => {
-      //     setOpen(true);
-      //     return handle.createWritable();
-      //   });
-
-      //   // create transform stream for decryption
-      //   let ts_dec = new TransformStream({
-      //     async transform(chunk, controller) {
-      //       controller.enqueue(chunk);
-      //     },
-      //   });
-      //   // stream cleartext to file
-      //   let rs_clear = rs_src.then((s) => s.pipeThrough(ts_dec));
-      //   return (await rs_clear).pipeTo(await ws_dest);
-      // })().then(() => setOpen(false));
     }
   }, [startDownload, CSRFToken]);
   return (
@@ -132,7 +88,47 @@ const Download = ({ startImmediate, setDownload }) => {
           sx={{ cursor: "pointer", fontSize: 25 }}
         />
       </Button>
-      <Snackbar
+    </>
+  );
+};
+
+export default React.memo(Download);
+
+// (async () => {
+//   let rs_src = fetch(downloadItemsURL, options).then(async (response) => {
+//     console.log(response.body);
+//     return response.body;
+//   });
+
+//   // create writable stream for file
+//   const opts = {
+//     suggestedName: "QDrive.zip",
+//     types: [
+//       {
+//         description: "Zip Files",
+//         accept: {
+//           "application/zip": [".zip"],
+//         },
+//       },
+//     ],
+//   };
+//   let ws_dest = window.showSaveFilePicker(opts).then((handle) => {
+//     setOpen(true);
+//     return handle.createWritable();
+//   });
+
+//   // create transform stream for decryption
+//   let ts_dec = new TransformStream({
+//     async transform(chunk, controller) {
+//       controller.enqueue(chunk);
+//     },
+//   });
+//   // stream cleartext to file
+//   let rs_clear = rs_src.then((s) => s.pipeThrough(ts_dec));
+//   return (await rs_clear).pipeTo(await ws_dest);
+// })().then(() => setOpen(false));
+{
+  /* <Snackbar
         open={open}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         onClose={handleClose}
@@ -152,9 +148,5 @@ const Download = ({ startImmediate, setDownload }) => {
             </Box>
           }
         />
-      </Snackbar>
-    </>
-  );
-};
-
-export default React.memo(Download);
+      </Snackbar> */
+}

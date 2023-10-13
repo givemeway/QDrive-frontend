@@ -6,7 +6,7 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import useOutSideClick from "../useOutsideClick";
-import CopyAllIcon from "@mui/icons-material/CopyAll";
+import InfoIcon from "@mui/icons-material/Info";
 
 const overlayStyle = {
   position: "absolute",
@@ -111,8 +111,8 @@ const FileVersionSelectionOverlayMenu = ({
           handleClose();
         }}
       >
-        <CopyAllIcon />
-        Versions
+        <InfoIcon />
+        File Info
       </Button>
     </Stack>
   );

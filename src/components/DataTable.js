@@ -105,7 +105,10 @@ const buildCellValueForFile = (file) => {
     )}&uuid=${encodeURIComponent(file.uuid)}`,
     origin: file.origin,
     versions: file.versions,
-    modified: new Date(file.last_modified).toLocaleString("en-in", options),
+    last_modified: new Date(file.last_modified).toLocaleString(
+      "en-in",
+      options
+    ),
     item: "file",
   };
 };
@@ -113,6 +116,25 @@ const buildCellValueForFile = (file) => {
 function ensureStartsWithSlash(input) {
   return input.startsWith("/") ? input : "/" + input;
 }
+
+function getFileInfo(files, versionedFiles, id) {
+  if (files.has(id) && files.get(id).versions > 1) return versionedFiles[id];
+  else if (files.has(id) && files.get(id).versions === 1) {
+    const file = new Map([]);
+    file.set(id, files.get(id));
+    return file;
+  }
+}
+
+const formatFileInfo = (file) => {
+  return {
+    ...file,
+    last_modified: new Date(file.last_modified).toLocaleString(
+      "en-in",
+      options
+    ),
+  };
+};
 
 function generateLink(url, folderPath, layout, nav, id) {
   if (layout === "dashboard") return url + folderPath;
@@ -213,7 +235,7 @@ const columnDef = (path, nav, layout) => {
       editable: false,
     },
     {
-      field: "modified",
+      field: "last_modified",
       headerName: "Modified",
       description: "This column has a value getter and is not sortable.",
       flex: 0.15,
@@ -268,10 +290,13 @@ export default React.memo(function DataGridTable({
         } else {
           setSelectionType(type);
         }
+        selectedToEdit.current = rowId;
         return [rowId];
       } else {
         if (rowSelectionModel.includes(rowId)) {
           setSelectionType(multiple);
+          setActivity(false);
+          selectedToEdit.current = undefined;
           return [...prev];
         } else {
           const originId = (originFileId.current = event.currentTarget
@@ -283,6 +308,7 @@ export default React.memo(function DataGridTable({
           } else {
             setSelectionType(type);
           }
+          selectedToEdit.current = rowId;
           return [rowId];
         }
       }
@@ -312,6 +338,7 @@ export default React.memo(function DataGridTable({
     setRowSelectionModel((prev) => {
       if (prev.includes(params.id) && prev.length === 1) {
         rowClick.current = true;
+        setActivity(false);
         selectedToEdit.current = undefined;
         return [];
       } else if (prev.length >= 1) {
@@ -343,6 +370,13 @@ export default React.memo(function DataGridTable({
       fileIds: [...files],
       directories: [...folders],
     }));
+
+    if (rowSelectionModel.length === 1)
+      selectedToEdit.current = rowSelectionModel[0];
+    else {
+      selectedToEdit.current = undefined;
+      setActivity(false);
+    }
   }, [rowSelectionModel, setItemsSelection]);
 
   useEffect(() => {
@@ -375,7 +409,10 @@ export default React.memo(function DataGridTable({
           filteredFiles.current.set(file.origin, fileItem);
           if (file.versions > 1) {
             versionedFiles.current[file.origin] = new Map();
-            versionedFiles.current[file.origin].set(file.uuid, file);
+            versionedFiles.current[file.origin].set(
+              file.uuid,
+              formatFileInfo(fileItem)
+            );
           }
         } else {
           const curVer = filteredFiles.current.get(file.origin)["versions"];
@@ -383,10 +420,16 @@ export default React.memo(function DataGridTable({
             filteredFiles.current.set(file.origin, fileItem);
           }
           if (versionedFiles.current.hasOwnProperty(file.origin)) {
-            versionedFiles.current[file.origin].set(file.uuid, file);
+            versionedFiles.current[file.origin].set(
+              file.uuid,
+              formatFileInfo(fileItem)
+            );
           } else {
             versionedFiles.current[file.origin] = new Map();
-            versionedFiles.current[file.origin].set(file.uuid, file);
+            versionedFiles.current[file.origin].set(
+              file.uuid,
+              formatFileInfo(fileItem)
+            );
           }
         }
       });
@@ -404,7 +447,7 @@ export default React.memo(function DataGridTable({
           size: "--",
           path: folder.path,
           versions: "--",
-          modified: new Date(folder.created_at).toLocaleString(
+          last_modified: new Date(folder.created_at).toLocaleString(
             "en-in",
             options
           ),
@@ -454,9 +497,6 @@ export default React.memo(function DataGridTable({
         onProcessRowUpdateError={(err) => console.log(err)}
         editMode="cell"
         onRowSelectionModelChange={(newRowSelectionModel) => {
-          if (newRowSelectionModel.length === 1)
-            selectedToEdit.current = newRowSelectionModel[0];
-          else selectedToEdit.current = undefined;
           if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
           rowClick.current = false;
         }}
@@ -485,29 +525,19 @@ export default React.memo(function DataGridTable({
           borderRadius: 0,
         }}
       />
-      {openContext && selectionType === file && (
-        <FileSelectionOverlayMenu
-          handleClose={handleClose}
-          moveItems={moveItems}
-          copyItems={copyItems}
-          setDownload={setDownload}
-          coords={coords}
-          setShare={setShare}
-          reference={ref}
-        />
-      )}
-      {openContext && selectionType === fileVersion && (
-        <FileVersionSelectionOverlayMenu
-          handleClose={handleClose}
-          moveItems={moveItems}
-          copyItems={copyItems}
-          setDownload={setDownload}
-          setActivity={setActivity}
-          coords={coords}
-          setShare={setShare}
-          reference={ref}
-        />
-      )}
+      {openContext &&
+        (selectionType === fileVersion || selectionType === file) && (
+          <FileVersionSelectionOverlayMenu
+            handleClose={handleClose}
+            moveItems={moveItems}
+            copyItems={copyItems}
+            setDownload={setDownload}
+            setActivity={setActivity}
+            coords={coords}
+            setShare={setShare}
+            reference={ref}
+          />
+        )}
       {openContext && selectionType === folder && (
         <FolderSelectionOverlayMenu
           handleClose={handleClose}
@@ -550,11 +580,14 @@ export default React.memo(function DataGridTable({
           <Share shareImmediate={true} />
         </ItemSelectionContext.Provider>
       )}
-      {activity && (
+      {activity && selectedToEdit.current && (
         <Activity
-          versions={
-            versionedFiles.current[selectedToEdit.current.split(";")[4]]
-          }
+          versions={getFileInfo(
+            filteredFiles.current,
+            versionedFiles.current,
+            selectedToEdit.current.split(";")[4]
+          )}
+          setActivity={setActivity}
         />
       )}
     </Box>

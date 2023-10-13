@@ -1,5 +1,5 @@
 import { useEffect, useContext } from "react";
-import { Box, Divider, Typography, Fab, IconButton } from "@mui/material";
+import { Box, Divider, Typography, Fab, IconButton, Link } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
 import Badge from "@mui/material/Badge";
@@ -9,7 +9,9 @@ import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import ClearIcon from "@mui/icons-material/Clear";
 import { ItemSelectionContext } from "./Context";
 import { useState } from "react";
-import { formatBytes } from "../util";
+import InfoIcon from "@mui/icons-material/InfoRounded";
+import ImageIcon from "@mui/icons-material/Image";
+import { fireEvent } from "@testing-library/react";
 
 const container = {
   display: "flex",
@@ -36,7 +38,7 @@ const styleVersions = {
 const heading = {
   display: "flex",
   flexDirection: "row",
-  justifyContent: "space-around",
+  justifyContent: "flex-start",
   alignItems: "center",
   borderBottom: "1px solid #E0E0E0",
   height: 56,
@@ -52,7 +54,6 @@ const header = {
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
-  fontWeight: 600,
   borderBottom: "1px solid #E0E0E0",
 };
 
@@ -75,47 +76,59 @@ function CustomizedBadges({ version }) {
   );
 }
 
-export default function Activity({ versions }) {
-  const { itemsSelected } = useContext(ItemSelectionContext);
+export default function Activity({ versions, setActivity }) {
   const [versionedFiles, setVersionedFiles] = useState([]);
-  const { fileIds } = itemsSelected;
-  const options = {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  };
-  const handleClick = () => {
-    console.log("clicked");
+  const handleClose = () => {
+    setActivity(false);
   };
   useEffect(() => {
     setVersionedFiles(
       Array.from(versions)
         .map((file) => ({
-          modified: new Date(file[1].last_modified).toLocaleString(
-            "en-in",
-            options
-          ),
+          modified: file[1].last_modified,
           version: file[1].versions,
           size: file[1].size,
-          id: file[1].uuid,
+          id: file[1].id,
+          url: file[1].url,
         }))
         .sort((a, b) => b.version - a.version)
     );
   }, [versions]);
+
   return (
     <Box sx={container}>
       <Box sx={heading}>
-        <InsertDriveFileIcon sx={{ color: "#6EA5CE" }} />
-        <Typography component={"h3"} sx={{ color: "#6EA5CE" }}>
-          '{fileIds[0]?.file}'
+        <InfoIcon sx={{ width: 40 }} />
+
+        <Typography
+          component={"h1"}
+          sx={{
+            textAlign: "left",
+            fontSize: "1.25rem",
+            width: 320,
+          }}
+        >
+          Info
         </Typography>
-        <ClearIcon />
+        <ClearIcon
+          sx={{ width: 40, cursor: "pointer" }}
+          onClick={handleClose}
+        />
+      </Box>
+      <Box
+        sx={{
+          ...header,
+          background: "transparent",
+          borderBottom: "none",
+          height: 200,
+        }}
+      >
+        <ImageIcon sx={{ fontSize: 200 }} />
       </Box>
       <Box sx={header}>
-        <Typography>Previous Versions</Typography>
+        <Typography sx={{ fontSize: "1rem", fontWeight: 600 }}>
+          Previous Versions
+        </Typography>
       </Box>
       {versionedFiles.map((file) => {
         return (
@@ -128,10 +141,14 @@ export default function Activity({ versions }) {
               Modified: {file.modified}
             </Typography>
             <Typography sx={{ width: 100, fontSize: 12, textAlign: "left" }}>
-              Size: {formatBytes(file.size)}
+              Size: {file.size}
             </Typography>
-
-            <DownloadForOfflineIcon color={"primary"} sx={{ width: 30 }} />
+            <Link href={file.url} rel="noreferrer" target="_parent">
+              <DownloadForOfflineIcon
+                color={"primary"}
+                sx={{ width: 30, cursor: "pointer" }}
+              />
+            </Link>
           </Box>
         );
       })}
