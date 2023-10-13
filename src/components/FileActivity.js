@@ -17,16 +17,20 @@ const container = {
   justifyContent: "flex-start",
   alignItems: "flex-start",
   width: 400,
+  border: "1px solid #E0E0E0",
+  borderTop: "none",
+  borderLeft: "none",
 };
 const styleVersions = {
   display: "flex",
   flexDirection: "row",
-  justifyContent: "space-between",
+  justifyContent: "flex-start",
   alignItems: "center",
   width: "100%",
   border: "1px solid #E0E0E0",
   borderTop: "none",
   borderLeft: "none",
+  gap: 2,
 };
 
 const heading = {
@@ -37,6 +41,7 @@ const heading = {
   borderBottom: "1px solid #E0E0E0",
   height: 56,
   width: "100%",
+  boxSizing: "border-box",
 };
 
 const header = {
@@ -49,10 +54,6 @@ const header = {
   alignItems: "center",
   fontWeight: 600,
   borderBottom: "1px solid #E0E0E0",
-};
-const fabStyle = {
-  height: 25,
-  width: 25,
 };
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
@@ -91,15 +92,17 @@ export default function Activity({ versions }) {
   };
   useEffect(() => {
     setVersionedFiles(
-      Array.from(versions).map((file) => ({
-        modified: new Date(file[1].last_modified).toLocaleString(
-          "en-in",
-          options
-        ),
-        version: file[1].versions,
-        size: file[1].size,
-        id: file[1].uuid,
-      }))
+      Array.from(versions)
+        .map((file) => ({
+          modified: new Date(file[1].last_modified).toLocaleString(
+            "en-in",
+            options
+          ),
+          version: file[1].versions,
+          size: file[1].size,
+          id: file[1].uuid,
+        }))
+        .sort((a, b) => b.version - a.version)
     );
   }, [versions]);
   return (
@@ -121,10 +124,10 @@ export default function Activity({ versions }) {
               version={file.version}
               sx={{ width: 30, fontSize: 12 }}
             />
-            <Typography sx={{ width: 180, fontSize: 12 }}>
+            <Typography sx={{ width: 180, fontSize: 12, textAlign: "left" }}>
               Modified: {file.modified}
             </Typography>
-            <Typography sx={{ width: 120, fontSize: 12 }}>
+            <Typography sx={{ width: 100, fontSize: 12, textAlign: "left" }}>
               Size: {formatBytes(file.size)}
             </Typography>
 

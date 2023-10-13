@@ -33,11 +33,21 @@ const fileVersion = "fileVersion";
 const MOVE = "move";
 const COPY = "copy";
 
+const options = {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+  hour12: true,
+};
+
 const gridContainerStyle = {
   height: "100%",
   width: "100%",
   display: "flex",
   flexDirection: "row",
+  border: "none",
 };
 
 const style = {
@@ -95,7 +105,7 @@ const buildCellValueForFile = (file) => {
     )}&uuid=${encodeURIComponent(file.uuid)}`,
     origin: file.origin,
     versions: file.versions,
-    modified: file.last_modified,
+    modified: new Date(file.last_modified).toLocaleString("en-in", options),
     item: "file",
   };
 };
@@ -363,6 +373,10 @@ export default React.memo(function DataGridTable({
 
         if (!filteredFiles.current.has(file.origin)) {
           filteredFiles.current.set(file.origin, fileItem);
+          if (file.versions > 1) {
+            versionedFiles.current[file.origin] = new Map();
+            versionedFiles.current[file.origin].set(file.uuid, file);
+          }
         } else {
           const curVer = filteredFiles.current.get(file.origin)["versions"];
           if (curVer < file.versions) {
@@ -390,11 +404,14 @@ export default React.memo(function DataGridTable({
           size: "--",
           path: folder.path,
           versions: "--",
-          modified: folder.created_at,
+          modified: new Date(folder.created_at).toLocaleString(
+            "en-in",
+            options
+          ),
           item: "folder",
         })),
       ];
-
+      console.log(versionedFiles.current);
       setNewRows(rows);
     } else {
       setNewRows([]);
@@ -464,6 +481,8 @@ export default React.memo(function DataGridTable({
             fontSize: 20,
             boxShadow: 4,
           },
+          borderTop: "none",
+          borderRadius: 0,
         }}
       />
       {openContext && selectionType === file && (
