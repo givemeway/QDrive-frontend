@@ -5,6 +5,8 @@ const UploadContext = createContext();
 const UploadFolderContenxt = createContext();
 const SnackBarContext = createContext();
 const EditContext = createContext();
+const ModalContext = createContext();
+const RightClickContext = createContext();
 export {
   PathContext,
   UploadContext,
@@ -12,4 +14,6 @@ export {
   UploadFolderContenxt,
   SnackBarContext,
   EditContext,
+  ModalContext,
+  RightClickContext,
 };

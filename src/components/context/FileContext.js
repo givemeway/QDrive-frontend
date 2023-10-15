@@ -53,7 +53,7 @@ const FileSelectionOverlayMenu = ({
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          moveItems();
+          moveItems(true);
           handleClose();
         }}
       >

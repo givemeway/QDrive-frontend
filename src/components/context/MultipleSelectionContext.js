@@ -5,6 +5,12 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import useOutSideClick from "../useOutsideClick";
+import { useContext, useEffect } from "react";
+import { ItemSelectionContext, RightClickContext } from "../Context";
+import useDownload from "../hooks/DownloadItemsHook";
+
+const MOVE = "move";
+const COPY = "copy";
 
 const overlayStyle = {
   position: "absolute",
@@ -30,30 +36,43 @@ const overlayButtonStyle = {
   width: "100%",
 };
 
-const MUltipleSelectionOverlayMenu = ({
-  moveItems,
-  copyItems,
-  handleClose,
-  coords,
-  setDownload,
-  reference,
-  setShare,
-}) => {
-  useOutSideClick(reference, () => {
-    handleClose();
+const MUltipleSelectionOverlayMenu = () => {
+  const { setOpenContext, setOpen, setMode, coords, setShare, ref } =
+    useContext(RightClickContext);
+
+  const { fileIds, directories } = useContext(ItemSelectionContext);
+  const [initDownload, isDownload] = useDownload(fileIds, directories);
+
+  useOutSideClick(ref, () => {
+    setOpenContext(null);
+  });
+
+  const handleDownload = () => {
+    initDownload();
+  };
+
+  useEffect(() => {
+    if (isDownload) {
+      setOpenContext(null);
+    }
+  }, [isDownload, setOpenContext]);
+
+  useOutSideClick(ref, () => {
+    setOpenContext(null);
   });
 
   return (
     <Stack
       sx={{ ...overlayStyle, top: coords.y, left: coords.x, gap: 0 }}
-      ref={reference}
+      ref={ref}
     >
       <Button
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          handleClose();
-          moveItems();
+          setOpenContext(null);
+          setOpen(true);
+          setMode(MOVE);
         }}
       >
         <DriveFileMoveIcon />
@@ -63,8 +82,9 @@ const MUltipleSelectionOverlayMenu = ({
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          copyItems();
-          handleClose();
+          setOpen(true);
+          setMode(COPY);
+          setOpenContext(null);
         }}
       >
         <ContentCopyIcon />
@@ -74,25 +94,22 @@ const MUltipleSelectionOverlayMenu = ({
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          handleClose();
+          setOpenContext(null);
           setShare(true);
         }}
       >
         <ShareIcon />
         Share
       </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-        <DeleteIcon />
-        Delete
-      </Button>
       <Button
         sx={overlayButtonStyle}
         variant="text"
-        onClick={() => {
-          handleClose();
-          setDownload(true);
-        }}
+        onClick={() => setOpenContext(null)}
       >
+        <DeleteIcon />
+        Delete
+      </Button>
+      <Button sx={overlayButtonStyle} variant="text" onClick={handleDownload}>
         <CloudDownloadIcon />
         Download
       </Button>

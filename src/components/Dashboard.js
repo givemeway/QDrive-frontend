@@ -18,12 +18,7 @@ import { csrftokenURL, filesFoldersURL, searchURL } from "../config";
 
 import React, { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-
-async function fetchCSRFToken(csrftokenURL) {
-  const response = await fetch(csrftokenURL);
-  const { CSRFToken } = await response.json();
-  return CSRFToken;
-}
+import useFetchCSRFToken from "./FetchCSRFToken";
 
 const Dashboard = () => {
   const [data, setData] = useState([]);
@@ -31,6 +26,8 @@ const Dashboard = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
+  const csrftoken = useFetchCSRFToken(csrftokenURL);
+  console.log(csrftoken);
   const [edit, setEdit] = useState({
     editStart: undefined,
     editStop: undefined,
@@ -78,31 +75,30 @@ const Dashboard = () => {
         }
         homedir = path[1];
       }
-      fetchCSRFToken(csrftokenURL).then((csrftoken) => {
-        const headers = {
-          "X-CSRF-Token": csrftoken,
-          "Content-type": "application/x-www-form-urlencoded",
-          devicename: homedir,
-          currentdirectory: curDir,
-          username: "sandeep.kumar@idriveinc.com",
-          sortorder: "ASC",
-        };
-        const options = {
-          method: "POST",
-          credentials: "include",
-          mode: "cors",
-          headers: headers,
-        };
-        fetch(filesFoldersURL + "/", options)
-          .then((res) => res.json())
-          .then((data) => {
-            setData(() => {
-              setDataLoaded(true);
-              return data;
-            });
-          })
-          .catch((err) => console.log(err));
-      });
+
+      const headers = {
+        "X-CSRF-Token": csrftoken,
+        "Content-type": "application/x-www-form-urlencoded",
+        devicename: homedir,
+        currentdirectory: curDir,
+        username: "sandeep.kumar@idriveinc.com",
+        sortorder: "ASC",
+      };
+      const options = {
+        method: "POST",
+        credentials: "include",
+        mode: "cors",
+        headers: headers,
+      };
+      fetch(filesFoldersURL + "/", options)
+        .then((res) => res.json())
+        .then((data) => {
+          setData(() => {
+            setDataLoaded(true);
+            return data;
+          });
+        })
+        .catch((err) => console.log(err));
     } else if (path[0] === "search") {
       const initiateSearch = async (value) => {
         try {
@@ -122,7 +118,7 @@ const Dashboard = () => {
       setSearchValue(param);
       initiateSearch(param);
     }
-  }, [subpath]);
+  }, [csrftoken, subpath]);
   return (
     <Grid container columns={2} wrap="nowrap">
       <Grid item sx={{ width: 200, height: "100vh" }}>

@@ -1,30 +1,19 @@
 import { useState, useEffect } from "react";
 
 import { csrftokenURL, get_download_zip } from "../../config.js";
+import useFetchCSRFToken from "../FetchCSRFToken.js";
 
-async function fetchCSRFToken(csrfurl) {
-  const response = await fetch(csrfurl);
-  const { CSRFToken } = await response.json();
-  return CSRFToken;
-}
+function useDownload(fileIds, directories) {
+  const [isDownload, setIsDownload] = useState(false);
+  const CSRFToken = useFetchCSRFToken(csrftokenURL);
 
-const useDownload = (fileIds, directories) => {
-  const [CSRFToken, setCSRFToken] = useState("");
-  const [startDownload, setStartDownload] = useState(false);
-
-  console.log("custom hook download items");
-
-  useEffect(() => {
-    fetchCSRFToken(csrftokenURL)
-      .then((csrftoken) => {
-        setCSRFToken(csrftoken);
-      })
-      .catch((err) => console.log(err));
-  }, []);
+  const initDownload = () => {
+    setIsDownload(true);
+  };
 
   useEffect(() => {
     if (
-      startDownload &&
+      isDownload &&
       CSRFToken.length > 0 &&
       (fileIds.length > 0 || directories.length > 0)
     ) {
@@ -51,14 +40,14 @@ const useDownload = (fileIds, directories) => {
             `https://localhost:3001/app/downloadItems?key=${key}&dl=1`,
             "_parent"
           );
-          setStartDownload(false);
+          setIsDownload(false);
         })
         .catch((err) => console.error(err));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startDownload, CSRFToken]);
+  }, [isDownload, CSRFToken, fileIds, directories]);
 
-  return setStartDownload;
-};
+  return [initDownload, isDownload];
+}
 
 export default useDownload;

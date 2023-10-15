@@ -16,23 +16,21 @@ import { downloadURL } from "../config.js";
 import {
   EditContext,
   ItemSelectionContext,
-  PathContext,
+  ModalContext,
+  RightClickContext,
   UploadFolderContenxt,
 } from "./Context.js";
 import Modal from "./Modal";
-import FileSelectionOverlayMenu from "./context/FileContext";
 import MUltipleSelectionOverlayMenu from "./context/MultipleSelectionContext";
 import FolderSelectionOverlayMenu from "./context/FolderContext";
 import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
 import Share from "./Share";
+import useRename from "./hooks/RenameItemHook";
 
 const multiple = "multiple";
 const file = "file";
 const folder = "folder";
 const fileVersion = "fileVersion";
-const MOVE = "move";
-const COPY = "copy";
-
 const options = {
   year: "numeric",
   month: "short",
@@ -40,6 +38,27 @@ const options = {
   hour: "numeric",
   minute: "numeric",
   hour12: true,
+};
+
+const dataGridStyle = {
+  "& .MuiDataGrid-cell:focus-within": {
+    outline: "none !important",
+  },
+  "& .MuiDataGrid-cell": {
+    borderBottom: "none",
+    marginLeft: 0,
+    marginRight: 0,
+    paddingLeft: 0,
+    paddingRight: 0,
+  },
+  "& .MuiDataGrid-cell--editing": {
+    // backgroundColor: "red",
+    border: "2px solid #0061FE",
+    fontSize: 20,
+    boxShadow: 4,
+  },
+  borderTop: "none",
+  borderRadius: 0,
 };
 
 const gridContainerStyle = {
@@ -262,17 +281,47 @@ export default React.memo(function DataGridTable({
   const originFileId = React.useRef("");
   const ref = React.useRef();
   const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
+  const { fileIds, directories } = itemsSelected;
   const data = useContext(UploadFolderContenxt);
   const { edit, setEdit } = useContext(EditContext);
-  const [startMove, setStartMove] = React.useState(false);
-  const [startCopy, setStartCopy] = React.useState(false);
-  const [download, setDownload] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
   const [selectionType, setSelectionType] = React.useState("");
   const [share, setShare] = React.useState(false);
   const [activity, setActivity] = React.useState(false);
+  const [mode, setMode] = React.useState(null);
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
+  const [rename] = useRename(fileIds, directories, edit, setEdit);
+  const fileContextProps = {
+    setOpenContext,
+    setOpen,
+    setMode,
+    setActivity,
+    coords,
+    setShare,
+    ref,
+    edit,
+    setEdit,
+  };
+  const folderContextProps = {
+    setOpenContext,
+    setOpen,
+    setMode,
+    coords,
+    setShare,
+    ref,
+    edit,
+    setEdit,
+  };
+  const multipleSelectionContext = {
+    setOpenContext,
+    setOpen,
+    setMode,
+    coords,
+    setShare,
+    ref,
+  };
 
   console.log("table rendered");
   const contextMenu = (event) => {
@@ -315,20 +364,6 @@ export default React.memo(function DataGridTable({
     });
     setOpenContext(true);
     setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
-  };
-
-  const moveItems = () => {
-    setStartMove(true);
-    setOpenContext(null);
-  };
-
-  const copyItems = () => {
-    setStartCopy(true);
-    setOpenContext(null);
-  };
-
-  const handleClose = () => {
-    setOpenContext(null);
   };
 
   const rowClicked = (params, event, details) => {
@@ -454,7 +489,6 @@ export default React.memo(function DataGridTable({
           item: "folder",
         })),
       ];
-      console.log(versionedFiles.current);
       setNewRows(rows);
     } else {
       setNewRows([]);
@@ -486,6 +520,7 @@ export default React.memo(function DataGridTable({
         disableVirtualization={false}
         onRowClick={rowClicked}
         processRowUpdate={(newRow) => {
+          rename();
           setEdit((prev) => ({
             ...prev,
             val: newRow.name,
@@ -504,75 +539,35 @@ export default React.memo(function DataGridTable({
         // hideFooter={true}
         rowHeight={40}
         density={"standard"}
-        sx={{
-          "& .MuiDataGrid-cell:focus-within": {
-            outline: "none !important",
-          },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-            marginLeft: 0,
-            marginRight: 0,
-            paddingLeft: 0,
-            paddingRight: 0,
-          },
-          "& .MuiDataGrid-cell--editing": {
-            // backgroundColor: "red",
-            border: "2px solid #0061FE",
-            fontSize: 20,
-            boxShadow: 4,
-          },
-          borderTop: "none",
-          borderRadius: 0,
-        }}
+        sx={dataGridStyle}
       />
       {openContext &&
         (selectionType === fileVersion || selectionType === file) && (
-          <FileVersionSelectionOverlayMenu
-            handleClose={handleClose}
-            moveItems={moveItems}
-            copyItems={copyItems}
-            setDownload={setDownload}
-            setActivity={setActivity}
-            coords={coords}
-            setShare={setShare}
-            reference={ref}
-          />
+          <RightClickContext.Provider value={fileContextProps}>
+            <ItemSelectionContext.Provider value={itemsSelected}>
+              <FileVersionSelectionOverlayMenu />
+            </ItemSelectionContext.Provider>
+          </RightClickContext.Provider>
         )}
       {openContext && selectionType === folder && (
-        <FolderSelectionOverlayMenu
-          handleClose={handleClose}
-          moveItems={moveItems}
-          copyItems={copyItems}
-          setDownload={setDownload}
-          coords={coords}
-          setShare={setShare}
-          reference={ref}
-        />
+        <RightClickContext.Provider value={folderContextProps}>
+          <ItemSelectionContext.Provider value={itemsSelected}>
+            <FolderSelectionOverlayMenu />
+          </ItemSelectionContext.Provider>
+        </RightClickContext.Provider>
       )}
       {openContext && selectionType === multiple && (
-        <MUltipleSelectionOverlayMenu
-          handleClose={handleClose}
-          moveItems={moveItems}
-          copyItems={copyItems}
-          setDownload={setDownload}
-          coords={coords}
-          setShare={setShare}
-          reference={ref}
-        />
+        <RightClickContext.Provider value={multipleSelectionContext}>
+          <ItemSelectionContext.Provider value={itemsSelected}>
+            <MUltipleSelectionOverlayMenu />
+          </ItemSelectionContext.Provider>
+        </RightClickContext.Provider>
       )}
-      {startMove && (
+      {open && mode !== null && (
         <ItemSelectionContext.Provider value={itemsSelected}>
-          <Modal setStartMove={setStartMove} moveImmediate={true} mode={MOVE} />
-        </ItemSelectionContext.Provider>
-      )}
-      {startCopy && (
-        <ItemSelectionContext.Provider value={itemsSelected}>
-          <Modal setStartMove={setStartCopy} moveImmediate={true} mode={COPY} />
-        </ItemSelectionContext.Provider>
-      )}
-      {download && (
-        <ItemSelectionContext.Provider value={itemsSelected}>
-          <DownloadItems startImmediate={true} setDownload={setDownload} />
+          <ModalContext.Provider value={{ open, setOpen }}>
+            <Modal mode={mode} />
+          </ModalContext.Provider>
         </ItemSelectionContext.Provider>
       )}
       {share && (

@@ -38,7 +38,6 @@ export default function Share({ shareImmediate }) {
   const [snackbarOpen, setsnakbarOpen] = useState(false);
   const handleClose = () => setOpen(false);
   const items = useRef([]);
-  console.log(shareImmediate, "shareing");
 
   const style = {
     position: "absolute",

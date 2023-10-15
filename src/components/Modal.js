@@ -24,7 +24,7 @@ import { ItemSelectionContext } from "./Context";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import IconExpandedTreeItem from "./CustomTreeItem";
-import { useLocation, useNavigate } from "react-router-dom";
+import { ModalContext } from "./Context";
 
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);
@@ -71,15 +71,11 @@ const fetchFoldersFromServer = async (path) => {
   return newFolders;
 };
 
-export default function CustomizedTreeView({
-  setStartMove,
-  moveImmediate,
-  mode,
-}) {
-  const [open, setOpen] = useState(true);
+export default function CustomizedTreeView({ mode }) {
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
   const { fileIds, directories } = useContext(ItemSelectionContext);
+  const { open, setOpen } = useContext(ModalContext);
   console.log("Modal rendered");
   const toPath = useRef("/");
   const [nodeSelected, setNodeSelected] = useState(false);
@@ -91,6 +87,8 @@ export default function CustomizedTreeView({
     movedItems: 0,
     movedFailed: 0,
   });
+
+  console.log("mode: ", mode);
 
   const handleClose = () => {
     setOpen(false);
@@ -201,14 +199,6 @@ export default function CustomizedTreeView({
     (async () => setFolders((await fetchFoldersFromServer("/")).folders))();
     setExpanded(["1"]);
   }, []);
-
-  useEffect(() => {
-    if (move.moved) {
-      if (moveImmediate === true) {
-        setStartMove(false);
-      }
-    }
-  }, [move.moved]);
 
   const handleSelect = (event, nodeId) => {
     setNodeSelected(true);

@@ -6,6 +6,13 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import useOutSideClick from "../useOutsideClick";
+import { ItemSelectionContext, RightClickContext } from "../Context";
+import { useContext, useEffect } from "react";
+import useDownload from "../hooks/DownloadItemsHook";
+import useInitRename from "../hooks/InitRenameItemHook";
+
+const MOVE = "move";
+const COPY = "copy";
 
 const overlayStyle = {
   position: "absolute",
@@ -31,30 +38,44 @@ const overlayButtonStyle = {
   width: "100%",
 };
 
-const FolderSelectionOverlayMenu = ({
-  moveItems,
-  copyItems,
-  handleClose,
-  coords,
-  setDownload,
-  reference,
-  setShare,
-}) => {
-  useOutSideClick(reference, () => {
-    handleClose();
+const FolderSelectionOverlayMenu = () => {
+  const { setOpenContext, setOpen, setMode, coords, setShare, ref, setEdit } =
+    useContext(RightClickContext);
+
+  const { fileIds, directories } = useContext(ItemSelectionContext);
+  const [initDownload, isDownload] = useDownload(fileIds, directories);
+  const [initRename] = useInitRename(setEdit);
+
+  useOutSideClick(ref, () => {
+    setOpenContext(null);
   });
+
+  const handleDownload = () => {
+    initDownload();
+  };
+  const handleRename = () => {
+    initRename();
+    setOpenContext(null);
+  };
+
+  useEffect(() => {
+    if (isDownload) {
+      setOpenContext(null);
+    }
+  }, [isDownload, setOpenContext]);
 
   return (
     <Stack
       sx={{ ...overlayStyle, top: coords.y, left: coords.x, gap: 0 }}
-      ref={reference}
+      ref={ref}
     >
       <Button
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          moveItems();
-          handleClose();
+          setOpen(true);
+          setMode(MOVE);
+          setOpenContext(null);
         }}
       >
         <DriveFileMoveIcon />
@@ -64,14 +85,15 @@ const FolderSelectionOverlayMenu = ({
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          copyItems();
-          handleClose();
+          setOpen(true);
+          setMode(COPY);
+          setOpenContext(null);
         }}
       >
         <ContentCopyIcon />
         Copy
       </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
+      <Button sx={overlayButtonStyle} variant="text" onClick={handleRename}>
         <DriveFileRenameOutlineIcon />
         Rename
       </Button>
@@ -79,25 +101,22 @@ const FolderSelectionOverlayMenu = ({
         sx={overlayButtonStyle}
         variant="text"
         onClick={() => {
-          handleClose();
+          setOpenContext(null);
           setShare(true);
         }}
       >
         <ShareIcon />
         Share
       </Button>
-      <Button sx={overlayButtonStyle} variant="text" onClick={handleClose}>
-        <DeleteIcon />
-        Delete
-      </Button>
       <Button
         sx={overlayButtonStyle}
         variant="text"
-        onClick={() => {
-          handleClose();
-          setDownload(true);
-        }}
+        onClick={() => setOpenContext(null)}
       >
+        <DeleteIcon />
+        Delete
+      </Button>
+      <Button sx={overlayButtonStyle} variant="text" onClick={handleDownload}>
         <CloudDownloadIcon />
         Download
       </Button>
