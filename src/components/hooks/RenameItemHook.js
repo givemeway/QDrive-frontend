@@ -22,7 +22,7 @@ export default function useRename(fileIds, directories, edit, setEdit) {
       let body = {};
       if (fileIds.length > 0) {
         body.type = "fi";
-        body.uuid = fileIds[0].id;
+        body.uuid = fileIds[0].origin;
         body.to = edit.val;
       } else {
         body.type = "fo";

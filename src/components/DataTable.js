@@ -26,6 +26,7 @@ import FolderSelectionOverlayMenu from "./context/FolderContext";
 import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
 import Share from "./Share";
 import useRename from "./hooks/RenameItemHook";
+import { GolfCourse } from "@mui/icons-material";
 
 const multiple = "multiple";
 const file = "file";
@@ -123,6 +124,7 @@ const buildCellValueForFile = (file) => {
       file.filename
     )}&uuid=${encodeURIComponent(file.uuid)}`,
     origin: file.origin,
+    uuid: file.uuid,
     versions: file.versions,
     last_modified: new Date(file.last_modified).toLocaleString(
       "en-in",
@@ -437,11 +439,14 @@ export default React.memo(function DataGridTable({
     if (!loading) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       versionedFiles.current = {};
+      const newfiles = new Map([]);
       data.files.forEach((file) => {
         const fileItem = buildCellValueForFile(file);
 
         if (!filteredFiles.current.has(file.origin)) {
           filteredFiles.current.set(file.origin, fileItem);
+          newfiles[file.origin] = new Map();
+          newfiles[file.origin].set(file.uuid, fileItem);
           if (file.versions > 1) {
             versionedFiles.current[file.origin] = new Map();
             versionedFiles.current[file.origin].set(
@@ -450,6 +455,7 @@ export default React.memo(function DataGridTable({
             );
           }
         } else {
+          newfiles[file.origin].set(file.uuid, fileItem);
           const curVer = filteredFiles.current.get(file.origin)["versions"];
           if (curVer < file.versions) {
             filteredFiles.current.set(file.origin, fileItem);
@@ -469,7 +475,7 @@ export default React.memo(function DataGridTable({
         }
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
-
+      console.log(newfiles);
       // eslint-disable-next-line react-hooks/exhaustive-deps
       rows = Array.from(filteredFiles.current).map((file) => file[1]);
 
