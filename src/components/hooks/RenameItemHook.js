@@ -31,7 +31,6 @@ export default function useRename(fileIds, directories, edit, setEdit) {
         path_array.push(edit.val);
         body.to = path_array.join("/");
       }
-
       (async () => {
         try {
           const res = await axios.post(renameURL, body, { headers: headers });

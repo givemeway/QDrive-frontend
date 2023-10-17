@@ -26,7 +26,6 @@ import FolderSelectionOverlayMenu from "./context/FolderContext";
 import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
 import Share from "./Share";
 import useRename from "./hooks/RenameItemHook";
-import { GolfCourse } from "@mui/icons-material";
 
 const multiple = "multiple";
 const file = "file";
@@ -124,10 +123,9 @@ const buildCellValueForFile = (file) => {
       file.filename
     )}&uuid=${encodeURIComponent(file.uuid)}`,
     origin: file.origin,
-    uuid: file.uuid,
     versions: file.versions,
     last_modified: new Date(file.last_modified).toLocaleString(
-      "en-in",
+      "en-IN",
       options
     ),
     item: "file",
@@ -146,16 +144,6 @@ function getFileInfo(files, versionedFiles, id) {
     return file;
   }
 }
-
-const formatFileInfo = (file) => {
-  return {
-    ...file,
-    last_modified: new Date(file.last_modified).toLocaleString(
-      "en-in",
-      options
-    ),
-  };
-};
 
 function generateLink(url, folderPath, layout, nav, id) {
   if (layout === "dashboard") return url + folderPath;
@@ -280,6 +268,7 @@ export default React.memo(function DataGridTable({
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const filteredFiles = React.useRef(new Map([]));
   const versionedFiles = React.useRef({});
+  const tempFiles = React.useRef({});
   const originFileId = React.useRef("");
   const ref = React.useRef();
   const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
@@ -392,7 +381,12 @@ export default React.memo(function DataGridTable({
     rowSelectionModel.forEach((val) => {
       const item = val.split(";");
       if (item[0] === "file") {
-        files.push({ id: item[1], path: item[2], file: item[3] });
+        files.push({
+          id: item[1],
+          path: item[2],
+          file: item[3],
+          origin: item[4],
+        });
       }
       if (item[0] === "folder") {
         folders.push({
@@ -439,43 +433,33 @@ export default React.memo(function DataGridTable({
     if (!loading) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       versionedFiles.current = {};
-      const newfiles = new Map([]);
+      tempFiles.current = {};
       data.files.forEach((file) => {
         const fileItem = buildCellValueForFile(file);
 
         if (!filteredFiles.current.has(file.origin)) {
           filteredFiles.current.set(file.origin, fileItem);
-          newfiles[file.origin] = new Map();
-          newfiles[file.origin].set(file.uuid, fileItem);
-          if (file.versions > 1) {
-            versionedFiles.current[file.origin] = new Map();
-            versionedFiles.current[file.origin].set(
-              file.uuid,
-              formatFileInfo(fileItem)
-            );
-          }
+          tempFiles.current[file.origin] = new Map();
+          tempFiles.current[file.origin].set(file.uuid, fileItem);
         } else {
-          newfiles[file.origin].set(file.uuid, fileItem);
+          tempFiles.current[file.origin].set(file.uuid, fileItem);
           const curVer = filteredFiles.current.get(file.origin)["versions"];
           if (curVer < file.versions) {
             filteredFiles.current.set(file.origin, fileItem);
           }
-          if (versionedFiles.current.hasOwnProperty(file.origin)) {
-            versionedFiles.current[file.origin].set(
-              file.uuid,
-              formatFileInfo(fileItem)
-            );
-          } else {
-            versionedFiles.current[file.origin] = new Map();
-            versionedFiles.current[file.origin].set(
-              file.uuid,
-              formatFileInfo(fileItem)
-            );
-          }
         }
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      console.log(newfiles);
+
+      const versionArray = Object.entries(tempFiles.current).filter(
+        (val) => Array.from(val[1]).map((file) => file[1]).length > 1
+      );
+      versionArray.forEach((file) => {
+        versionedFiles.current[file[0]] = new Map();
+        Array.from(file[1]).forEach((item) =>
+          versionedFiles.current[file[0]].set(item[0], item[1])
+        );
+      });
       // eslint-disable-next-line react-hooks/exhaustive-deps
       rows = Array.from(filteredFiles.current).map((file) => file[1]);
 

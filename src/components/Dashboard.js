@@ -20,6 +20,9 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import useFetchCSRFToken from "./FetchCSRFToken";
 
+const HOME = "home";
+const SEARCH = "search";
+
 const Dashboard = () => {
   const [data, setData] = useState([]);
   const [breadCrumb, setBreadCrumb] = useState(["/"]);
@@ -27,7 +30,7 @@ const Dashboard = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
   const csrftoken = useFetchCSRFToken(csrftokenURL);
-  console.log(csrftoken);
+
   const [edit, setEdit] = useState({
     editStart: undefined,
     editStop: undefined,
@@ -51,29 +54,29 @@ const Dashboard = () => {
   const params = useParams();
   const location = useLocation();
   const subpath = params["*"];
-  console.log("dashboard rendered ", subpath);
+  const { nav } = useParams();
   useEffect(() => {
     setDataLoaded(false);
     setIsSearch(false);
     setSearchValue("");
     const path = subpath.split("/");
-    if (path[0] === "home") {
+    if (nav === HOME && csrftoken.length > 0) {
       let homedir;
       let curDir;
       let breadCrumbQueue;
-
-      if (path.length === 1) {
+      console.log(subpath.length);
+      if (subpath.length === 0) {
         homedir = "/";
         curDir = "/";
         setBreadCrumb(["/"]);
       } else {
-        curDir = path.slice(2).join("/");
-        breadCrumbQueue = [...path.slice(1)];
+        curDir = path.slice(1).join("/");
+        breadCrumbQueue = [...path];
         setBreadCrumb(["/", ...breadCrumbQueue]);
         if (curDir.length === 0) {
           curDir = "/";
         }
-        homedir = path[1];
+        homedir = path[0];
       }
 
       const headers = {
@@ -99,10 +102,9 @@ const Dashboard = () => {
           });
         })
         .catch((err) => console.log(err));
-    } else if (path[0] === "search") {
+    } else if (nav === SEARCH && csrftoken.length > 0) {
       const initiateSearch = async (value) => {
         try {
-          console.log(searchURL);
           const res = await axios.get(searchURL + `?search=${value}`);
           setData(res.data);
           setDataLoaded(true);
@@ -112,13 +114,14 @@ const Dashboard = () => {
           setDataLoaded(true);
         }
       };
-      const param = path.slice(1)[0];
+
+      const param = path[0];
       console.log(param);
       setIsSearch(true);
       setSearchValue(param);
       initiateSearch(param);
     }
-  }, [csrftoken, subpath]);
+  }, [csrftoken, nav, subpath]);
   return (
     <Grid container columns={2} wrap="nowrap">
       <Grid item sx={{ width: 200, height: "100vh" }}>

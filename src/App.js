@@ -13,7 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard/*" element={<Dashboard />} />
+        <Route path="/dashboard/:nav/*" element={<Dashboard />} />
         <Route path="/register" element={<Register />} />
         <Route path="/sh/:type/:shareId/*" element={<Shared />} />
         <Route path="/sh/t/:shareId/*" element={<Transfer />} />
