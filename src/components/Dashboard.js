@@ -1,4 +1,3 @@
-/*global axios */
 import { Grid, Box, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 
@@ -14,14 +13,13 @@ import {
   EditContext,
 } from "./Context";
 
-import { csrftokenURL, filesFoldersURL, searchURL } from "../config";
+import { csrftokenURL } from "../config";
 
 import React, { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import useFetchCSRFToken from "./FetchCSRFToken";
-
-const HOME = "home";
-const SEARCH = "search";
+import useFetchCSRFToken from "./hooks/FetchCSRFToken";
+import useFetchItems from "./hooks/FetchCurrentDirectoryItems";
+import useFetchSearchItems from "./hooks/FetchSearchItems";
 
 const Dashboard = () => {
   const [data, setData] = useState([]);
@@ -30,7 +28,7 @@ const Dashboard = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
   const csrftoken = useFetchCSRFToken(csrftokenURL);
-
+  const [nav, setNav] = useState("");
   const [edit, setEdit] = useState({
     editStart: undefined,
     editStop: undefined,
@@ -54,78 +52,48 @@ const Dashboard = () => {
   const params = useParams();
   const location = useLocation();
   const subpath = params["*"];
-  const { nav } = useParams();
+  console.log("dashboard rendered ", subpath);
+  const [items, breadCrumbQueue, getItems, itemsLoaded] = useFetchItems(
+    subpath,
+    csrftoken
+  );
+
+  const [searchResult, initSearch, searchLoaded, searchParam] =
+    useFetchSearchItems(subpath, csrftoken);
+
+  useEffect(() => {
+    if (itemsLoaded) {
+      setData(items);
+      setBreadCrumb(breadCrumbQueue);
+      setDataLoaded(true);
+    }
+  }, [breadCrumbQueue, items, itemsLoaded]);
+
+  useEffect(() => {
+    if (searchLoaded) {
+      setData(searchResult);
+      setDataLoaded(true);
+    }
+  }, [searchLoaded, searchParam, searchResult]);
+
   useEffect(() => {
     setDataLoaded(false);
     setIsSearch(false);
     setSearchValue("");
+
     const path = subpath.split("/");
-    if (nav === HOME && csrftoken.length > 0) {
-      let homedir;
-      let curDir;
-      let breadCrumbQueue;
-      console.log(subpath.length);
-      if (subpath.length === 0) {
-        homedir = "/";
-        curDir = "/";
-        setBreadCrumb(["/"]);
-      } else {
-        curDir = path.slice(1).join("/");
-        breadCrumbQueue = [...path];
-        setBreadCrumb(["/", ...breadCrumbQueue]);
-        if (curDir.length === 0) {
-          curDir = "/";
-        }
-        homedir = path[0];
-      }
-
-      const headers = {
-        "X-CSRF-Token": csrftoken,
-        "Content-type": "application/x-www-form-urlencoded",
-        devicename: homedir,
-        currentdirectory: curDir,
-        username: "sandeep.kumar@idriveinc.com",
-        sortorder: "ASC",
-      };
-      const options = {
-        method: "POST",
-        credentials: "include",
-        mode: "cors",
-        headers: headers,
-      };
-      fetch(filesFoldersURL + "/", options)
-        .then((res) => res.json())
-        .then((data) => {
-          setData(() => {
-            setDataLoaded(true);
-            return data;
-          });
-        })
-        .catch((err) => console.log(err));
-    } else if (nav === SEARCH && csrftoken.length > 0) {
-      const initiateSearch = async (value) => {
-        try {
-          const res = await axios.get(searchURL + `?search=${value}`);
-          setData(res.data);
-          setDataLoaded(true);
-        } catch (err) {
-          console.log(err);
-          setData([]);
-          setDataLoaded(true);
-        }
-      };
-
-      const param = path[0];
-      console.log(param);
+    if (path[0] === "home") {
+      getItems();
+    } else if (path[0] === "search") {
+      setSearchValue(searchParam);
       setIsSearch(true);
-      setSearchValue(param);
-      initiateSearch(param);
+      initSearch();
     }
-  }, [csrftoken, nav, subpath]);
+  }, [subpath]);
   return (
     <Grid container columns={2} wrap="nowrap">
-      <Grid item sx={{ width: 200, height: "100vh" }}>
-        <NavigatePanel />
+      <Grid item sx={{ width: 240, height: "100vh" }}>
+        <NavigatePanel nav={nav} setNav={setNav} />
       </Grid>
       <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
         <Grid container sx={{ height: "100%" }}>

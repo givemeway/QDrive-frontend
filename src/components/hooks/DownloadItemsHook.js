@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { csrftokenURL, get_download_zip } from "../../config.js";
-import useFetchCSRFToken from "../FetchCSRFToken.js";
+import useFetchCSRFToken from "./FetchCSRFToken.js";
 
 function useDownload(fileIds, directories) {
   const [isDownload, setIsDownload] = useState(false);

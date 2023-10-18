@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { csrftokenURL, renameURL } from "../../config";
 
-import useFetchCSRFToken from "../FetchCSRFToken.js";
+import useFetchCSRFToken from "./FetchCSRFToken.js";
 
 export default function useRename(fileIds, directories, edit, setEdit) {
   const csrfToken = useFetchCSRFToken(csrftokenURL);

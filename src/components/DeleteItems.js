@@ -1,9 +1,7 @@
-/*global axios */
-
 import React, { useEffect, useState, useContext } from "react";
 import { Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
-import { deleteItemsURL, csrftokenURL, filesFoldersURL } from "../config";
+import { csrftokenURL } from "../config";
 import {
   ItemSelectionContext,
   UploadFolderContenxt,
@@ -11,29 +9,27 @@ import {
 } from "./Context";
 
 import { useParams } from "react-router-dom";
-
-async function fetchCSRFToken(csrfurl) {
-  const response = await fetch(csrfurl);
-  const { CSRFToken } = await response.json();
-  return CSRFToken;
-}
+import useFetchItems from "./hooks/FetchCurrentDirectoryItems";
+import useFetchCSRFToken from "./hooks/FetchCSRFToken";
+import useDeleteItems from "./hooks/DeleteItemsHook";
 
 const DeleteItems = () => {
-  const [CSRFToken, setCSRFToken] = useState("");
+  const CSRFToken = useFetchCSRFToken(csrftokenURL);
   const { fileIds, directories } = useContext(ItemSelectionContext);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isDeleted, setIsDeleted] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(null);
+  const [isDeleted, setIsDeleted] = useState(null);
   const { setData } = useContext(UploadFolderContenxt);
   const { setItemDeletion } = useContext(SnackBarContext);
   const params = useParams();
   const subpath = params["*"];
-  console.log("delete item rendered");
 
-  useEffect(() => {
-    fetchCSRFToken(csrftokenURL)
-      .then((csrftoken) => setCSRFToken(csrftoken))
-      .catch((err) => console.log(err));
-  }, []);
+  const [items, , getItems, itemsLoaded] = useFetchItems(subpath, CSRFToken);
+  const [initDelete, , deleted, failed, itemsDeleted] = useDeleteItems(
+    fileIds,
+    directories,
+    CSRFToken
+  );
+  console.log("delete item rendered");
 
   const handleDelete = (e) => {
     e.preventDefault();
@@ -49,76 +45,40 @@ const DeleteItems = () => {
   };
 
   useEffect(() => {
-    const path = subpath.split("/");
-    if (path[0] === "home" && isDeleted) {
-      let homedir;
-      let curDir;
-      console.log("inside delete component after deletion");
-      if (path.length === 1) {
-        homedir = "/";
-        curDir = "/";
-      } else {
-        curDir = path.slice(2).join("/");
-
-        if (curDir.length === 0) {
-          curDir = "/";
-        }
-        homedir = path[1];
-      }
-      const headers = {
-        "X-CSRF-Token": CSRFToken,
-        "Content-type": "application/x-www-form-urlencoded",
-        devicename: homedir,
-        currentdirectory: curDir,
-        username: "sandeep.kumar@idriveinc.com",
-        sortorder: "ASC",
-      };
-      const options = {
-        method: "POST",
-        credentials: "include",
-        mode: "cors",
-        headers: headers,
-      };
-      fetch(filesFoldersURL + "/", options)
-        .then((res) => res.json())
-        .then((data) => {
-          setData(() => {
-            return data;
-          });
-        })
-        .catch((err) => console.log(err));
+    if (itemsLoaded && isDeleted) {
+      setData(items);
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemsLoaded]);
+
+  useEffect(() => {
+    if (deleted) {
+      setItemDeletion((prev) => ({
+        ...prev,
+        isDeleting: false,
+        itemsFailed: failed,
+        itemsDeleted: itemsDeleted,
+      }));
+      setIsDeleted(true);
+      setIsDeleting(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleted, failed, itemsDeleted]);
+
+  useEffect(() => {
+    if (isDeleted) {
+      getItems();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDeleted]);
 
   useEffect(() => {
-    if (
-      isDeleting &&
-      CSRFToken.length > 0 &&
-      (fileIds.length > 0 || directories.length > 0)
-    ) {
-      const headers = {
-        "X-CSRF-Token": CSRFToken,
-        "Content-Type": "application/x-www-form-urlencoded",
-      };
-      const body = {
-        fileIds: JSON.stringify([...fileIds]),
-        directories: JSON.stringify([...directories]),
-      };
-      setIsDeleted(false);
-      (async () => {
-        const res = await axios.post(deleteItemsURL, body, {
-          headers: headers,
-        });
-        setItemDeletion((prev) => ({
-          ...prev,
-          isDeleting: false,
-          itemsFailed: res.data.files.length + res.data.folders.length,
-          itemsDeleted: fileIds.length + directories.length,
-        }));
-        setIsDeleted(true);
-        setIsDeleting(false);
-      })();
+    if (isDeleting) {
+      initDelete();
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDeleting]);
 
   return (

@@ -29,6 +29,8 @@ export default React.memo(function UploadMenu() {
             height: "100%",
             background: "#F9F9F9",
             border: "1px solid #DBDBDB",
+            boxSizing: "border-box",
+            borderLeft: "none",
             margin: 0,
             padding: 0,
           }}

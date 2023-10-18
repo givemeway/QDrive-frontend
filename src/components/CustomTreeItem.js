@@ -105,9 +105,9 @@ const StyledTreeItem = styled(CustomTreeItem)(({ theme }) => ({
     },
   },
   [`& .${treeItemClasses.group}`]: {
-    marginLeft: 15,
-    paddingLeft: 18,
-    borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
+    marginLeft: 10,
+    paddingLeft: 12,
+    // borderLeft: `1px dashed ${alpha(theme.palette.text.primary, 0.4)}`,
   },
 }));
 

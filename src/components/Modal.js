@@ -128,6 +128,8 @@ export default function CustomizedTreeView({ mode }) {
   const handleClick = async (path, nodeId) => {
     // Fetch folders from server while expanding
     let newFolders = [];
+    console.log("handled click - ", nodeId);
+    console.log(nodeId);
     if (!expanded.includes(nodeId)) {
       newFolders = (await fetchFoldersFromServer(path)).folders;
       // Find the clicked node and update its children
@@ -161,6 +163,8 @@ export default function CustomizedTreeView({ mode }) {
   };
 
   const renderTree = (nodes) => {
+    console.log(nodes);
+    console.log(expanded);
     return nodes.map((node) => (
       <IconExpandedTreeItem
         nodeId={`${node.uuid};${node.path}`}

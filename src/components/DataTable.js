@@ -59,6 +59,7 @@ const dataGridStyle = {
   },
   borderTop: "none",
   borderRadius: 0,
+  borderLeft: "none",
 };
 
 const gridContainerStyle = {
@@ -436,10 +437,10 @@ export default React.memo(function DataGridTable({
       tempFiles.current = {};
       data.files.forEach((file) => {
         const fileItem = buildCellValueForFile(file);
-
+        tempFiles.current[file.origin] = new Map();
         if (!filteredFiles.current.has(file.origin)) {
           filteredFiles.current.set(file.origin, fileItem);
-          tempFiles.current[file.origin] = new Map();
+
           tempFiles.current[file.origin].set(file.uuid, fileItem);
         } else {
           tempFiles.current[file.origin].set(file.uuid, fileItem);
