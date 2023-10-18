@@ -1,7 +1,7 @@
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import { Button } from "@mui/material";
 import { useContext } from "react";
-import { EditContext } from "./Context";
+import { EditContext } from "./UseContext";
 import useInitRename from "./hooks/InitRenameItemHook";
 export default function RenameItem() {
   const { setEdit } = useContext(EditContext);

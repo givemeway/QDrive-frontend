@@ -3,7 +3,11 @@ import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded"
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useContext, useRef } from "react";
 import { filesFoldersURL } from "../config.js";
-import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
+import {
+  PathContext,
+  UploadContext,
+  UploadFolderContenxt,
+} from "./UseContext.js";
 import { Button } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { Typography, Box } from "@mui/material";

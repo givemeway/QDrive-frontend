@@ -7,6 +7,7 @@ const SnackBarContext = createContext();
 const EditContext = createContext();
 const ModalContext = createContext();
 const RightClickContext = createContext();
+const FolderExplorerContext = createContext();
 export {
   PathContext,
   UploadContext,
@@ -16,4 +17,5 @@ export {
   EditContext,
   ModalContext,
   RightClickContext,
+  FolderExplorerContext,
 };

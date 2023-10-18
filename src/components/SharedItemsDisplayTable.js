@@ -13,19 +13,7 @@ import Activity from "./FileActivity.js";
 
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
-import {
-  EditContext,
-  ItemSelectionContext,
-  ModalContext,
-  RightClickContext,
-  UploadFolderContenxt,
-} from "./UseContext.js";
-import Modal from "./Modal";
-import MUltipleSelectionOverlayMenu from "./context/MultipleSelectionContext";
-import FolderSelectionOverlayMenu from "./context/FolderContext";
-import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
-import Share from "./Share";
-import useRename from "./hooks/RenameItemHook";
+import { ItemSelectionContext, UploadFolderContenxt } from "./UseContext.js";
 
 const multiple = "multiple";
 const file = "file";
@@ -57,9 +45,10 @@ const dataGridStyle = {
     fontSize: 20,
     boxShadow: 4,
   },
-  borderTop: "none",
+  border: "1px solid #E0E0E0",
   borderRadius: 0,
-  borderLeft: "none",
+  height: 400,
+  width: 500,
 };
 
 const gridContainerStyle = {
@@ -264,99 +253,19 @@ export default React.memo(function DataGridTable({
   const columns = columnDef(path, nav, layout);
   const [newRows, setNewRows] = React.useState([]);
   const rowClick = React.useRef(false);
-  const [coords, setCoords] = React.useState({ x: 0, y: 0 });
-  const [openContext, setOpenContext] = React.useState(null);
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const filteredFiles = React.useRef(new Map([]));
   const versionedFiles = React.useRef({});
   const tempFiles = React.useRef({});
-  const originFileId = React.useRef("");
-  const ref = React.useRef();
   const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
   const { fileIds, directories } = itemsSelected;
   const data = useContext(UploadFolderContenxt);
-  const { edit, setEdit } = useContext(EditContext);
-  const [open, setOpen] = React.useState(false);
-  const [selectionType, setSelectionType] = React.useState("");
-  const [share, setShare] = React.useState(false);
   const [activity, setActivity] = React.useState(false);
-  const [mode, setMode] = React.useState(null);
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
-  const [rename] = useRename(fileIds, directories, edit, setEdit);
-  const fileContextProps = {
-    setOpenContext,
-    setOpen,
-    setMode,
-    setActivity,
-    coords,
-    setShare,
-    ref,
-    edit,
-    setEdit,
-  };
-  const folderContextProps = {
-    setOpenContext,
-    setOpen,
-    setMode,
-    coords,
-    setShare,
-    ref,
-    edit,
-    setEdit,
-  };
-  const multipleSelectionContext = {
-    setOpenContext,
-    setOpen,
-    setMode,
-    coords,
-    setShare,
-    ref,
-  };
 
   console.log("table rendered");
-  const contextMenu = (event) => {
-    event.preventDefault();
-    const type = event.currentTarget.getAttribute("data-id").split(";")[0];
-    const rowId = event.currentTarget.getAttribute("data-id");
-    setRowSelectionModel((prev) => {
-      if (prev.length === 0 || prev.length === 1) {
-        const originId = (originFileId.current = event.currentTarget
-          .getAttribute("data-id")
-          .split(";")[4]);
-        const hasVersions = versionedFiles.current.hasOwnProperty(originId);
-        if (type === file && hasVersions) {
-          setSelectionType(fileVersion);
-        } else {
-          setSelectionType(type);
-        }
-        selectedToEdit.current = rowId;
-        return [rowId];
-      } else {
-        if (rowSelectionModel.includes(rowId)) {
-          setSelectionType(multiple);
-          setActivity(false);
-          selectedToEdit.current = undefined;
-          return [...prev];
-        } else {
-          const originId = (originFileId.current = event.currentTarget
-            .getAttribute("data-id")
-            .split(";")[4]);
-          const hasVersions = versionedFiles.current.hasOwnProperty(originId);
-          if (type === file && hasVersions) {
-            setSelectionType(fileVersion);
-          } else {
-            setSelectionType(type);
-          }
-          selectedToEdit.current = rowId;
-          return [rowId];
-        }
-      }
-    });
-    setOpenContext(true);
-    setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
-  };
 
   const rowClicked = (params, event, details) => {
     selectedToEdit.current = params.id;
@@ -421,15 +330,6 @@ export default React.memo(function DataGridTable({
   }, [apiRef]);
 
   useEffect(() => {
-    if (selectedToEdit.current && edit.editStart) {
-      const params = { id: selectedToEdit.current, field: "name" };
-      apiRef.current.startCellEditMode(params);
-      setEdit((prev) => ({ ...prev, editing: true }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiRef, edit.editStart]);
-
-  useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     if (!loading) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -462,7 +362,7 @@ export default React.memo(function DataGridTable({
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
       rows = Array.from(filteredFiles.current).map((file) => file[1]);
-
+      console.log(data.folders);
       rows = [
         ...rows,
         ...data.folders.map((folder) => ({
@@ -499,28 +399,10 @@ export default React.memo(function DataGridTable({
           },
         }}
         pageSizeOptions={[5, 10, 15, 20, 50, 100]}
-        checkboxSelection
-        slotProps={{
-          row: {
-            onContextMenu: contextMenu,
-            style: { cursor: "context-menu" },
-          },
-        }}
         loading={loading}
         disableVirtualization={false}
         onRowClick={rowClicked}
-        processRowUpdate={(newRow) => {
-          rename();
-          setEdit((prev) => ({
-            ...prev,
-            val: newRow.name,
-            editStop: true,
-            editStart: false,
-          }));
-          return newRow;
-        }}
         onProcessRowUpdateError={(err) => console.log(err)}
-        editMode="cell"
         onRowSelectionModelChange={(newRowSelectionModel) => {
           if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
           rowClick.current = false;
@@ -531,40 +413,6 @@ export default React.memo(function DataGridTable({
         density={"standard"}
         sx={dataGridStyle}
       />
-      {openContext &&
-        (selectionType === fileVersion || selectionType === file) && (
-          <RightClickContext.Provider value={fileContextProps}>
-            <ItemSelectionContext.Provider value={itemsSelected}>
-              <FileVersionSelectionOverlayMenu />
-            </ItemSelectionContext.Provider>
-          </RightClickContext.Provider>
-        )}
-      {openContext && selectionType === folder && (
-        <RightClickContext.Provider value={folderContextProps}>
-          <ItemSelectionContext.Provider value={itemsSelected}>
-            <FolderSelectionOverlayMenu />
-          </ItemSelectionContext.Provider>
-        </RightClickContext.Provider>
-      )}
-      {openContext && selectionType === multiple && (
-        <RightClickContext.Provider value={multipleSelectionContext}>
-          <ItemSelectionContext.Provider value={itemsSelected}>
-            <MUltipleSelectionOverlayMenu />
-          </ItemSelectionContext.Provider>
-        </RightClickContext.Provider>
-      )}
-      {open && mode !== null && (
-        <ItemSelectionContext.Provider value={itemsSelected}>
-          <ModalContext.Provider value={{ open, setOpen }}>
-            <Modal mode={mode} />
-          </ModalContext.Provider>
-        </ItemSelectionContext.Provider>
-      )}
-      {share && (
-        <ItemSelectionContext.Provider value={itemsSelected}>
-          <Share shareImmediate={true} />
-        </ItemSelectionContext.Provider>
-      )}
       {activity && selectedToEdit.current && (
         <Activity
           versions={getFileInfo(

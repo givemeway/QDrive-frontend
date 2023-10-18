@@ -6,7 +6,7 @@ import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
 import DownloadItems from "./DownloadItems.js";
-import { UploadContext, ItemSelectionContext } from "./Context.js";
+import { UploadContext, ItemSelectionContext } from "./UseContext.js";
 import Share from "./Share.js";
 import MoveItems from "./MoveItems.js";
 import RenameItem from "./RenameItem.js";

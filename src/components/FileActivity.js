@@ -7,7 +7,7 @@ import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import ClearIcon from "@mui/icons-material/Clear";
-import { ItemSelectionContext } from "./Context";
+import { ItemSelectionContext } from "./UseContext";
 import { useState } from "react";
 import InfoIcon from "@mui/icons-material/InfoRounded";
 import ImageIcon from "@mui/icons-material/Image";

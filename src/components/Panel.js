@@ -1,44 +1,51 @@
 import { Button, Box, Typography } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import FolderExplorer from "./FolderExplorer";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 const style = {
   display: "flex",
   flexDirection: "column",
   justifyContent: "space-between",
   width: "100%",
-  height: 400,
+  height: 250,
   bgcolor: "background.paper",
   border: "none",
   boxSizing: "border-box",
 };
 
+const tabStyle = {
+  color: "#886C64",
+  width: "100%",
+  fontSize: 20,
+  paddingLeft: 3,
+  backgroundColor: "#F7F5F2",
+  textTransform: "none",
+  "&:hover": {
+    backgroundColor: "transparent",
+    opacity: [0.9, 0.8, 0.7],
+  },
+  display: "flex",
+  flexDirection: "row",
+  justifyContent: "flex-start",
+  textAlign: "left",
+};
+
 const Tab = ({ children }) => {
   return (
-    <Button
-      sx={{
-        color: "#886C64",
-        fontSize: 20,
-        paddingLeft: 3,
-        backgroundColor: "#F7F5F2",
-        textTransform: "none",
-        "&:hover": {
-          backgroundColor: "transparent",
-          opacity: [0.9, 0.8, 0.7],
-        },
-        display: "block",
-        textAlign: "left",
-      }}
-      fullWidth
-      disableRipple
-    >
+    <Button sx={tabStyle} fullWidth disableRipple>
       {children}
     </Button>
   );
 };
 
-const Panel = ({ nav, setNav }) => {
+const Panel = () => {
+  const [open, setOpen] = useState(false);
   console.log("side panel rendered");
+  const handleClick = () => {
+    setOpen((prev) => !prev);
+  };
   return (
     <Box
       display="flex"
@@ -54,13 +61,46 @@ const Panel = ({ nav, setNav }) => {
         boxSizing: "border-box",
       }}
     >
-      <Typography component="h3" variant="h3" mt={5} mb={8}>
+      <Typography component="h3" variant="h3" mt={5} mb={8} ml={2}>
         QDrive
       </Typography>
-      <Tab>All Files</Tab>
-      <Box sx={style}>
-        <FolderExplorer nav={nav} setNav={setNav} />
-      </Box>
+
+      <Tab>
+        {!open && (
+          <ChevronRightIcon
+            fontSize="medium"
+            sx={{
+              position: "absolute",
+              left: 0,
+              "&:hover": {
+                backgroundColor: "#ECE1CE",
+                opacity: [0.9, 0.8, 0.7],
+              },
+            }}
+            onClick={handleClick}
+          />
+        )}
+        {open && (
+          <ExpandMoreIcon
+            fontSize="medium"
+            sx={{
+              position: "absolute",
+              left: 0,
+              "&:hover": {
+                backgroundColor: "#ECE1CE",
+                opacity: [0.9, 0.8, 0.7],
+              },
+            }}
+            onClick={handleClick}
+          />
+        )}
+        All Files
+      </Tab>
+      {open && (
+        <Box sx={style}>
+          <FolderExplorer />
+        </Box>
+      )}
       <Tab>Photos</Tab>
       <Tab>Shared</Tab>
       <Tab>Deleted Files</Tab>

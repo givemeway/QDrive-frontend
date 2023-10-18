@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Snackbar, Box, Button, Typography, IconButton } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import CloseIcon from "@mui/icons-material/Close";
-import { SnackBarContext } from "./Context";
+import { SnackBarContext } from "./UseContext";
 
 const DeleteSnackBar = () => {
   const { itemDeletion, setItemDeletion } = useContext(SnackBarContext);

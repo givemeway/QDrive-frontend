@@ -16,7 +16,7 @@ import {
 import FolderIcon from "@mui/icons-material/FolderRounded";
 import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
-import { ItemSelectionContext } from "./Context";
+import { ItemSelectionContext } from "./UseContext";
 import { useContext, useRef, useEffect, useState } from "react";
 import { csrftokenURL, getShareLinkURL, host } from "../config";
 import { Modal, Box, Typography } from "@mui/material";

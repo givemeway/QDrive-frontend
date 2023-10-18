@@ -6,7 +6,7 @@ import {
   ItemSelectionContext,
   UploadFolderContenxt,
   SnackBarContext,
-} from "./Context";
+} from "./UseContext";
 
 import { useParams } from "react-router-dom";
 import useFetchItems from "./hooks/FetchCurrentDirectoryItems";

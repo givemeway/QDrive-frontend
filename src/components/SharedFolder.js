@@ -1,11 +1,29 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { getSharedItemsURL } from "../config";
-import Table from "./DataTable";
+import Table from "./SharedItemsDisplayTable";
 import { Box } from "@mui/material";
 
 import BreadCrumb from "./Breadcrumb";
-import { ItemSelectionContext, UploadFolderContenxt } from "./Context";
+import { ItemSelectionContext, UploadFolderContenxt } from "./UseContext";
+
+const sharedBoxStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
+  justifyContent: "flex-start",
+  minWidth: 900,
+  height: 500,
+};
+
+const container = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  height: "100%",
+  width: "100%",
+};
 
 export default function Shared() {
   const location = useLocation();
@@ -58,15 +76,15 @@ export default function Shared() {
   }, [location.pathname]);
 
   return (
-    <>
-      {!invalidPage && type !== "fi" && dirNav.length > 0 && (
-        <BreadCrumb
-          queue={breadCrumb}
-          link={`/sh/fo/${shareId}/h`}
-          layout={"share"}
-        />
-      )}
-      <Box sx={{ height: 800 }}>
+    <Box sx={container}>
+      <Box sx={sharedBoxStyle}>
+        {!invalidPage && type !== "fi" && dirNav.length > 0 && (
+          <BreadCrumb
+            queue={breadCrumb}
+            link={`/sh/fo/${shareId}/h`}
+            layout={"share"}
+          />
+        )}
         {!invalidPage && !dataLoaded && (
           <UploadFolderContenxt.Provider value={data}>
             <ItemSelectionContext.Provider
@@ -97,6 +115,6 @@ export default function Shared() {
         )}
         {invalidPage && <>Invalid Share Link or Link Expired</>}
       </Box>
-    </>
+    </Box>
   );
 }

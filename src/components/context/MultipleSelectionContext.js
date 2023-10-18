@@ -6,7 +6,7 @@ import ShareIcon from "@mui/icons-material/ShareRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import useOutSideClick from "../useOutsideClick";
 import { useContext, useEffect } from "react";
-import { ItemSelectionContext, RightClickContext } from "../Context";
+import { ItemSelectionContext, RightClickContext } from "../UseContext";
 import useDownload from "../hooks/DownloadItemsHook";
 
 const MOVE = "move";

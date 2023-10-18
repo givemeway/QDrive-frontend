@@ -11,7 +11,8 @@ import {
   UploadFolderContenxt,
   SnackBarContext,
   EditContext,
-} from "./Context";
+  FolderExplorerContext,
+} from "./UseContext";
 
 import { csrftokenURL } from "../config";
 
@@ -28,7 +29,6 @@ const Dashboard = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
   const csrftoken = useFetchCSRFToken(csrftokenURL);
-  const [nav, setNav] = useState("");
   const [edit, setEdit] = useState({
     editStart: undefined,
     editStop: undefined,
@@ -93,7 +93,14 @@ const Dashboard = () => {
   return (
     <Grid container columns={2} wrap="nowrap">
       <Grid item sx={{ width: 240, height: "100vh" }}>
-        <NavigatePanel nav={nav} setNav={setNav} />
+        <FolderExplorerContext.Provider
+          value={{
+            nodeIDToExpand: "/" + subpath.split("/").slice(1).join("/"),
+            breadCrumb: breadCrumb,
+          }}
+        >
+          <NavigatePanel />
+        </FolderExplorerContext.Provider>
       </Grid>
       <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
         <Grid container sx={{ height: "100%" }}>

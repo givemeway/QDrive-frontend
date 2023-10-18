@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { Button } from "@mui/material";
-import { ModalContext } from "./Context.js";
+import { ModalContext } from "./UseContext.js";
 import Modal from "./Modal.js";
 const COPY = "copy";
 export default function CopyItems() {

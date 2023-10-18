@@ -6,7 +6,7 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import useOutSideClick from "../useOutsideClick";
-import { ItemSelectionContext, RightClickContext } from "../Context";
+import { ItemSelectionContext, RightClickContext } from "../UseContext";
 import { useContext, useEffect } from "react";
 import useDownload from "../hooks/DownloadItemsHook";
 import useInitRename from "../hooks/InitRenameItemHook";

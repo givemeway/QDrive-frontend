@@ -1,11 +1,11 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { getSharedItemsURL } from "../config";
-import Table from "./DataTable";
+import Table from "./SharedItemsDisplayTable";
 import { Box } from "@mui/material";
 
 import BreadCrumb from "./Breadcrumb";
-import { ItemSelectionContext, UploadFolderContenxt } from "./Context";
+import { ItemSelectionContext, UploadFolderContenxt } from "./UseContext";
 
 export default function Transfer() {
   const location = useLocation();

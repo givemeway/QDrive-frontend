@@ -6,7 +6,11 @@ import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useContext, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { filesFoldersURL } from "../config.js";
-import { PathContext, UploadContext, UploadFolderContenxt } from "./Context.js";
+import {
+  PathContext,
+  UploadContext,
+  UploadFolderContenxt,
+} from "./UseContext.js";
 import { Button, Snackbar, Box, Typography } from "@mui/material";
 
 function CustomButton({ children }) {

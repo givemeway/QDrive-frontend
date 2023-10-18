@@ -20,11 +20,11 @@ import {
   getSubFoldersURL,
   moveItemsURL,
 } from "../config";
-import { ItemSelectionContext } from "./Context";
+import { ItemSelectionContext } from "./UseContext";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import IconExpandedTreeItem from "./CustomTreeItem";
-import { ModalContext } from "./Context";
+import { ModalContext } from "./UseContext";
 
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);

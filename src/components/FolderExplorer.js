@@ -1,16 +1,22 @@
 /*global axios */
 import * as React from "react";
 import Box from "@mui/material/Box";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import FolderRounded from "@mui/icons-material/FolderRounded";
 import { TreeView } from "@mui/x-tree-view/TreeView";
 import { Divider } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { csrftokenURL, getSubFoldersURL } from "../config";
+import { useNavigate } from "react-router-dom";
+import LoadingGif from "./icons/LoadingGif";
+import { CircularProgress } from "@mui/material";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import IconExpandedTreeItem from "./CustomTreeItem";
+import { FolderExplorerContext } from "./UseContext";
+
+const HOME = "/dashboard/home";
 
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);
@@ -31,6 +37,7 @@ async function fetchCSRFToken(csrfurl) {
 
 const fetchFoldersFromServer = async (path) => {
   const CSRFToken = await fetchCSRFToken(csrftokenURL);
+
   const headers = {
     "X-CSRF-Token": CSRFToken,
     "Content-Type": "application/x-www-form-urlencoded",
@@ -49,14 +56,13 @@ const fetchFoldersFromServer = async (path) => {
   return newFolders;
 };
 
-export default function CustomizedTreeView({ nav, setNav }) {
+export default function CustomizedTreeView() {
+  const navigate = useNavigate();
+  const { nodeIDToExpand, breadCrumb } = useContext(FolderExplorerContext);
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
   console.log("Modal rendered");
-  // const { nav, setNav } = path;
-  console.log(nav, setNav);
-  const toPath = useRef("/");
-  const [nodeSelected, setNodeSelected] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleClick = async (path, nodeId) => {
     // Fetch folders from server while expanding
@@ -64,6 +70,8 @@ export default function CustomizedTreeView({ nav, setNav }) {
     if (!expanded.includes(nodeId)) {
       newFolders = (await fetchFoldersFromServer(path)).folders;
       // Find the clicked node and update its children
+      setLoading(false);
+
       setExpanded((prev) => [...prev, nodeId]);
       setFolders((prevFolders) => updateNode(prevFolders, nodeId, newFolders));
     } else {
@@ -77,7 +85,7 @@ export default function CustomizedTreeView({ nav, setNav }) {
 
   const updateNode = (nodes, nodeId, newChildren) => {
     return nodes.map((node) => {
-      if (node.uuid + ";" + node.path === nodeId) {
+      if (node.path === nodeId) {
         // This is the clicked node, update its children
         return { ...node, children: newChildren };
       } else if (node.children) {
@@ -93,10 +101,10 @@ export default function CustomizedTreeView({ nav, setNav }) {
     });
   };
 
-  const renderTree = (nodes) => {
+  const RenderTree = (nodes) => {
     return nodes.map((node) => (
       <IconExpandedTreeItem
-        nodeId={`${node.uuid};${node.path}`}
+        nodeId={node.path}
         key={node.uuid}
         label={
           <Box
@@ -109,40 +117,69 @@ export default function CustomizedTreeView({ nav, setNav }) {
           </Box>
         }
         icon={
-          expanded.includes(node.uuid + ";" + node.path) ? (
-            <ExpandMoreIcon
-              onClick={() =>
-                handleClick(node.path, `${node.uuid};${node.path}`)
-              }
-            />
+          expanded.includes(node.path) ? (
+            <ExpandMoreIcon onClick={() => handleClick(node.path, node.path)} />
           ) : (
             <ChevronRightIcon
-              onClick={() =>
-                handleClick(node.path, `${node.uuid};${node.path}`)
-              }
+              onClick={() => handleClick(node.path, node.path)}
             />
           )
         }
       >
-        {node.children && renderTree(node.children)}
+        {node.children && RenderTree(node.children)}
+        {!node?.children && (
+          <CircularProgress
+            size={25}
+            sx={{
+              color: "#0061FE",
+              position: "relative",
+              left: 15,
+            }}
+          />
+        )}
       </IconExpandedTreeItem>
     ));
   };
   useEffect(() => {
-    (async () => setFolders((await fetchFoldersFromServer("/")).folders))();
+    (async () => {
+      setFolders((await fetchFoldersFromServer("/")).folders);
+      setLoading(false);
+    })();
+
     setExpanded(["1"]);
   }, []);
 
-  const handleSelect = (event, nodeId) => {
-    setNodeSelected(true);
-    if (nodeId === "1") {
-      toPath.current = "/";
-      console.log(toPath.current);
-    } else {
-      console.log(nodeId.split(";")[1]);
-      toPath.current = nodeId.split(";")[1];
+  useEffect(() => {
+    const temp_breadCrumb = [...breadCrumb];
+    temp_breadCrumb[0] = "";
+    for (let i = 0; i < temp_breadCrumb.length; i++) {
+      const slice = temp_breadCrumb.slice(0, i + 1);
+      const id = slice.join("/");
+      setExpanded((prev) => [...prev, id]);
+      let newFolders = [];
+      (async () => {
+        if (!expanded.includes(id)) {
+          newFolders = (await fetchFoldersFromServer(id)).folders;
+          // Find the clicked node and update its children
+          setExpanded((prev) => [...prev, id]);
+          setFolders((prevFolders) => updateNode(prevFolders, id, newFolders));
+        } else {
+          setExpanded((prev) => {
+            return prev.includes(id)
+              ? prev.filter((el) => el !== id)
+              : [...prev, id];
+          });
+        }
+      })();
     }
-    console.log(toPath.current);
+  }, [nodeIDToExpand, breadCrumb]);
+
+  const handleSelect = (event, nodeId) => {
+    if (nodeId === "1") {
+      navigate(HOME);
+    } else {
+      navigate(HOME + nodeId);
+    }
   };
   const handleNodeToggle = (event, nodeIds) => {
     setExpanded(nodeIds);
@@ -172,7 +209,8 @@ export default function CustomizedTreeView({ nav, setNav }) {
           label="Home"
           sx={{ textAlign: "left" }}
         >
-          {renderTree(folders)}
+          {RenderTree(folders)}
+          {loading && <CircularProgress size={50} sx={{ color: "#0061FE" }} />}
         </IconExpandedTreeItem>
       </TreeView>
     </>
