@@ -1,5 +1,6 @@
 import { Grid, Box, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
+import Search from "./SearchFilesFolders";
 
 import NavigatePanel from "./Panel";
 import Header from "./Header";
@@ -90,6 +91,7 @@ const Dashboard = () => {
       initSearch();
     }
   }, [subpath]);
+
   return (
     <Grid container columns={2} wrap="nowrap">
       <Grid item sx={{ width: 240, height: "100vh" }}>
@@ -105,6 +107,8 @@ const Dashboard = () => {
       <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
         <Grid container sx={{ height: "100%" }}>
           <Grid item xs={12} sx={{ height: "20%", margin: 0, padding: 0 }}>
+            <Search searchValue={searchValue} />
+
             <Header
               queue={breadCrumb}
               searchValue={searchValue}

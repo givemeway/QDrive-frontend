@@ -1,8 +1,9 @@
 import { Button, Box, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FolderExplorer from "./FolderExplorer";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import useFetchDeletedItems from "./hooks/FetchDeletedItems";
 
 const style = {
   display: "flex",
@@ -42,10 +43,17 @@ const Tab = ({ children }) => {
 
 const Panel = () => {
   const [open, setOpen] = useState(false);
+  const [items, initFetchDeleted] = useFetchDeletedItems();
   console.log("side panel rendered");
   const handleClick = () => {
     setOpen((prev) => !prev);
   };
+  const handleDeleted = () => {
+    initFetchDeleted();
+  };
+  useEffect(() => {
+    console.log(items);
+  }, [items]);
   return (
     <Box
       display="flex"
@@ -103,7 +111,11 @@ const Panel = () => {
       )}
       <Tab>Photos</Tab>
       <Tab>Shared</Tab>
-      <Tab>Deleted Files</Tab>
+      <Tab>
+        <Typography sx={{ fontSize: 20 }} onClick={handleDeleted}>
+          Deleted Files
+        </Typography>
+      </Tab>
     </Box>
   );
 };

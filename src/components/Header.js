@@ -18,8 +18,7 @@ const Header = ({ queue, searchValue, search }) => {
   }, [search]);
   return (
     <Stack sx={{ height: "100%" }}>
-      <AvatarMenu />
-      <Search searchValue={searchValue} />
+      {/* <AvatarMenu /> */}
       {showBreadCrumb ? (
         <BreadCrumb
           queue={queue}

@@ -14,6 +14,7 @@ const getSharedItemsURL = "/app/sh";
 const moveItemsURL = "/app/moveItems";
 const copyItemsURL = "/app/copyItems";
 const searchURL = "/app/search";
+const deletedItemsURL = "/app/trash";
 const renameURL = "/app/renameItem";
 const devicename = "DESKTOP-10RSGE8";
 const username = "sandeep.kumar@idriveinc.com";
@@ -40,4 +41,5 @@ export {
   searchURL,
   renameURL,
   copyItemsURL,
+  deletedItemsURL,
 };
