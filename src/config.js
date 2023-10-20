@@ -16,6 +16,7 @@ const copyItemsURL = "/app/copyItems";
 const searchURL = "/app/search";
 const deletedItemsURL = "/app/trash";
 const renameURL = "/app/renameItem";
+const trashTotalURL = "/app/trashTotal";
 const devicename = "DESKTOP-10RSGE8";
 const username = "sandeep.kumar@idriveinc.com";
 const cwd = "/";
@@ -42,4 +43,5 @@ export {
   renameURL,
   copyItemsURL,
   deletedItemsURL,
+  trashTotalURL,
 };

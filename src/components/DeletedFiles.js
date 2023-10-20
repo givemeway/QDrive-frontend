@@ -9,28 +9,14 @@ import { Typography, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
 import { useGridApiRef } from "@mui/x-data-grid";
-import Activity from "./FileActivity.js";
-
 import { formatBytes } from "../util.js";
-import { downloadURL } from "../config.js";
-import {
-  EditContext,
-  ItemSelectionContext,
-  ModalContext,
-  RightClickContext,
-  UploadFolderContenxt,
-} from "./UseContext.js";
-import Modal from "./Modal";
-import MUltipleSelectionOverlayMenu from "./context/MultipleSelectionContext";
-import FolderSelectionOverlayMenu from "./context/FolderContext";
-import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
-import Share from "./Share";
-import useRename from "./hooks/RenameItemHook";
+import { downloadURL, trashTotalURL } from "../config.js";
+import { EditContext, ItemSelectionContext } from "./UseContext.js";
 
-const multiple = "multiple";
-const file = "file";
-const folder = "folder";
-const fileVersion = "fileVersion";
+import useRename from "./hooks/RenameItemHook";
+import useFetchDeletedItems from "./hooks/FetchDeletedItems";
+import useFetchTotal from "./hooks/FetchTotalHook";
+
 const options = {
   year: "numeric",
   month: "short",
@@ -44,6 +30,7 @@ const dataGridStyle = {
   "& .MuiDataGrid-cell:focus-within": {
     outline: "none !important",
   },
+  "& .MuiDataGrid-row:hover": { backgroundColor: "#F5EFE5" },
   "& .MuiDataGrid-cell": {
     borderBottom: "none",
     marginLeft: 0,
@@ -94,6 +81,9 @@ const typoGraphyStyle = {
   textAlign: "left",
   padding: 0,
   margin: 0,
+  fontWeight: 450,
+  color: "#1A1918",
+  fontFamily: "system-ui",
 };
 
 const iconStyle = {
@@ -135,15 +125,6 @@ const buildCellValueForFile = (file) => {
 
 function ensureStartsWithSlash(input) {
   return input.startsWith("/") ? input : "/" + input;
-}
-
-function getFileInfo(files, versionedFiles, id) {
-  if (files.has(id) && files.get(id).versions > 1) return versionedFiles[id];
-  else if (files.has(id) && files.get(id).versions === 1) {
-    const file = new Map([]);
-    file.set(id, files.get(id));
-    return file;
-  }
 }
 
 function generateLink(url, folderPath, layout, nav, id) {
@@ -192,7 +173,6 @@ const columnDef = (path, nav, layout) => {
           <>
             {cellValues.row.item === "folder" ? (
               <Box sx={flexRowStyle}>
-                {/* <FolderIcon sx={iconStyle} /> */}
                 <Link
                   to={generateLink(
                     path,
@@ -206,11 +186,15 @@ const columnDef = (path, nav, layout) => {
                   <Typography sx={typoGraphyStyle}>
                     {cellValues.row.name}
                   </Typography>
+                  <Typography
+                    sx={{ ...typoGraphyStyle, fontSize: 12, color: "#736C64" }}
+                  >
+                    {cellValues.row.path}
+                  </Typography>
                 </Link>
               </Box>
             ) : (
               <Box sx={flexRowStyle}>
-                {/* <FileOpenIcon sx={iconStyle} /> */}
                 <Atag
                   href={cellValues.row.url}
                   rel="noreferrer"
@@ -219,6 +203,11 @@ const columnDef = (path, nav, layout) => {
                 >
                   <Typography sx={typoGraphyStyle}>
                     {cellValues.row.name}
+                  </Typography>
+                  <Typography
+                    sx={{ ...typoGraphyStyle, fontSize: 12, color: "#736C64" }}
+                  >
+                    {cellValues.row.dir}
                   </Typography>
                 </Atag>
               </Box>
@@ -254,109 +243,38 @@ const columnDef = (path, nav, layout) => {
   ];
 };
 
-export default React.memo(function DataGridTable({
-  layout,
-  path,
-  nav,
-  loading,
-}) {
-  let rows = [];
+export default React.memo(function DataGridTable({ layout, path, nav }) {
+  const rows = React.useRef([]);
   const columns = columnDef(path, nav, layout);
   const [newRows, setNewRows] = React.useState([]);
   const rowClick = React.useRef(false);
-  const [coords, setCoords] = React.useState({ x: 0, y: 0 });
-  const [openContext, setOpenContext] = React.useState(null);
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const filteredFiles = React.useRef(new Map([]));
   const versionedFiles = React.useRef({});
   const tempFiles = React.useRef({});
-  const originFileId = React.useRef("");
-  const ref = React.useRef();
   const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
   const { fileIds, directories } = itemsSelected;
-  const data = useContext(UploadFolderContenxt);
   const { edit, setEdit } = useContext(EditContext);
-  const [open, setOpen] = React.useState(false);
-  const [selectionType, setSelectionType] = React.useState("");
-  const [share, setShare] = React.useState(false);
-  const [activity, setActivity] = React.useState(false);
-  const [mode, setMode] = React.useState(null);
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
+  const [paginationModel, setPaginationModel] = React.useState({
+    page: 0,
+    pageSize: 2,
+  });
+  const [total, fetchTotal] = useFetchTotal(trashTotalURL);
+  const [rowCount, setRowCount] = React.useState(0);
+  const [data, setData] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [page, setPage] = React.useState(0);
+  const scrollPosition = React.useRef({});
+  const [rowCountState, setRowCountState] = React.useState(rowCount);
+
   const [rename] = useRename(fileIds, directories, edit, setEdit);
-  const fileContextProps = {
-    setOpenContext,
-    setOpen,
-    setMode,
-    setActivity,
-    coords,
-    setShare,
-    ref,
-    edit,
-    setEdit,
-  };
-  const folderContextProps = {
-    setOpenContext,
-    setOpen,
-    setMode,
-    coords,
-    setShare,
-    ref,
-    edit,
-    setEdit,
-  };
-  const multipleSelectionContext = {
-    setOpenContext,
-    setOpen,
-    setMode,
-    coords,
-    setShare,
-    ref,
-  };
+  const [deletedItems, initFetchDeleted, deletedLoaded] =
+    useFetchDeletedItems();
 
   console.log("table rendered");
-  const contextMenu = (event) => {
-    event.preventDefault();
-    const type = event.currentTarget.getAttribute("data-id").split(";")[0];
-    const rowId = event.currentTarget.getAttribute("data-id");
-    setRowSelectionModel((prev) => {
-      if (prev.length === 0 || prev.length === 1) {
-        const originId = (originFileId.current = event.currentTarget
-          .getAttribute("data-id")
-          .split(";")[4]);
-        const hasVersions = versionedFiles.current.hasOwnProperty(originId);
-        if (type === file && hasVersions) {
-          setSelectionType(fileVersion);
-        } else {
-          setSelectionType(type);
-        }
-        selectedToEdit.current = rowId;
-        return [rowId];
-      } else {
-        if (rowSelectionModel.includes(rowId)) {
-          setSelectionType(multiple);
-          setActivity(false);
-          selectedToEdit.current = undefined;
-          return [...prev];
-        } else {
-          const originId = (originFileId.current = event.currentTarget
-            .getAttribute("data-id")
-            .split(";")[4]);
-          const hasVersions = versionedFiles.current.hasOwnProperty(originId);
-          if (type === file && hasVersions) {
-            setSelectionType(fileVersion);
-          } else {
-            setSelectionType(type);
-          }
-          selectedToEdit.current = rowId;
-          return [rowId];
-        }
-      }
-    });
-    setOpenContext(true);
-    setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
-  };
 
   const rowClicked = (params, event, details) => {
     selectedToEdit.current = params.id;
@@ -365,7 +283,6 @@ export default React.memo(function DataGridTable({
     setRowSelectionModel((prev) => {
       if (prev.includes(params.id) && prev.length === 1) {
         rowClick.current = true;
-        setActivity(false);
         selectedToEdit.current = undefined;
         return [];
       } else if (prev.length >= 1) {
@@ -375,6 +292,37 @@ export default React.memo(function DataGridTable({
       }
     });
   };
+
+  useEffect(() => {
+    fetchTotal(trashTotalURL);
+    setLoading(true);
+  }, []);
+
+  useEffect(() => {
+    setRowCount(total);
+  }, [total]);
+
+  useEffect(() => {
+    if (deletedLoaded) {
+      setData(deletedItems);
+      setLoading(false);
+    }
+  }, [deletedLoaded, deletedItems]);
+
+  useEffect(() => {
+    setLoading(true);
+    initFetchDeleted(
+      paginationModel.page * parseInt(paginationModel.pageSize / 2),
+      parseInt(paginationModel.pageSize / 2)
+    );
+    setPage(paginationModel.page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paginationModel.page, paginationModel.pageSize]);
+  useEffect(() => {
+    setRowCountState((prevRowCountState) =>
+      rowCount !== undefined ? rowCount : prevRowCountState
+    );
+  }, [rowCount, setRowCountState]);
 
   useEffect(() => {
     const files = [];
@@ -407,31 +355,36 @@ export default React.memo(function DataGridTable({
       selectedToEdit.current = rowSelectionModel[0];
     else {
       selectedToEdit.current = undefined;
-      setActivity(false);
     }
   }, [rowSelectionModel, setItemsSelection]);
 
-  useEffect(() => {
-    return apiRef.current.subscribeEvent("scrollPositionChange", () => {
-      const data = gridRef.current.querySelector(
-        ".MuiDataGrid-virtualScroller"
-      );
-      console.log(data.scrollTop + data.clientHeight, data.scrollHeight);
-    });
-  }, [apiRef]);
+  // useEffect(() => {
+  //   return apiRef.current.subscribeEvent("scrollPositionChange", (params) => {
+  //     scrollPosition.current = params;
+  //     const data = gridRef.current.querySelector(
+  //       ".MuiDataGrid-virtualScroller"
+  //     );
+  //     console.log(data.scrollTop + data.clientHeight, data.scrollHeight);
+  //     if (data.scrollTop + data.clientHeight === data.scrollHeight) {
+  //       console.log(rows.current.length, paginationModel.pageSize);
+  //       if (rows.current.length > paginationModel.pageSize) {
+  //         setPage((prev) => {
+  //           apiRef.current.setPage(prev + 1);
+  //           apiRef.current.scroll({
+  //             ...params,
+  //             top: parseInt(params.top - 100),
+  //           });
+  //           return prev + 1;
+  //         });
+  //       }
+  //     }
+  //   });
+  // }, [apiRef]);
 
   useEffect(() => {
-    if (selectedToEdit.current && edit.editStart) {
-      const params = { id: selectedToEdit.current, field: "name" };
-      apiRef.current.startCellEditMode(params);
-      setEdit((prev) => ({ ...prev, editing: true }));
-    }
+    let rows = [];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiRef, edit.editStart]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    if (!loading) {
+    if (!Array.isArray(data)) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       versionedFiles.current = {};
       tempFiles.current = {};
@@ -461,6 +414,7 @@ export default React.memo(function DataGridTable({
         );
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
+
       rows = Array.from(filteredFiles.current).map((file) => file[1]);
 
       rows = [
@@ -479,11 +433,16 @@ export default React.memo(function DataGridTable({
           item: "folder",
         })),
       ];
-      setNewRows(rows);
+      setNewRows([...rows]);
     } else {
       setNewRows([]);
     }
-  }, [data]);
+  }, [data, loading]);
+
+  useEffect(() => {
+    console.log(newRows);
+  }, [newRows]);
+
   return (
     <Box sx={gridContainerStyle}>
       <DataGrid
@@ -491,21 +450,18 @@ export default React.memo(function DataGridTable({
         ref={gridRef}
         apiRef={apiRef}
         columns={columns}
+        paginationMode="server"
+        rowCount={rowCountState}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[2, 5, 10, 15, 20, 50, 100]}
         initialState={{
           pagination: {
             paginationModel: {
-              pageSize: 50,
+              pageSize: 2,
             },
           },
         }}
-        pageSizeOptions={[5, 10, 15, 20, 50, 100]}
         checkboxSelection
-        slotProps={{
-          row: {
-            onContextMenu: contextMenu,
-            style: { cursor: "context-menu" },
-          },
-        }}
         loading={loading}
         disableVirtualization={false}
         onRowClick={rowClicked}
@@ -531,50 +487,6 @@ export default React.memo(function DataGridTable({
         density={"standard"}
         sx={dataGridStyle}
       />
-      {openContext &&
-        (selectionType === fileVersion || selectionType === file) && (
-          <RightClickContext.Provider value={fileContextProps}>
-            <ItemSelectionContext.Provider value={itemsSelected}>
-              <FileVersionSelectionOverlayMenu />
-            </ItemSelectionContext.Provider>
-          </RightClickContext.Provider>
-        )}
-      {openContext && selectionType === folder && (
-        <RightClickContext.Provider value={folderContextProps}>
-          <ItemSelectionContext.Provider value={itemsSelected}>
-            <FolderSelectionOverlayMenu />
-          </ItemSelectionContext.Provider>
-        </RightClickContext.Provider>
-      )}
-      {openContext && selectionType === multiple && (
-        <RightClickContext.Provider value={multipleSelectionContext}>
-          <ItemSelectionContext.Provider value={itemsSelected}>
-            <MUltipleSelectionOverlayMenu />
-          </ItemSelectionContext.Provider>
-        </RightClickContext.Provider>
-      )}
-      {open && mode !== null && (
-        <ItemSelectionContext.Provider value={itemsSelected}>
-          <ModalContext.Provider value={{ open, setOpen }}>
-            <Modal mode={mode} />
-          </ModalContext.Provider>
-        </ItemSelectionContext.Provider>
-      )}
-      {share && (
-        <ItemSelectionContext.Provider value={itemsSelected}>
-          <Share shareImmediate={true} />
-        </ItemSelectionContext.Provider>
-      )}
-      {activity && selectedToEdit.current && (
-        <Activity
-          versions={getFileInfo(
-            filteredFiles.current,
-            versionedFiles.current,
-            selectedToEdit.current.split(";")[4]
-          )}
-          setActivity={setActivity}
-        />
-      )}
     </Box>
   );
 });

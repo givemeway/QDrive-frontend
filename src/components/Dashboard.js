@@ -15,21 +15,26 @@ import {
   FolderExplorerContext,
 } from "./UseContext";
 
-import { csrftokenURL } from "../config";
+import { csrftokenURL, trashTotalURL } from "../config";
 
 import React, { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import useFetchCSRFToken from "./hooks/FetchCSRFToken";
 import useFetchItems from "./hooks/FetchCurrentDirectoryItems";
 import useFetchSearchItems from "./hooks/FetchSearchItems";
+import useFetchTotal from "./hooks/FetchTotalHook";
+import useFetchDeletedItems from "./hooks/FetchDeletedItems";
 
 const Dashboard = () => {
   const [data, setData] = useState([]);
+  const [rowCount, setRowCount] = useState(0);
+  const [tabSelected, setTabSelected] = useState(1);
   const [breadCrumb, setBreadCrumb] = useState(["/"]);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
   const csrftoken = useFetchCSRFToken(csrftokenURL);
+  const [total, fetchTotal] = useFetchTotal();
   const [edit, setEdit] = useState({
     editStart: undefined,
     editStop: undefined,
@@ -89,8 +94,15 @@ const Dashboard = () => {
       setSearchValue(searchParam);
       setIsSearch(true);
       initSearch();
+    } else if (path[0] === "deleted") {
+      setDataLoaded(true);
     }
   }, [subpath]);
+
+  useEffect(() => {
+    console.log("total: ", total);
+    setRowCount(total);
+  }, [total]);
 
   return (
     <Grid container columns={2} wrap="nowrap">
@@ -101,7 +113,11 @@ const Dashboard = () => {
             breadCrumb: breadCrumb,
           }}
         >
-          <NavigatePanel />
+          <UploadFolderContenxt.Provider
+            value={{ setData, setTabSelected, setRowCount }}
+          >
+            <NavigatePanel />
+          </UploadFolderContenxt.Provider>
         </FolderExplorerContext.Provider>
       </Grid>
       <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
@@ -147,7 +163,10 @@ const Dashboard = () => {
               >
                 <UploadFolderContenxt.Provider value={data}>
                   <ItemSelectionContext.Provider
-                    value={{ itemsSelected, setItemsSelection }}
+                    value={{
+                      itemsSelected,
+                      setItemsSelection,
+                    }}
                   >
                     <PathContext.Provider value={location.pathname}>
                       <EditContext.Provider value={{ edit, setEdit }}>

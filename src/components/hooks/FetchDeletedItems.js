@@ -4,20 +4,26 @@ import { useState, useEffect } from "react";
 import { deletedItemsURL } from "../../config";
 
 export default function useFetchDeletedItems() {
-  const [items, setItems] = useState([]);
+  const [deletedItems, setItems] = useState([]);
+  const [deletedLoaded, setDeletedLoaded] = useState(false);
   const [start, setStart] = useState(false);
-  const initFetchDeleted = () => {
+  const [page, setPage] = useState({ begin: 0, size: 25 });
+  const initFetchDeleted = (begin, size) => {
     setStart(true);
-  };
-  const fetchDeleted = async () => {
-    const res = await axios.get(deletedItemsURL);
-    setItems(res.data);
+    setPage({ begin, size });
+    setDeletedLoaded(false);
   };
   useEffect(() => {
     if (start) {
-      fetchDeleted();
+      (async () => {
+        const res = await axios.get(
+          deletedItemsURL + `?begin=${page.begin}&page=${page.size}`
+        );
+        setItems(res.data);
+      })();
       setStart(false);
+      setDeletedLoaded(true);
     }
-  }, [start]);
-  return [items, initFetchDeleted];
+  }, [start, page.size, page.begin]);
+  return [deletedItems, initFetchDeleted, deletedLoaded];
 }

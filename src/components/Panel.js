@@ -1,9 +1,11 @@
 import { Button, Box, Typography } from "@mui/material";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import FolderExplorer from "./FolderExplorer";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import useFetchDeletedItems from "./hooks/FetchDeletedItems";
+import { UploadFolderContenxt } from "./UseContext";
+import { useNavigate } from "react-router-dom";
 
 const style = {
   display: "flex",
@@ -43,17 +45,31 @@ const Tab = ({ children }) => {
 
 const Panel = () => {
   const [open, setOpen] = useState(false);
-  const [items, initFetchDeleted] = useFetchDeletedItems();
+  const navigate = useNavigate();
+  // const [items, initFetchDeleted] = useFetchDeletedItems();
+  // const { setData, setTabSelected, setRowCount } =
+  //   useContext(UploadFolderContenxt);
   console.log("side panel rendered");
   const handleClick = () => {
     setOpen((prev) => !prev);
   };
   const handleDeleted = () => {
-    initFetchDeleted();
+    // initFetchDeleted();
+    // setTabSelected(1);
+    navigate("/dashboard/deleted");
   };
-  useEffect(() => {
-    console.log(items);
-  }, [items]);
+  // const handleAllFiles = () => {
+  //   setTabSelected(4);
+  // };
+  // useEffect(() => {
+  //   setData(items);
+  //   const total =
+  //     Object.values(items?.fileCount[0])[0] +
+  //     Object.values(items?.folderCount[0])[0];
+  //   console.log(total);
+  //   setRowCount(total);
+  // }, [items, setData, setRowCount]);
+
   return (
     <Box
       display="flex"
@@ -102,7 +118,7 @@ const Panel = () => {
             onClick={handleClick}
           />
         )}
-        All Files
+        <Typography sx={{ fontSize: 20 }}>All Files</Typography>
       </Tab>
       {open && (
         <Box sx={style}>
