@@ -23,7 +23,7 @@ import useFetchCSRFToken from "./hooks/FetchCSRFToken";
 import useFetchItems from "./hooks/FetchCurrentDirectoryItems";
 import useFetchSearchItems from "./hooks/FetchSearchItems";
 import useFetchTotal from "./hooks/FetchTotalHook";
-import useFetchDeletedItems from "./hooks/FetchDeletedItems";
+import { PanelContext } from "./UseContext";
 
 const Dashboard = () => {
   const [data, setData] = useState([]);
@@ -90,11 +90,13 @@ const Dashboard = () => {
     const path = subpath.split("/");
     if (path[0] === "home") {
       getItems();
+      setTabSelected(1);
     } else if (path[0] === "search") {
       setSearchValue(searchParam);
       setIsSearch(true);
       initSearch();
     } else if (path[0] === "deleted") {
+      setTabSelected(4);
       setDataLoaded(true);
     }
   }, [subpath]);
@@ -113,11 +115,9 @@ const Dashboard = () => {
             breadCrumb: breadCrumb,
           }}
         >
-          <UploadFolderContenxt.Provider
-            value={{ setData, setTabSelected, setRowCount }}
-          >
+          <PanelContext.Provider value={{ setTabSelected }}>
             <NavigatePanel />
-          </UploadFolderContenxt.Provider>
+          </PanelContext.Provider>
         </FolderExplorerContext.Provider>
       </Grid>
       <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
@@ -170,7 +170,9 @@ const Dashboard = () => {
                   >
                     <PathContext.Provider value={location.pathname}>
                       <EditContext.Provider value={{ edit, setEdit }}>
-                        <MainPanel />
+                        <PanelContext.Provider value={tabSelected}>
+                          <MainPanel />
+                        </PanelContext.Provider>
                       </EditContext.Provider>
                     </PathContext.Provider>
                   </ItemSelectionContext.Provider>

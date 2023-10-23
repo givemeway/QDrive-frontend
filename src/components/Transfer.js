@@ -4,7 +4,7 @@ import { getSharedItemsURL } from "../config";
 import Table from "./SharedItemsDisplayTable";
 import { Box } from "@mui/material";
 
-import BreadCrumb from "./Breadcrumb";
+import BreadCrumb from "./breadCrumbs/Breadcrumb";
 import { ItemSelectionContext, UploadFolderContenxt } from "./UseContext";
 
 export default function Transfer() {

@@ -1,7 +1,3 @@
-import DownloadItems from "./DownloadItems";
-
-import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
-import FolderIcon from "@mui/icons-material/FolderRounded";
 import { DataGrid } from "@mui/x-data-grid";
 
 import React, { useEffect, useContext } from "react";
@@ -10,6 +6,8 @@ import { Link } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
 import { useGridApiRef } from "@mui/x-data-grid";
 import Activity from "./FileActivity.js";
+import PdfIcon from "./icons/PdfIcon";
+import ExcelIcon from "./icons/ExcelIcon";
 
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
@@ -26,6 +24,13 @@ import FolderSelectionOverlayMenu from "./context/FolderContext";
 import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
 import Share from "./Share";
 import useRename from "./hooks/RenameItemHook";
+import WordIcon from "./icons/WordIcon";
+import TextIcon from "./icons/TextIcon";
+import ArchiveIcon from "./icons/ArchiveIcon";
+import HtmlIcon from "./icons/HtmlIcon";
+import CodeIcon from "./icons/CodeIcon";
+import FileIcon from "./icons/FileIcon";
+import FolderIcon from "./icons/FolderIcon";
 
 const multiple = "multiple";
 const file = "file";
@@ -38,6 +43,37 @@ const options = {
   hour: "numeric",
   minute: "numeric",
   hour12: true,
+};
+
+const svgIconStyle = {
+  backgroundColor: "#F7F5F2",
+  boxShadow: 1,
+  borderRadius: "2px",
+  width: 25,
+  height: 25,
+};
+
+const file_format = {
+  pdf: <PdfIcon style={svgIconStyle} />,
+  doc: <WordIcon style={svgIconStyle} />,
+  docx: <WordIcon style={svgIconStyle} />,
+  xls: <ExcelIcon style={svgIconStyle} />,
+  xlsx: <ExcelIcon style={svgIconStyle} />,
+  csv: <ExcelIcon style={svgIconStyle} />,
+  txt: <TextIcon style={svgIconStyle} />,
+  log: <TextIcon style={svgIconStyle} />,
+  zip: <ArchiveIcon style={svgIconStyle} />,
+  tar: <ArchiveIcon style={svgIconStyle} />,
+  "7z": <ArchiveIcon style={svgIconStyle} />,
+  rar: <ArchiveIcon style={svgIconStyle} />,
+  js: <CodeIcon style={svgIconStyle} />,
+  py: <CodeIcon style={svgIconStyle} />,
+  cpp: <CodeIcon style={svgIconStyle} />,
+  java: <CodeIcon style={svgIconStyle} />,
+  html: <HtmlIcon style={svgIconStyle} />,
+  c: <CodeIcon style={svgIconStyle} />,
+  css: <CodeIcon style={svgIconStyle} />,
+  json: <CodeIcon style={svgIconStyle} />,
 };
 
 const dataGridStyle = {
@@ -162,6 +198,13 @@ function generateLink(url, folderPath, layout, nav, id) {
       : url + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
   }
 }
+
+function get_file_icon(formats, filename, iconStyle) {
+  const ext = filename.split(".").slice(-1)[0];
+  if (formats.hasOwnProperty(ext)) return formats[ext];
+  else return <FileIcon style={svgIconStyle} />;
+}
+
 const columnDef = (path, nav, layout) => {
   return [
     {
@@ -172,11 +215,11 @@ const columnDef = (path, nav, layout) => {
       headerAlign: "left",
       editable: false,
       renderCell: (param) => {
-        <FolderIcon sx={iconStyle} />;
         return param.row.item === "folder" ? (
-          <FolderIcon sx={iconStyle} />
+          <FolderIcon style={svgIconStyle} />
         ) : (
-          <FileOpenIcon sx={iconStyle} />
+          // <PdfIcon sx={iconStyle} />
+          get_file_icon(file_format, param.row.name, iconStyle)
         );
       },
     },
@@ -265,6 +308,10 @@ export default React.memo(function DataGridTable({
   const [newRows, setNewRows] = React.useState([]);
   const rowClick = React.useRef(false);
   const [coords, setCoords] = React.useState({ x: 0, y: 0 });
+  const [paginationModel, setPaginationModel] = React.useState({
+    page: 0,
+    pageSize: 50,
+  });
   const [openContext, setOpenContext] = React.useState(null);
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const filteredFiles = React.useRef(new Map([]));
@@ -411,14 +458,14 @@ export default React.memo(function DataGridTable({
     }
   }, [rowSelectionModel, setItemsSelection]);
 
-  useEffect(() => {
-    return apiRef.current.subscribeEvent("scrollPositionChange", () => {
-      const data = gridRef.current.querySelector(
-        ".MuiDataGrid-virtualScroller"
-      );
-      console.log(data.scrollTop + data.clientHeight, data.scrollHeight);
-    });
-  }, [apiRef]);
+  // useEffect(() => {
+  //   return apiRef.current.subscribeEvent("scrollPositionChange", () => {
+  //     const data = gridRef.current.querySelector(
+  //       ".MuiDataGrid-virtualScroller"
+  //     );
+  //     console.log(data.scrollTop + data.clientHeight, data.scrollHeight);
+  //   });
+  // }, [apiRef]);
 
   useEffect(() => {
     if (selectedToEdit.current && edit.editStart) {
@@ -431,7 +478,7 @@ export default React.memo(function DataGridTable({
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    if (!loading) {
+    if (!loading && !Array.isArray(data)) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       versionedFiles.current = {};
       tempFiles.current = {};
@@ -530,6 +577,7 @@ export default React.memo(function DataGridTable({
         rowHeight={40}
         density={"standard"}
         sx={dataGridStyle}
+        keepNonExistentRowsSelected
       />
       {openContext &&
         (selectionType === fileVersion || selectionType === file) && (

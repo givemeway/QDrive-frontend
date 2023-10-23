@@ -1,5 +1,5 @@
 import { Stack, Box, IconButton } from "@mui/material";
-import BreadCrumb from "./Breadcrumb";
+import BreadCrumb from "./breadCrumbs/Breadcrumb";
 import AvatarMenu from "./AvatarMenu";
 import Search from "./SearchFilesFolders";
 import { useEffect, useState } from "react";

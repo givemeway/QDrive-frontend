@@ -4,7 +4,7 @@ import FolderExplorer from "./FolderExplorer";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import useFetchDeletedItems from "./hooks/FetchDeletedItems";
-import { UploadFolderContenxt } from "./UseContext";
+import { PanelContext, UploadFolderContenxt } from "./UseContext";
 import { useNavigate } from "react-router-dom";
 
 const style = {
@@ -46,29 +46,21 @@ const Tab = ({ children }) => {
 const Panel = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  // const [items, initFetchDeleted] = useFetchDeletedItems();
-  // const { setData, setTabSelected, setRowCount } =
-  //   useContext(UploadFolderContenxt);
+  const { setTabSelected } = useContext(PanelContext);
+
   console.log("side panel rendered");
   const handleClick = () => {
     setOpen((prev) => !prev);
   };
-  const handleDeleted = () => {
-    // initFetchDeleted();
-    // setTabSelected(1);
-    navigate("/dashboard/deleted");
+  const handleAllFiles = () => {
+    navigate("/dashboard/home");
+    setTabSelected(1);
   };
-  // const handleAllFiles = () => {
-  //   setTabSelected(4);
-  // };
-  // useEffect(() => {
-  //   setData(items);
-  //   const total =
-  //     Object.values(items?.fileCount[0])[0] +
-  //     Object.values(items?.folderCount[0])[0];
-  //   console.log(total);
-  //   setRowCount(total);
-  // }, [items, setData, setRowCount]);
+
+  const handleDeleted = () => {
+    navigate("/dashboard/deleted");
+    setTabSelected(4);
+  };
 
   return (
     <Box
@@ -118,7 +110,9 @@ const Panel = () => {
             onClick={handleClick}
           />
         )}
-        <Typography sx={{ fontSize: 20 }}>All Files</Typography>
+        <Typography sx={{ fontSize: 20 }} onClick={handleAllFiles}>
+          All Files
+        </Typography>
       </Tab>
       {open && (
         <Box sx={style}>

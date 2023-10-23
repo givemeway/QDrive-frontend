@@ -2,7 +2,14 @@ import { SvgIcon } from "@mui/material";
 
 export default function LoadingGif() {
   return (
-    <SvgIcon>
+    <SvgIcon
+      sx={{
+        fontSize: 25,
+        backgroundColor: "#F7F5F2",
+        boxShadow: 1,
+        borderRadius: "2px",
+      }}
+    >
       <svg
         width="200px"
         height="200px"
