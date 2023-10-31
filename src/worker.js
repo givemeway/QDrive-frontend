@@ -7,27 +7,37 @@ import { formatBytes, formatSeconds } from "./util.js";
 
 importScripts(new URL("../dist/async.js", import.meta.url));
 
+const FILE = "file";
+const FOLDER = "folder";
+
 const findFilesToUpload = async (cwd, filesList, device) => {
   try {
     let tempDeviceName;
-    let uploadingDirPath =
-      cwd === "/"
-        ? filesList[0].webkitRelativePath.split(/\//g)[0]
-        : cwd + "/" + filesList[0].webkitRelativePath.split(/\//g)[0];
+    let backupType;
+    const filePath = filesList[0].webkitRelativePath.split(/\//g)[0];
+    let uploadingDirPath = cwd === "/" ? filePath : cwd + "/" + filePath;
     if (device === "/") {
-      tempDeviceName = filesList[0].webkitRelativePath.split(/\//g)[0];
+      tempDeviceName = filePath;
       if (tempDeviceName.length === 0) {
         tempDeviceName = "/";
       }
       uploadingDirPath = "/";
     }
+    if (filesList[0].webkitRelativePath === "") {
+      tempDeviceName = device;
+      uploadingDirPath = cwd;
+      backupType = FILE;
+    } else {
+      backupType = FOLDER;
+    }
     const response = await fetch(csrftokenURL);
     const { CSRFToken } = await response.json();
-    console.log(uploadingDirPath);
+
     const DbFiles = await getfilesCurDir(
       uploadingDirPath,
       tempDeviceName !== undefined ? tempDeviceName : device,
-      CSRFToken
+      CSRFToken,
+      backupType
     );
     let files = await compareFiles(filesList, DbFiles, cwd, device);
     console.log("files to upload: ", files.length);
