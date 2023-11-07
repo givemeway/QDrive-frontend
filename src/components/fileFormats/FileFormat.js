@@ -6,6 +6,7 @@ import CodeIcon from "../icons/CodeIcon";
 import PdfIcon from "../icons/PdfIcon";
 import ExcelIcon from "../icons/ExcelIcon";
 import FileIcon from "../icons/FileIcon";
+import PictureIcon from "../icons/PictureIcon";
 
 const svgIconStyle = {
   backgroundColor: "#F7F5F2",
@@ -35,6 +36,11 @@ const file_format = {
   c: <CodeIcon style={svgIconStyle} />,
   css: <CodeIcon style={svgIconStyle} />,
   json: <CodeIcon style={svgIconStyle} />,
+  png: <PictureIcon style={svgIconStyle} />,
+  jpg: <PictureIcon style={svgIconStyle} />,
+  jpeg: <PictureIcon style={svgIconStyle} />,
+  tiff: <PictureIcon style={svgIconStyle} />,
+  gif: <PictureIcon style={svgIconStyle} />,
 };
 
 function get_file_icon(filename) {

@@ -20,13 +20,20 @@ export default function useRename(fileIds, directories, edit, setEdit) {
         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
       };
       let body = {};
+      console.log(directories[0]);
       if (fileIds.length > 0) {
         body.type = "fi";
         body.uuid = fileIds[0].origin;
         body.to = edit.val;
+        body.device = fileIds[0].device;
+        body.dir = fileIds[0].dir;
+        body.filename = fileIds[0].file;
       } else {
         body.type = "fo";
         body.uuid = directories[0].uuid;
+        body.device = directories[0].device;
+        body.folder = directories[0].folder;
+        body.oldPath = directories[0].path;
         let path_array = directories[0].path.split("/").slice(0, -1);
         path_array.push(edit.val);
         body.to = path_array.join("/");

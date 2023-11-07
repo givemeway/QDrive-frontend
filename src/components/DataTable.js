@@ -107,7 +107,7 @@ const buildCellValueForFile = (file) => {
       file.device
     )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
       file.filename
-    )};${file.filename};${file.origin}`,
+    )};${file.filename};${file.origin};${file.directory};${file.device}`,
     name: file.filename,
     icon: "file",
     size: formatBytes(file.size),
@@ -119,7 +119,7 @@ const buildCellValueForFile = (file) => {
     )}&uuid=${encodeURIComponent(file.uuid)}`,
     url: `https://localhost:3001${downloadURL}?file=${encodeURIComponent(
       file.filename
-    )}&uuid=${encodeURIComponent(file.uuid)}`,
+    )}&uuid=${encodeURIComponent(file.uuid)}&db=files`,
     origin: file.origin,
     versions: file.versions,
     last_modified: new Date(file.last_modified).toLocaleString(
@@ -388,6 +388,8 @@ export default React.memo(function DataGridTable({
           path: item[2],
           file: item[3],
           origin: item[4],
+          dir: item[5],
+          device: item[6],
         });
       }
       if (item[0] === "folder") {
@@ -396,6 +398,7 @@ export default React.memo(function DataGridTable({
           path: item[2],
           folder: item[3],
           uuid: item[4],
+          device: item[5],
         });
       }
     });
@@ -467,7 +470,7 @@ export default React.memo(function DataGridTable({
       rows = [
         ...rows,
         ...data.folders.map((folder) => ({
-          id: `folder;${folder.uuid};${folder.path};${folder.folder};${folder.uuid}`,
+          id: `folder;${folder.uuid};${folder.path};${folder.folder};${folder.uuid};${folder.device}`,
           icon: "folder",
           name: folder.folder,
           size: "--",

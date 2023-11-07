@@ -1,7 +1,6 @@
 import { Breadcrumbs, Typography } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 const typoGraphyStyle = {
-  fontSize: "1rem",
   flexGrow: 1,
   textAlign: "left",
   padding: 0,
@@ -12,12 +11,12 @@ const typoGraphyStyle = {
   color: "#736C64",
 };
 
-export default function CollapsibleBreadCrumbs({ path, id }) {
+export default function CollapsibleBreadCrumbs({ path, id, style }) {
   const breadCrumbs = path.split("/").filter((subpath) => subpath.length > 0);
   return (
     <Breadcrumbs
       maxItems={3}
-      separator={<NavigateNextIcon sx={{ fontSize: 15 }} />}
+      separator={<NavigateNextIcon sx={{ fontSize: 15, ...style }} />}
       aria-label="breadcrumb"
       sx={{
         "& .MuiBreadcrumbs-separator": { padding: 0, margin: 0 },
@@ -25,7 +24,10 @@ export default function CollapsibleBreadCrumbs({ path, id }) {
     >
       {breadCrumbs.map((subpath) => {
         return (
-          <Typography sx={typoGraphyStyle} key={`${id};${path};${subpath}`}>
+          <Typography
+            sx={{ ...typoGraphyStyle, ...style }}
+            key={`${id};${path};${subpath}`}
+          >
             {subpath}
           </Typography>
         );

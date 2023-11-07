@@ -81,6 +81,11 @@ export default function Activity({ versions, setActivity }) {
   const handleClose = () => {
     setActivity(false);
   };
+  const convertURL = (url, db) => {
+    const search = new URL(url);
+    search.searchParams.set("db", db);
+    return search.toString();
+  };
   useEffect(() => {
     setVersionedFiles(
       Array.from(versions)
@@ -89,7 +94,7 @@ export default function Activity({ versions, setActivity }) {
           version: file[1].versions,
           size: file[1].size,
           id: file[1].id,
-          url: file[1].url,
+          url: convertURL(file[1].url, "versions"),
         }))
         .sort((a, b) => b.version - a.version)
     );
@@ -130,7 +135,7 @@ export default function Activity({ versions, setActivity }) {
           Previous Versions
         </Typography>
       </Box>
-      {versionedFiles.map((file) => {
+      {versionedFiles.map((file, idx) => {
         return (
           <Box sx={styleVersions} key={file.id}>
             <CustomizedBadges
@@ -143,7 +148,11 @@ export default function Activity({ versions, setActivity }) {
             <Typography sx={{ width: 100, fontSize: 12, textAlign: "left" }}>
               Size: {file.size}
             </Typography>
-            <Link href={file.url} rel="noreferrer" target="_parent">
+            <Link
+              href={idx === 0 ? convertURL(file.url, "files") : file.url}
+              rel="noreferrer"
+              target="_parent"
+            >
               <DownloadForOfflineIcon
                 color={"primary"}
                 sx={{ width: 30, cursor: "pointer" }}

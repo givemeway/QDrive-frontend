@@ -8,6 +8,8 @@ import useFetchDeletedItems from "./hooks/FetchDeletedItems";
 import CollapsibleBreadCrumbs from "./breadCrumbs/CollapsibleBreadCrumbs";
 import FileIcon from "./icons/FileIcon";
 import { get_file_icon } from "./fileFormats/FileFormat";
+import TrashModal from "./Modal/TrashModal";
+import { TrashContext } from "./UseContext";
 
 const options = {
   year: "numeric",
@@ -16,6 +18,16 @@ const options = {
   hour: "numeric",
   minute: "numeric",
   hour12: true,
+};
+
+const buildIndividualFilePath = (device, directory) => {
+  if (device === "/") {
+    return "/";
+  } else if (directory === "/") {
+    return device;
+  } else {
+    return `${device}/${directory}`;
+  }
 };
 
 const dataGridStyle = {
@@ -87,7 +99,6 @@ const columnDef = () => {
       headerAlign: "left",
       editable: false,
       renderCell: (param) => {
-        <FolderIcon sx={iconStyle} />;
         if (param.row.item === "folder") {
           return <FolderIcon sx={iconStyle} />;
         } else if (param.row.item === "file") {
@@ -142,6 +153,8 @@ export default React.memo(function DataGridTable() {
   const gridRef = React.useRef();
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
+  const [openTrashItem, setOpenTrashItem] = React.useState(false);
+  const [selectedTrashItem, setSelectedTrashItem] = React.useState("");
   const [deletedItems, initFetchDeleted, deletedLoaded] =
     useFetchDeletedItems();
 
@@ -155,6 +168,8 @@ export default React.memo(function DataGridTable() {
         return [...prev, params.id];
       } else if (prev.length === 0) {
         console.log("trigger modal action");
+        setOpenTrashItem(true);
+        setSelectedTrashItem(params.row);
         // bring the modal window
         // make a api call to fetch details
         return [];
@@ -175,34 +190,42 @@ export default React.memo(function DataGridTable() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    console.log(data);
     if (!Array.isArray(data)) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
+
       rows.current = data.files.map((file) => ({
-        id: `file;${file.name};${file.path}`,
+        id: file.id,
         item: "file",
         name: file.name,
         path: file.path,
+        begin: file?.limit?.begin,
+        end: file?.limit?.end,
+        items: file?.items,
         deleted: new Date(file.deleted).toLocaleString("en-in", options),
       }));
 
       rows.current = [
         ...rows.current,
         ...data.folders.map((folder) => ({
-          id: `folder;${folder.name};${folder.path}`,
+          id: folder.id,
           item: "folder",
           name: folder.name,
           path: folder.path,
+          begin: folder?.limit?.begin,
+          end: folder?.limit?.end,
+          items: folder?.items,
           deleted: new Date(folder.deleted).toLocaleString("en-in", options),
         })),
       ];
       rows.current = [
         ...rows.current,
         ...data.file.map((file) => ({
-          id: `singleFile;${file.filename};${file.directory}`,
+          id: file.uuid,
           item: "singleFile",
           name: file.filename,
-          path: `${file.device}/${file.directory}`,
+          path: buildIndividualFilePath(file.device, file.directory),
+          begin: 0,
+          end: 0,
           deleted: new Date(file.deletion_date).toLocaleString(
             "en-in",
             options
@@ -246,6 +269,13 @@ export default React.memo(function DataGridTable() {
         density={"standard"}
         sx={dataGridStyle}
       />
+      {openTrashItem && (
+        <TrashContext.Provider
+          value={{ openTrashItem, setOpenTrashItem, selectedTrashItem }}
+        >
+          <TrashModal />
+        </TrashContext.Provider>
+      )}
     </Box>
   );
 });

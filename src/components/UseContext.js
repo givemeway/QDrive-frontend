@@ -9,6 +9,7 @@ const ModalContext = createContext();
 const RightClickContext = createContext();
 const FolderExplorerContext = createContext();
 const PanelContext = createContext();
+const TrashContext = createContext();
 export {
   PathContext,
   UploadContext,
@@ -20,4 +21,5 @@ export {
   RightClickContext,
   FolderExplorerContext,
   PanelContext,
+  TrashContext,
 };

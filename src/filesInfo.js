@@ -34,9 +34,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
   }
   let files = new Object();
   DbFileList.forEach((file) => {
-    const extractedFileName = file.filename.split(
-      /\${3}[0-9a-zA-Z]{64}\${3}NA/g
-    );
+    const extractedFileName = file.filename.split(`_${file.uuid}`);
     let fileName = file.filename;
     if (extractedFileName.length > 1) {
       fileName = extractedFileName[0];
@@ -71,7 +69,6 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
   });
   let filesToUpload = [];
   let idx = 0;
-
   for (const file of selectedFileList) {
     let dirName;
     let filePath;

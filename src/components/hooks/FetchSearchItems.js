@@ -37,5 +37,6 @@ export default function useFetchSearchItems(subpath, csrftoken) {
       search(param);
     }
   }, [csrftoken, subpath, startSearch]);
+
   return [searchResult, initSearch, searchLoaded, isSearching, searchParam];
 }
