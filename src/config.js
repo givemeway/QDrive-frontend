@@ -11,7 +11,9 @@ const csrftokenURL = `/app/csrftoken`;
 const downloadItemsURL = "/app/downloadItems";
 const getShareLinkURL = "/app/createShare";
 const getSharedItemsURL = "/app/sh";
-const moveItemsURL = "/app/moveItems";
+// const moveItemsURL = "/app/moveItems";
+const moveItemsURL = "/app/v2/moveItems";
+
 const copyItemsURL = "/app/copyItems";
 const searchURL = "/app/search";
 const deletedItemsURL = "/app/trash";

@@ -79,7 +79,7 @@ const findFilesToUpload = async (cwd, filesList, device) => {
       total: files.length,
     });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return err;
   }
 };

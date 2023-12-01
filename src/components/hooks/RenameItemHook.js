@@ -20,7 +20,6 @@ export default function useRename(fileIds, directories, edit, setEdit) {
         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
       };
       let body = {};
-      console.log(directories[0]);
       if (fileIds.length > 0) {
         body.type = "fi";
         body.uuid = fileIds[0].origin;

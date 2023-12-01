@@ -190,6 +190,7 @@ export default React.memo(function DataGridTable() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    console.log(data);
     if (!Array.isArray(data)) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
 
