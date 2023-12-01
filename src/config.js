@@ -13,6 +13,8 @@ const getShareLinkURL = "/app/createShare";
 const getSharedItemsURL = "/app/sh";
 // const moveItemsURL = "/app/moveItems";
 const moveItemsURL = "/app/v2/moveItems";
+const signupURL = "/app/signup";
+const validateUsernameURL = "/app/validateusername";
 
 const copyItemsURL = "/app/copyItems";
 const searchURL = "/app/search";
@@ -22,6 +24,7 @@ const trashTotalURL = "/app/trashTotal";
 const getTrashBatchURL = "/app/trashBatch";
 const devicename = "DESKTOP-10RSGE8";
 const username = "sandeep.kumar@idriveinc.com";
+const restoreTrashItems = "/app/restoreTrashItems";
 const cwd = "/";
 
 export {
@@ -48,4 +51,7 @@ export {
   deletedItemsURL,
   trashTotalURL,
   getTrashBatchURL,
+  restoreTrashItems,
+  signupURL,
+  validateUsernameURL,
 };

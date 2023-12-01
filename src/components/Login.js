@@ -2,71 +2,58 @@ import { Stack, TextField, Button, Box } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useState, useEffect } from "react";
 import Header from "./HomePageHeader";
-const loginURL = "/app/login";
-const csrftokenURL = `/app/csrftoken`;
+import * as React from "react";
+import useValidateLogin from "./hooks/LoginHook";
+import { useNavigate } from "react-router-dom";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
-const validateLogin = (loginURL, options, setLogging) => {
-  fetch(loginURL, options)
-    .then((res) => {
-      if (res.status === 401 || res.status === 403) {
-        alert("Username or password incorrect!");
-        throw Error("Username or password incorrect");
-      } else if (res.status === 200) {
-        setLogging(false);
-        console.log("Login Successful");
-      } else if (res.status === 500) {
-        alert("Something Went wrong. Try again!");
-        throw Error("Something Went wrong. Try again!");
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      setLogging(false);
-    });
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+const MessageSnackBar = ({ msg, severity, setMessage }) => {
+  const [open, setOpen] = useState(true);
+  const handleClose = () => {
+    setOpen(false);
+    setMessage(false);
+  };
+  console.log({ msg, severity });
+  return (
+    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+      <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
+        {msg}
+      </Alert>
+    </Snackbar>
+  );
 };
-
-async function fetchCSRFToken(loginForm) {
-  const encodedData = btoa(`${loginForm.username}:${loginForm.password}`);
-
-  const response = await fetch(csrftokenURL);
-  const { CSRFToken } = await response.json();
-  const headers = {
-    Authorization: `Basic ${encodedData}`,
-    "X-CSRF-Token": CSRFToken,
-  };
-
-  const options = {
-    method: "POST",
-    credentials: "include",
-    mode: "cors",
-    headers: headers,
-  };
-  return options;
-}
 
 const Login = () => {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
-  const [loginClicked, setLoginClicked] = useState(false);
-  const [logging, setLogging] = useState(false);
+  const [logging, status, initLogin] = useValidateLogin(loginForm);
+  const [warning, setWarning] = useState(false);
+  const [error, setError] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+
   const handleChange = (event) => {
     setLoginForm((prev) => {
       return { ...prev, [event.target.name]: event.target.value };
     });
   };
   const handleClick = (e) => {
-    setLoginClicked((prev) => !prev);
-    setLogging(true);
+    initLogin();
   };
 
   useEffect(() => {
-    if (loginForm.username.length > 0 && loginForm.password.length > 0) {
-      fetchCSRFToken(loginForm)
-        .then((options) => {
-          validateLogin(loginURL, options, setLogging);
-        })
-        .catch((err) => console.log(err));
+    if (status == 200) {
+      navigate("/dashboard/home");
+    } else if (status === 401 || status === 403) {
+      setWarning(true);
+    } else if (status === 500) {
+      setError(true);
     }
-  }, [loginClicked]);
+  }, [logging, status]);
   return (
     <>
       <Header />
@@ -98,6 +85,27 @@ const Login = () => {
             <Button variant="contained" onClick={handleClick}>
               Login
             </Button>
+          )}
+          {warning && (
+            <MessageSnackBar
+              severity={"warning"}
+              msg={"Username or password incorrect!"}
+              setMessage={setWarning}
+            />
+          )}
+          {success && (
+            <MessageSnackBar
+              severity={"success"}
+              msg={"Login Successful!"}
+              setMessage={setSuccess}
+            />
+          )}
+          {error && (
+            <MessageSnackBar
+              severity={"error"}
+              msg={"Something Went wrong. Try again!"}
+              setMessage={setError}
+            />
           )}
         </Stack>
       </Box>

@@ -24,6 +24,7 @@ import useFetchItems from "./hooks/FetchCurrentDirectoryItems";
 import useFetchSearchItems from "./hooks/FetchSearchItems";
 import useFetchTotal from "./hooks/FetchTotalHook";
 import { PanelContext } from "./UseContext";
+import SpinnerGIF from "./icons/SpinnerGIF";
 
 const Dashboard = () => {
   const [data, setData] = useState([]);
@@ -137,7 +138,9 @@ const Dashboard = () => {
                 <ItemSelectionContext.Provider value={itemsSelected}>
                   <PathContext.Provider value={subpath}>
                     <EditContext.Provider value={{ edit, setEdit }}>
-                      <Menu />
+                      <PanelContext.Provider value={tabSelected}>
+                        <Menu />
+                      </PanelContext.Provider>
                     </EditContext.Provider>
                   </PathContext.Provider>
                 </ItemSelectionContext.Provider>
