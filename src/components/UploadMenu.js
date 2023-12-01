@@ -6,7 +6,11 @@ import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
 import DownloadItems from "./DownloadItems.js";
-import { UploadContext, ItemSelectionContext } from "./UseContext.js";
+import {
+  UploadContext,
+  ItemSelectionContext,
+  PanelContext,
+} from "./UseContext.js";
 import Share from "./Share.js";
 import MoveItems from "./MoveItems.js";
 import RenameItem from "./RenameItem.js";
@@ -16,10 +20,11 @@ export default React.memo(function UploadMenu() {
   const [upload, setUpload] = useState(null);
   console.log("upload menu rendered");
   const { fileIds, directories } = useContext(ItemSelectionContext);
+  const tabSelected = useContext(PanelContext);
 
   return (
-    <>
-      <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
+    <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
+      {tabSelected != 4 && (
         <Box
           display="flex"
           flexDirection="row"
@@ -72,8 +77,8 @@ export default React.memo(function UploadMenu() {
             </>
           )}
         </Box>
-      </Stack>
-      {/* <UploadProgressDrawer /> */}
-    </>
+      )}
+      {tabSelected == 4 && <Box></Box>}
+    </Stack>
   );
 });

@@ -6,6 +6,7 @@ import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
 import Shared from "./components/SharedFolder";
 import Transfer from "./components/Transfer";
+import Signup from "./components/Signup";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/sh/:type/:shareId/*" element={<Shared />} />
         <Route path="/sh/t/:shareId/*" element={<Transfer />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </div>
   );

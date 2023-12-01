@@ -3,13 +3,21 @@ import FolderIcon from "@mui/icons-material/FolderRounded";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 
 import React, { useEffect } from "react";
-import { Typography, Box, Stack } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Stack,
+  Button,
+  Snackbar,
+  CircularProgress,
+} from "@mui/material";
 import useFetchDeletedItems from "./hooks/FetchDeletedItems";
 import CollapsibleBreadCrumbs from "./breadCrumbs/CollapsibleBreadCrumbs";
 import FileIcon from "./icons/FileIcon";
 import { get_file_icon } from "./fileFormats/FileFormat";
 import TrashModal from "./Modal/TrashModal";
 import { TrashContext } from "./UseContext";
+import BulkTrashModal from "./Modal/BulkTrashModal";
 
 const options = {
   year: "numeric",
@@ -24,9 +32,9 @@ const buildIndividualFilePath = (device, directory) => {
   if (device === "/") {
     return "/";
   } else if (directory === "/") {
-    return device;
+    return "/" + device;
   } else {
-    return `${device}/${directory}`;
+    return `/${device}/${directory}`;
   }
 };
 
@@ -51,13 +59,15 @@ const dataGridStyle = {
   borderTop: "none",
   borderRadius: 0,
   borderLeft: "none",
+  width: "100%",
 };
 
 const gridContainerStyle = {
-  height: "100%",
+  // height: "100%",
   width: "100%",
   display: "flex",
-  flexDirection: "row",
+  flexDirection: "column",
+  alignItems: "flex-start",
   border: "none",
 };
 
@@ -154,13 +164,23 @@ export default React.memo(function DataGridTable() {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [openTrashItem, setOpenTrashItem] = React.useState(false);
+  const [openTrashItems, setOpenTrashItems] = React.useState(false);
+  const [showRestoreButton, setShowRestoreButton] = React.useState(false);
   const [selectedTrashItem, setSelectedTrashItem] = React.useState("");
+  const [selectedItems, setSelectedItems] = React.useState([]);
   const [deletedItems, initFetchDeleted, deletedLoaded] =
     useFetchDeletedItems();
 
-  console.log("table rendered");
+  const [restoring, setRestoring] = React.useState(false);
+
+  console.log("deleted -- table rendered");
+
+  const handleBulkRestore = () => {
+    setOpenTrashItems(true);
+  };
 
   const rowClicked = (params, event, details) => {
+    setSelectedItems([]);
     setRowSelectionModel((prev) => {
       if (prev.length > 0) {
         if (prev.includes(params.id))
@@ -187,6 +207,14 @@ export default React.memo(function DataGridTable() {
       setData(deletedItems);
     }
   }, [deletedLoaded, deletedItems]);
+
+  useEffect(() => {
+    if (rowSelectionModel.length > 0) {
+      setShowRestoreButton(true);
+    } else {
+      setShowRestoreButton(false);
+    }
+  }, [rowSelectionModel]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -232,6 +260,7 @@ export default React.memo(function DataGridTable() {
           ),
         })),
       ];
+      console.log(rows.current);
       setNewRows(rows.current);
       setLoading(false);
     }
@@ -242,39 +271,105 @@ export default React.memo(function DataGridTable() {
   }, [data, loading]);
 
   return (
-    <Box sx={gridContainerStyle}>
-      <DataGrid
-        rows={newRows}
-        ref={gridRef}
-        apiRef={apiRef}
-        columns={columns}
-        pageSizeOptions={[2, 5, 10, 15, 20, 25, 50, 100]}
-        initialState={{
-          pagination: {
-            paginationModel: {
-              pageSize: 25,
+    <Box
+      sx={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+      }}
+    >
+      <Box
+        sx={{
+          ...gridContainerStyle,
+          width: showRestoreButton ? "80%" : "100%",
+        }}
+      >
+        <Typography sx={{ fontSize: 24, marginLeft: 2 }}>
+          Deleted Files
+        </Typography>
+        <Typography sx={{ fontSize: 16, marginLeft: 2 }}>
+          You can restore any file deleted in the last 30 days.
+        </Typography>
+        <DataGrid
+          rows={newRows}
+          ref={gridRef}
+          apiRef={apiRef}
+          columns={columns}
+          pageSizeOptions={[2, 5, 10, 15, 20, 25, 50, 100]}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 25,
+              },
             },
-          },
-        }}
-        checkboxSelection
-        disableRowSelectionOnClick={true}
-        loading={loading}
-        disableVirtualization={false}
-        onRowClick={rowClicked}
-        onRowSelectionModelChange={(newRowSelectionModel) => {
-          setRowSelectionModel(newRowSelectionModel);
-        }}
-        rowSelectionModel={rowSelectionModel}
-        rowHeight={50}
-        density={"standard"}
-        sx={dataGridStyle}
-      />
-      {openTrashItem && (
-        <TrashContext.Provider
-          value={{ openTrashItem, setOpenTrashItem, selectedTrashItem }}
-        >
-          <TrashModal />
-        </TrashContext.Provider>
+          }}
+          checkboxSelection
+          disableRowSelectionOnClick={true}
+          loading={loading}
+          disableVirtualization={false}
+          onRowClick={rowClicked}
+          onRowSelectionModelChange={(newRowSelectionModel) => {
+            if (newRowSelectionModel.length > 0) {
+              let selected = [];
+              newRowSelectionModel.forEach((rowId) => {
+                selected = [
+                  ...selected,
+                  ...rows.current.filter((row) => rowId == row.id),
+                ];
+              });
+              setSelectedItems(selected);
+            } else {
+              setSelectedItems([]);
+            }
+            setRowSelectionModel(newRowSelectionModel);
+          }}
+          rowSelectionModel={rowSelectionModel}
+          rowHeight={50}
+          density={"standard"}
+          sx={dataGridStyle}
+        />
+        {openTrashItem && (
+          <TrashContext.Provider
+            value={{
+              openTrashItem,
+              setOpenTrashItem,
+              selectedTrashItem,
+              setRestoring,
+            }}
+          >
+            <TrashModal />
+          </TrashContext.Provider>
+        )}
+        {openTrashItems && (
+          <TrashContext.Provider
+            value={{
+              openTrashItems,
+              setOpenTrashItems,
+              selectedItems,
+              setRestoring,
+            }}
+          >
+            <BulkTrashModal />
+          </TrashContext.Provider>
+        )}
+      </Box>
+      {showRestoreButton && (
+        <Box sx={{ width: "20%" }}>
+          <Button variant="contained" onClick={handleBulkRestore}>
+            Restore
+          </Button>
+        </Box>
+      )}
+      {restoring && (
+        <Snackbar
+          open={restoring}
+          message={
+            <>
+              <CircularProgress /> <Typography>Restoring...</Typography>
+            </>
+          }
+        ></Snackbar>
       )}
     </Box>
   );

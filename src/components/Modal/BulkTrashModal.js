@@ -135,23 +135,17 @@ function EllipsisTypoGraphy({ children }) {
   );
 }
 
-export default function TrashModal() {
-  const { openTrashItem, setOpenTrashItem, selectedTrashItem, setRestoring } =
+export default function BulkTrashModal() {
+  const { openTrashItems, setOpenTrashItems, selectedItems, setRestoring } =
     React.useContext(TrashContext);
-
-  const [items, loaded] = useFetchTrashBatch(selectedTrashItem);
   const [loading, setLoading] = React.useState(true);
   const [allItems, setAllItems] = React.useState([]);
-  const [restoreTrash, restoreStatus, init] = useRestoreItems([
-    selectedTrashItem,
-  ]);
+  const [restoreTrash, restoreStatus, init] = useRestoreItems(selectedItems);
 
   const handleRestore = () => {
-    // setOpenTrashItem(false);
+    // setOpenTrashItems(false);
     init();
   };
-
-  const handleClose = () => setOpenTrashItem(false);
 
   React.useEffect(() => {
     if (restoreTrash) {
@@ -162,64 +156,52 @@ export default function TrashModal() {
   }, [restoreTrash, restoreStatus]);
 
   React.useEffect(() => {
-    setLoading(true);
+    setAllItems(selectedItems);
+    setLoading(false);
   }, []);
 
-  React.useEffect(() => {
-    if (loaded && items.length > 0) {
-      setAllItems(items);
-      if (selectedTrashItem?.items) {
-        selectedTrashItem?.items.forEach((item) => {
-          if (!item?.root) {
-            setAllItems((prev) => [
-              {
-                filename: item.folder,
-                deletion_date: item.deleted,
-                count: item.count,
-                path: item.path,
-                item: "folder",
-                uuid: item.id,
-              },
-              ...prev,
-            ]);
-          }
-        });
-      }
-      setLoading(false);
+  const handleClose = () => setOpenTrashItems(false);
+
+  const getCount = (item) => {
+    let count = 0;
+    if (item?.items) {
+      item.items.forEach((i) => (count += i.count));
+    } else {
+      count += item.end - item.begin;
     }
-  }, [loaded, items]);
+    console.log(count);
+    return count;
+  };
 
   function RenderRows({ style, index }) {
     return (
       <ListItem
         style={style}
-        key={allItems[index].uuid}
+        key={allItems[index].id}
         component="div"
         disablePadding
         sx={listItemStyle}
       >
         <ListItemIcon sx={listItemIconStyle}>
           {allItems[index]?.item === "folder" && (
-            <CustomizedBadges content={allItems[index].count}>
+            <CustomizedBadges content={getCount(allItems[index])}>
               <FolderIcon style={svgIconStyle} />
             </CustomizedBadges>
           )}
-          {!allItems[index]?.item && get_file_icon(allItems[index].filename)}
+          {allItems[index]?.item == "singleFile" &&
+            get_file_icon(allItems[index].name)}
+
+          {allItems[index]?.item == "file" &&
+            get_file_icon(allItems[index].name)}
         </ListItemIcon>
         <Stack sx={listItemTextRowStyle}>
           <ListItemText
             primary={
               <Box sx={listItemTextFlexColumn}>
-                <EllipsisTypoGraphy>
-                  {allItems[index].filename}
-                </EllipsisTypoGraphy>
+                <EllipsisTypoGraphy>{allItems[index].name}</EllipsisTypoGraphy>
                 <CollapsibleBreadCrumbs
-                  path={
-                    allItems[index]?.path !== undefined
-                      ? allItems[index]?.path
-                      : `/${allItems[index].device}/${allItems[index].directory}`
-                  }
-                  id={allItems[index].uuid}
+                  path={allItems[index]?.path}
+                  id={allItems[index].id}
                   style={{ fontSize: 10 }}
                 />
               </Box>
@@ -230,12 +212,7 @@ export default function TrashModal() {
           />
           <ListItemText
             primary={
-              <EllipsisTypoGraphy>
-                {new Date(allItems[index].deletion_date).toLocaleString(
-                  "en-in",
-                  options
-                )}
-              </EllipsisTypoGraphy>
+              <EllipsisTypoGraphy>{allItems[index].deleted}</EllipsisTypoGraphy>
             }
             sx={{ width: "40%" }}
           />
@@ -248,7 +225,7 @@ export default function TrashModal() {
     <Modal
       aria-labelledby="transition-modal-title"
       aria-describedby="transition-modal-description"
-      open={openTrashItem}
+      open={openTrashItems}
       onClose={handleClose}
       closeAfterTransition
       slots={{ backdrop: Backdrop }}
@@ -258,9 +235,9 @@ export default function TrashModal() {
         },
       }}
     >
-      <Fade in={openTrashItem}>
+      <Fade in={openTrashItems}>
         <Box sx={mainContainerStyle}>
-          <Typography sx={headingStyle}>{selectedTrashItem.name}</Typography>
+          {/* <Typography sx={headingStyle}>{selectedItems[0].name}</Typography> */}
           <Box sx={scrollContainerStyle}>
             {loading && <CircularProgress />}
             {!loading && (
@@ -295,7 +272,7 @@ export default function TrashModal() {
               variant="contained"
               disableRipple
               sx={cancelButtonStyle}
-              onClick={() => setOpenTrashItem(false)}
+              onClick={() => setOpenTrashItems(false)}
             >
               Cancel
             </Button>
