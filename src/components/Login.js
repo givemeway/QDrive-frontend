@@ -46,7 +46,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (status == 200) {
+    if (status === 200) {
       navigate("/dashboard/home");
     } else if (status === 401 || status === 403) {
       setWarning(true);

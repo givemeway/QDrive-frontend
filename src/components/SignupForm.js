@@ -10,10 +10,13 @@ import { Button, Checkbox, Typography } from "@mui/material";
 import { useState } from "react";
 import { useEffect } from "react";
 import { styled } from "@mui/material/styles";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { csrftokenURL, validateUsernameURL } from "../config";
 import useFetchCSRFToken from "./hooks/FetchCSRFToken";
-
+import useSignup from "./hooks/SignupHook";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+import { LoadingButton } from "@mui/lab";
+import SaveIcon from "@mui/icons-material/Save";
 const formLabelStyle = {
   display: "flex",
   flexDirection: "column",
@@ -39,6 +42,26 @@ const inputBoxStyle = {
     marginLeft: 0,
     fontSize: 11,
   },
+};
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+const MessageSnackBar = ({ msg, severity, setMessage }) => {
+  const [open, setOpen] = useState(true);
+  const handleClose = () => {
+    setOpen(false);
+    setMessage((prev) => ({ ...prev, show: false, severity: null }));
+  };
+  console.log({ msg, severity });
+  return (
+    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+      <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
+        {msg}
+      </Alert>
+    </Snackbar>
+  );
 };
 
 const CustomTextField = styled(TextField)`
@@ -116,7 +139,7 @@ const validateLastName = (lastname, setFormInput) => {
 };
 
 const validatePassword = (password, setFormInput) => {
-  if (password.length == 0) {
+  if (password.length === 0) {
     setFormInput((prev) => ({
       ...prev,
       password: {
@@ -148,7 +171,7 @@ const validatePassword = (password, setFormInput) => {
 
 const validatePhone = (phone, setFormInput) => {
   try {
-    if (phone.length == 0) {
+    if (phone.length === 0) {
       setFormInput((prev) => ({
         ...prev,
         phone: {
@@ -197,7 +220,7 @@ const validatePhone = (phone, setFormInput) => {
 };
 const validateUsername = async (username, setFormInput, CSRFToken) => {
   console.log("inside username");
-  if (username.length == 0) {
+  if (username.length === 0) {
     setFormInput((prev) => ({
       ...prev,
       username: {
@@ -247,7 +270,7 @@ const validateEmail = (email, setFormInput) => {
   const emailRegex =
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/g;
 
-  if (email.length == 0) {
+  if (email.length === 0) {
     setFormInput((prev) => ({
       ...prev,
       email: {
@@ -296,15 +319,23 @@ export default function Signup() {
     terms: { value: false, error: undefined, helperText: "" },
   });
 
+  const [signupProgress, setSignupProgress] = useState(false);
+  const [snackBarStatus, setSnackBarStatus] = useState({
+    show: false,
+    msg: "",
+    severity: null,
+  });
   const CSRFToken = useFetchCSRFToken(csrftokenURL);
   const [checkUsername, setCheckUsername] = useState(false);
+  const [signup, res] = useSignup();
 
   const handleBlur = (e) => {
     const name = e.target.name;
     let value = e.target.value;
-    if (name === "terms") {
+    if (name === TERMS) {
       value = e.target.checked;
     }
+    // eslint-disable-next-line default-case
     switch (name) {
       case PASSWORD:
         validatePassword(value, setFormInput);
@@ -344,18 +375,31 @@ export default function Signup() {
         },
       };
     });
-    if (name == TERMS) {
+    if (name === TERMS) {
       validateCheckBox(value, setFormInput);
     }
   };
   const handleSubmit = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("submitted");
+    setSignupProgress(true);
+    const { firstname, lastname, password, email, username, phone } = e.target;
+    const body = {
+      firstname: firstname.value,
+      lastname: lastname.value,
+      password: password.value,
+      email: email.value,
+      username: username.value,
+      phone: phone.value,
+    };
+    signup(body);
+    console.log("submit puse");
+    console.log(body);
   };
 
   useEffect(() => {
     validateForm(formInput, setValidForm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     formInput.email.error,
     formInput.password.error,
@@ -367,13 +411,34 @@ export default function Signup() {
   ]);
 
   useEffect(() => {
-    console.log(validForm);
-  }, [validForm]);
+    console.log("responsereceived");
+    setSignupProgress(false);
+    if (res) {
+      if (res?.success) {
+        setSnackBarStatus(() => ({
+          show: true,
+          msg: "Creation Success!",
+          severity: "success",
+        }));
+      } else {
+        setSnackBarStatus(() => ({
+          show: true,
+          msg: "Sign up Failed!",
+          severity: "warning",
+        }));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signupProgress, res?.msg, res?.success]);
 
   useEffect(() => {
     (async () => {
       let res;
-      if (CSRFToken.length > 0 && checkUsername) {
+      if (
+        CSRFToken.length > 0 &&
+        checkUsername &&
+        formInput.username.value.length >= 6
+      ) {
         try {
           const headers = {
             "X-CSRF-Token": CSRFToken,
@@ -412,7 +477,7 @@ export default function Signup() {
       }
       setCheckUsername(false);
     })();
-  }, [checkUsername]);
+  }, [CSRFToken, checkUsername, formInput.username.value]);
 
   useEffect(() => {
     validateForm(formInput, setValidForm);
@@ -560,12 +625,15 @@ export default function Signup() {
         </Typography>
       </Box>
       <Box sx={{ gridColumn: "span 2" }}>
-        <Button
+        <LoadingButton
           disabled={!validForm}
           variant="contained"
           fullWidth
           disableRipple
           type="submit"
+          loading={signupProgress}
+          loadingPosition="start"
+          startIcon={<SaveIcon />}
           sx={{
             textTransform: "none",
             borderRadius: 0,
@@ -574,8 +642,15 @@ export default function Signup() {
           }}
         >
           Agree and sign up
-        </Button>
+        </LoadingButton>
       </Box>
+      {snackBarStatus.show && (
+        <MessageSnackBar
+          msg={snackBarStatus.msg}
+          severity={snackBarStatus.severity}
+          setMessage={setSnackBarStatus}
+        />
+      )}
     </Box>
   );
 }
