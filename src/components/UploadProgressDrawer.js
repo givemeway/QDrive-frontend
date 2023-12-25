@@ -90,10 +90,12 @@ export default React.memo(function UploadProgressDrawer({
               </Typography>
             )}
             {val.status === "uploading" && (
-              <Typography fontSize={10} align="left">
-                Uploading {formatBytes((val.bytes * val.progress) / 100)} /{" "}
-                {val.size} - {val.eta} left..
-              </Typography>
+              <Stack>
+                <Typography fontSize={10} align="left">
+                  Uploading {val.transferred} / {val.size} - {val.eta} left..
+                  Rate: {val.speed}
+                </Typography>
+              </Stack>
             )}
             {val.status === "uploaded" && (
               <Typography fontSize={10} align="left">

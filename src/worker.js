@@ -2,7 +2,7 @@
 /* global async*/
 import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { uploadFile } from "./transferFile.js";
-import { csrftokenURL } from "./config.js";
+import { csrftokenURL, concurrency } from "./config.js";
 import { formatBytes, formatSeconds } from "./util.js";
 
 importScripts(new URL("../dist/async.js", import.meta.url));
@@ -54,6 +54,8 @@ const findFilesToUpload = async (cwd, filesList, device) => {
           bytes: file.size,
           folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
           eta: Infinity,
+          speed: "",
+          transferred: 0,
         },
       ])
     );
@@ -126,7 +128,7 @@ const uploadFiles = async (
       processed: 0,
     });
     let idx = 0;
-    await async.eachLimit(newFiles, 10, async (file) => {
+    for (const file of newFiles) {
       try {
         await uploadFile(
           file,
@@ -142,6 +144,7 @@ const uploadFiles = async (
           ...filesStatus,
           processed: filesStatus.processed + 1,
         };
+        console.log(filesStatus.processed, idx);
         postMessage({
           mode: "filesStatus_processed",
           processed: filesStatus.processed,
@@ -155,7 +158,38 @@ const uploadFiles = async (
       } catch (err) {
         console.log(err);
       }
-    });
+    }
+    // await async.eachLimit(newFiles, concurrency, async (file) => {
+    //   try {
+    //     await uploadFile(
+    //       file,
+    //       cwd,
+    //       file.modified,
+    //       device,
+    //       CSRFToken,
+    //       filesProgress,
+    //       trackFilesProgress,
+    //       filesStatus
+    //     );
+    //     filesStatus = {
+    //       ...filesStatus,
+    //       processed: filesStatus.processed + 1,
+    //     };
+    //     console.log(filesStatus.processed, idx);
+    //     postMessage({
+    //       mode: "filesStatus_processed",
+    //       processed: filesStatus.processed,
+    //     });
+
+    //     if (idx === 0) {
+    //       uploadStarted = true;
+    //       postMessage({ mode: "uploadInitiated", uploadStarted });
+    //     }
+    //     idx++;
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // });
     clearInterval(timer);
     postMessage({ mode: "finish" });
   } catch (err) {

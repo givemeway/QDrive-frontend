@@ -80,7 +80,6 @@ function FolderUpload({ setUpload }) {
         "Content-type": "application/x-www-form-urlencoded",
         devicename: homedir,
         currentdirectory: curDir,
-        username: "sandeep.kumar@idriveinc.com",
         sortorder: "ASC",
       };
       const options = {

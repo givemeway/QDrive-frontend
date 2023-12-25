@@ -1,10 +1,12 @@
 /* global importScripts */
 /* global forge*/
+/* global io */
 
+// https://github.com/goto-bus-stop/from2-blob/tree/master
 import { fileUploadURL, username } from "./config.js";
 import { encryptFile } from "./encryptutil.js";
 import { deriveKey, encryptMessage } from "./cryptoutil.js";
-import { hashChunk, hashFile } from "./hashFile.js";
+import { hashChunk, hashFile, hashFileChunked } from "./hashFile.js";
 import {
   arrayBufferToBinaryString,
   binaryStringToArrayBuffer,
@@ -17,6 +19,9 @@ import {
 self.window = self;
 
 importScripts(new URL("../dist/forge.js", import.meta.url));
+importScripts(
+  new URL("https://cdn.socket.io/4.1.3/socket.io.js", import.meta.url)
+);
 
 const uploadFile = (
   file,
@@ -32,21 +37,26 @@ const uploadFile = (
     let progress = 0;
     let uploadedBytes = 0;
     let eta = 0;
+    let speed = "0 B/s";
     let filePath;
     const ETA = (timeStarted) => {
       const timeElapsed = new Date() - timeStarted;
       const uploadSpeed = uploadedBytes / (timeElapsed / 1000);
       const time = (file.size - uploadedBytes) / uploadSpeed;
+      speed = formatBytes(uploadSpeed) + "/s";
       eta = formatSeconds(time);
     };
+
+    const socket = io("http://localhost:3000");
 
     const updateFileState = (state, error) => {
       let body = {
         name: file.name,
         progress: progress,
         status: state,
+        transferred: formatBytes(uploadedBytes),
         size: formatBytes(file.size),
-        bytes: file.size,
+        speed: speed,
         folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
         eta: eta,
       };
@@ -54,7 +64,6 @@ const uploadFile = (
       if (error !== null) {
         body.error = error;
       }
-
       postMessage({
         mode: "uploadProgress",
         fileName:
@@ -106,14 +115,17 @@ const uploadFile = (
         filename: file.name,
         dir: dir,
         devicename: device,
-        username: username,
+        // username: username,
         // "Content-Type": "application/octet-stream",
         "Content-Disposition": `attachment; filename="${file.name}"`,
         "X-CSRF-Token": CSRFToken,
       };
 
       if (!file.hash) {
-        fileStat.checksum = await hashFile(file.slice(0, file.size));
+        fileStat.checksum = await hashFileChunked(
+          file.slice(0, file.size),
+          file.size
+        );
       } else {
         fileStat.checksum = file.hash;
       }
@@ -122,26 +134,29 @@ const uploadFile = (
         fileStat.uuid = file.uuid;
         fileStat.version = file.version;
       }
-
       const timeStarted = new Date();
       const timer = setInterval(ETA, 1000, timeStarted);
-      const {
-        encryptedFile,
-        saltCrypto,
-        ivCrypto,
-        // enc_fileName_crypto,
-        // enc_directory_crypto,
-      } = await encryptFile(file, "sandy86kumar", dir);
+      // const {
+      //   encryptedFile,
+      //   saltCrypto,
+      //   ivCrypto,
+      //   // enc_fileName_crypto,
+      //   // enc_directory_crypto,
+      // } = await encryptFile(file, "sandy86kumar", dir);
 
-      fileStat.salt = arrayBufferToHex(saltCrypto);
-      fileStat.iv = arrayBufferToHex(ivCrypto);
+      // fileStat.salt = arrayBufferToHex(saltCrypto);
+      // fileStat.iv = arrayBufferToHex(ivCrypto);
       // fileStat.enc_filename = enc_fileName_crypto;
       // fileStat.enc_directory = enc_directory_crypto;
-      headers.enc_file_checksum = await hashChunk(encryptedFile);
+      // headers.enc_file_checksum = await hashChunk(encryptedFile);
       headers.filestat = JSON.stringify(fileStat);
 
       const formData = new FormData();
-      formData.append("file", new Blob([encryptedFile]));
+      // formData.append("file", new Blob([encryptedFile]));
+      // formData.append("hash", fileStat.checksum);
+      // formData.append("hashAlgorithm", "sha256");
+
+      formData.append("file", file);
       let xhr = new XMLHttpRequest();
       xhr.open("POST", fileUploadURL, true);
       for (const key in headers) {
@@ -158,58 +173,117 @@ const uploadFile = (
           switch (xhr.status) {
             case 500:
               updateFileState("failed", xhr.response);
+              clearInterval(timer);
               reject(xhr.response);
               break;
             case 401:
               updateFileState("failed", xhr.response);
+              clearInterval(timer);
               reject(xhr.response);
               break;
             case 403:
               updateFileState("failed", xhr.response);
+              clearInterval(timer);
               reject(xhr.response);
               break;
             default:
               updateFileState("failed", xhr.response);
+              clearInterval(timer);
               reject(xhr.response);
           }
         }
       };
-      xhr.onprogress = (event) => {
-        progress = Math.round((event.loaded / event.total) * 100);
-        if (event.lengthComputable && progress === 100) {
-          uploadedBytes += file.size;
-          updateFileState("uploading", null);
-          filesProgress.uploaded = filesProgress.uploaded + file.size;
-          filesStatus = {
-            ...filesStatus,
-            uploaded: filesStatus.uploaded + file.size,
-          };
-          postMessage({
-            mode: "filesStatus_uploaded",
-            uploaded: filesStatus.uploaded + file.size,
-          });
-        } else if (event.lengthComputable && progress !== 100) {
-          uploadedBytes += parseInt(file.size * (progress / 100));
-          updateFileState("uploading", null);
-          filesProgress.uploaded =
-            filesProgress.uploaded + parseInt(file.size * (progress / 100));
-          filesStatus = {
-            ...filesStatus,
-            uploaded:
-              filesStatus.uploaded + parseInt(file.size * (progress / 100)),
-          };
-          postMessage({
-            mode: "filesStatus_uploaded",
-            uploaded:
-              filesStatus.uploaded + parseInt(file.size * (progress / 100)),
-          });
-        }
-      };
+      // xhr.onprogress = (event) => {
+      //   progress = Math.round((event.loaded / event.total) * 100);
+      //   if (event.lengthComputable && progress === 100) {
+      //     uploadedBytes += file.size;
+      //     updateFileState("uploading", null);
+      //     filesProgress.uploaded = filesProgress.uploaded + file.size;
+      //     filesStatus = {
+      //       ...filesStatus,
+      //       uploaded: filesStatus.uploaded + file.size,
+      //     };
+      //     postMessage({
+      //       mode: "filesStatus_uploaded",
+      //       uploaded: filesStatus.uploaded + file.size,
+      //     });
+      //   } else if (event.lengthComputable && progress !== 100) {
+      //     uploadedBytes += parseInt(file.size * (progress / 100));
+      //     updateFileState("uploading", null);
+      //     filesProgress.uploaded =
+      //       filesProgress.uploaded + parseInt(file.size * (progress / 100));
+      //     filesStatus = {
+      //       ...filesStatus,
+      //       uploaded:
+      //         filesStatus.uploaded + parseInt(file.size * (progress / 100)),
+      //     };
+      //     postMessage({
+      //       mode: "filesStatus_uploaded",
+      //       uploaded:
+      //         filesStatus.uploaded + parseInt(file.size * (progress / 100)),
+      //     });
+      //   }
+      // };
       xhr.onerror = (e) => {
         console.error(e);
         reject(e);
       };
 
+      socket.on("uploadStart", ({ start }) => {
+        updateFileState("uploading", null);
+        filesProgress.uploaded = 0;
+        filesStatus = {
+          ...filesStatus,
+          uploaded: filesStatus.uploaded,
+        };
+        postMessage({
+          mode: "filesStatus_uploaded",
+          uploaded: filesStatus.uploaded,
+        });
+      });
+
+      socket.on("done", ({ done, data }) => {
+        if (done === "success") {
+          updateFileState("uploaded", null);
+          clearInterval(timer);
+          resolve();
+        } else if (done === "failure") {
+          updateFileState("failed", data);
+          clearInterval(timer);
+          reject();
+        }
+      });
+
+      socket.on("uploadProgress", ({ processed, total, uploaded }) => {
+        progress = processed;
+        if (progress === 100) {
+          updateFileState("uploading", null);
+          filesProgress.uploaded =
+            filesProgress.uploaded + uploaded - uploadedBytes;
+          filesStatus = {
+            ...filesStatus,
+            uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
+          };
+          postMessage({
+            mode: "filesStatus_uploaded",
+            uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
+          });
+          uploadedBytes = uploaded;
+        } else if (progress < 100) {
+          updateFileState("uploading", null);
+          filesProgress.uploaded =
+            filesProgress.uploaded + uploaded - uploadedBytes;
+          filesStatus = {
+            ...filesStatus,
+            uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
+          };
+          postMessage({
+            mode: "filesStatus_uploaded",
+            uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
+          });
+          uploadedBytes = uploaded;
+        }
+      });
       // const reader = new FileReader();
 
       // const timeStarted = new Date();
