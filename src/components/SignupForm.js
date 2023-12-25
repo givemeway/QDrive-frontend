@@ -52,11 +52,16 @@ const MessageSnackBar = ({ msg, severity, setMessage }) => {
   const [open, setOpen] = useState(true);
   const handleClose = () => {
     setOpen(false);
-    setMessage((prev) => ({ ...prev, show: false, severity: null }));
+    setMessage(() => ({ show: false, msg: "", severity: null }));
   };
   console.log({ msg, severity });
   return (
-    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+    <Snackbar
+      open={open}
+      autoHideDuration={6000}
+      onClose={handleClose}
+      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+    >
       <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
         {msg}
       </Alert>
@@ -382,6 +387,7 @@ export default function Signup() {
   const handleSubmit = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setSnackBarStatus(() => ({ show: false, msg: "", severity: null }));
     setSignupProgress(true);
     const { firstname, lastname, password, email, username, phone } = e.target;
     const body = {
@@ -393,8 +399,6 @@ export default function Signup() {
       phone: phone.value,
     };
     signup(body);
-    console.log("submit puse");
-    console.log(body);
   };
 
   useEffect(() => {
@@ -411,20 +415,25 @@ export default function Signup() {
   ]);
 
   useEffect(() => {
-    console.log("responsereceived");
     setSignupProgress(false);
     if (res) {
-      if (res?.success) {
+      if (res?.status === 200) {
         setSnackBarStatus(() => ({
           show: true,
-          msg: "Creation Success!",
+          msg: res.msg,
           severity: "success",
         }));
-      } else {
+      } else if (res?.status === 409) {
         setSnackBarStatus(() => ({
           show: true,
-          msg: "Sign up Failed!",
+          msg: res.msg,
           severity: "warning",
+        }));
+      } else if (res?.status === 500) {
+        setSnackBarStatus(() => ({
+          show: true,
+          msg: res.msg,
+          severity: "error",
         }));
       }
     }
@@ -453,7 +462,6 @@ export default function Signup() {
           console.log(err);
         }
       }
-      console.log(res?.data);
       if (res?.data && res?.data.exist) {
         setFormInput((prev) => ({
           ...prev,
@@ -475,8 +483,8 @@ export default function Signup() {
           },
         }));
       }
-      setCheckUsername(false);
     })();
+    setCheckUsername(false);
   }, [CSRFToken, checkUsername, formInput.username.value]);
 
   useEffect(() => {
