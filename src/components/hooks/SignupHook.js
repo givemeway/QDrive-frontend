@@ -34,10 +34,13 @@ export default function useSignup() {
     if (init && CSRFToken?.length > 0) {
       initSignup(form, CSRFToken)
         .then((res) => {
-          setResponse(res.data);
+          setResponse(() => ({
+            success: true,
+            status: res.status,
+            msg: "User Created!",
+          }));
         })
         .catch((err) => {
-          console.log(err);
           if (err?.response.status === 409) {
             setResponse(() => ({
               success: false,
@@ -47,8 +50,8 @@ export default function useSignup() {
           } else if (err?.response.status === 500) {
             setResponse(() => ({
               success: false,
-              status: 409,
-              msg: "Username Exists!",
+              status: 500,
+              msg: "Internal Server Error",
             }));
           }
         });
