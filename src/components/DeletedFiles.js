@@ -10,6 +10,7 @@ import {
   Button,
   Snackbar,
   CircularProgress,
+  Divider,
 } from "@mui/material";
 import useFetchDeletedItems from "./hooks/FetchDeletedItems";
 import CollapsibleBreadCrumbs from "./breadCrumbs/CollapsibleBreadCrumbs";
@@ -18,7 +19,7 @@ import { get_file_icon } from "./fileFormats/FileFormat";
 import TrashModal from "./Modal/TrashModal";
 import { TrashContext } from "./UseContext";
 import BulkTrashModal from "./Modal/BulkTrashModal";
-
+import DeleteForeverIcon from "@mui/icons-material/DeleteForeverSharp";
 const options = {
   year: "numeric",
   month: "short",
@@ -36,6 +37,44 @@ const buildIndividualFilePath = (device, directory) => {
   } else {
     return `/${device}/${directory}`;
   }
+};
+
+const restoreButtonStyle = {
+  textTransform: "none",
+  width: 200,
+  ":hover": {
+    background: "#004DC7",
+  },
+  background: "#0061FE",
+  borderRadius: 0,
+  boxShadow: "none",
+  fontWeight: 600,
+};
+
+const deleteButtonStyle = {
+  textTransform: "none",
+  background: "transparent",
+  position: "relative",
+  margin: 0,
+  padding: 0,
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "1px",
+    background: "rgb(187,181,174)",
+  },
+  "&:hover::after": {
+    background: "black",
+  },
+  ":hover": {
+    background: "transparent",
+  },
+  width: 200,
+  color: "black",
+  fontWeight: 600,
 };
 
 const dataGridStyle = {
@@ -59,15 +98,17 @@ const dataGridStyle = {
   borderTop: "none",
   borderRadius: 0,
   borderLeft: "none",
+  borderRight: "none",
   width: "100%",
 };
 
 const gridContainerStyle = {
-  // height: "100%",
+  height: "100%",
   width: "100%",
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
+  justifyContent: "center",
   border: "none",
 };
 
@@ -301,7 +342,7 @@ export default React.memo(function DataGridTable() {
           initialState={{
             pagination: {
               paginationModel: {
-                pageSize: 25,
+                pageSize: 50,
               },
             },
           }}
@@ -356,9 +397,29 @@ export default React.memo(function DataGridTable() {
         )}
       </Box>
       {showRestoreButton && (
-        <Box sx={{ width: "20%" }}>
-          <Button variant="contained" onClick={handleBulkRestore}>
+        <Box
+          sx={{
+            width: "20%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="contained"
+            sx={restoreButtonStyle}
+            disableElevation
+            onClick={handleBulkRestore}
+          >
             Restore
+          </Button>
+          <Button
+            variant="text"
+            sx={deleteButtonStyle}
+            startIcon={<DeleteForeverIcon />}
+          >
+            Permanently delete
           </Button>
         </Box>
       )}
