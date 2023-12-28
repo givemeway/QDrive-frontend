@@ -25,6 +25,7 @@ const getTrashBatchURL = "/app/trashBatch";
 const devicename = "DESKTOP-10RSGE8";
 const username = "sandeep.kumar@idriveinc.com";
 const restoreTrashItems = "/app/restoreTrashItems";
+const concurrency = 5;
 const cwd = "/";
 
 export {
@@ -54,4 +55,5 @@ export {
   restoreTrashItems,
   signupURL,
   validateUsernameURL,
+  concurrency,
 };
