@@ -123,31 +123,50 @@ const Dashboard = () => {
       </Grid>
       <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
         <Grid container sx={{ height: "100%" }}>
-          <Grid item xs={12} sx={{ height: "20%", margin: 0, padding: 0 }}>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              height: tabSelected === 4 ? "15%" : "20%",
+              margin: 0,
+              padding: 0,
+            }}
+          >
             <Search searchValue={searchValue} />
-
-            <Header
-              queue={breadCrumb}
-              searchValue={searchValue}
-              search={isSearch}
-            />
+            {tabSelected !== 4 && (
+              <Header
+                queue={breadCrumb}
+                searchValue={searchValue}
+                search={isSearch}
+              />
+            )}
           </Grid>
-          <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
-            <SnackBarContext.Provider value={{ setItemDeletion }}>
-              <UploadFolderContenxt.Provider value={{ setData }}>
-                <ItemSelectionContext.Provider value={itemsSelected}>
-                  <PathContext.Provider value={subpath}>
-                    <EditContext.Provider value={{ edit, setEdit }}>
-                      <PanelContext.Provider value={tabSelected}>
-                        <Menu />
-                      </PanelContext.Provider>
-                    </EditContext.Provider>
-                  </PathContext.Provider>
-                </ItemSelectionContext.Provider>
-              </UploadFolderContenxt.Provider>
-            </SnackBarContext.Provider>
-          </Grid>
-          <Grid item xs={12} sx={{ height: "75%", margin: 0, padding: 0 }}>
+          {tabSelected !== 4 && (
+            <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
+              <SnackBarContext.Provider value={{ setItemDeletion }}>
+                <UploadFolderContenxt.Provider value={{ setData }}>
+                  <ItemSelectionContext.Provider value={itemsSelected}>
+                    <PathContext.Provider value={subpath}>
+                      <EditContext.Provider value={{ edit, setEdit }}>
+                        <PanelContext.Provider value={tabSelected}>
+                          <Menu />
+                        </PanelContext.Provider>
+                      </EditContext.Provider>
+                    </PathContext.Provider>
+                  </ItemSelectionContext.Provider>
+                </UploadFolderContenxt.Provider>
+              </SnackBarContext.Provider>
+            </Grid>
+          )}
+          <Grid
+            item
+            xs={12}
+            sx={{
+              height: tabSelected === 4 ? "85%" : "75%",
+              margin: 0,
+              padding: 0,
+            }}
+          >
             {!dataLoaded ? (
               <Box
                 sx={{
