@@ -1,6 +1,5 @@
 /* global importScripts */
 /* global forge*/
-/* global io */
 
 // https://github.com/goto-bus-stop/from2-blob/tree/master
 import { fileUploadURL, username } from "./config.js";
@@ -15,13 +14,11 @@ import {
   formatBytes,
   formatSeconds,
 } from "./util.js";
+
 // eslint-disable-next-line no-restricted-globals
 self.window = self;
 
 importScripts(new URL("../dist/forge.js", import.meta.url));
-importScripts(
-  new URL("https://cdn.socket.io/4.1.3/socket.io.js", import.meta.url)
-);
 
 const uploadFile = (
   file,
@@ -31,7 +28,8 @@ const uploadFile = (
   CSRFToken,
   filesProgress,
   trackFilesProgress,
-  filesStatus
+  filesStatus,
+  socket
 ) => {
   return new Promise(async (resolve, reject) => {
     let progress = 0;
@@ -46,8 +44,6 @@ const uploadFile = (
       speed = formatBytes(uploadSpeed) + "/s";
       eta = formatSeconds(time);
     };
-
-    const socket = io("http://localhost:3000");
 
     const updateFileState = (state, error) => {
       let body = {
