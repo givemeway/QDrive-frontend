@@ -92,7 +92,7 @@ export default React.memo(function UploadProgressDrawer({
             {val.status === "uploading" && (
               <Stack>
                 <Typography fontSize={10} align="left">
-                  Uploading {val.transferred} / {val.size} - {val.eta} left..
+                  Uploading {val.transferred_b} / {val.size} - {val.eta} left..
                   Rate: {val.speed}
                 </Typography>
               </Stack>

@@ -13,6 +13,8 @@ import { useParams } from "react-router-dom";
 import { Typography, Box } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
 import CircularProgress from "@mui/material/CircularProgress";
+import { socket } from "./Socket.js";
+import { formatBytes, formatSeconds } from "../util.js";
 
 function CustomButton({ children }) {
   return (
@@ -42,13 +44,16 @@ function FolderUpload({ setUpload }) {
   const [trackFilesProgress, setTrackFilesProgress] = useState([]);
   const [showProgress, setShowProgress] = useState(false);
   const [uploadCompleted, setUploadCompleted] = useState(false);
+  const [socketID, setSocketID] = useState(undefined);
   const [filesStatus, setFilesStatus] = useState({
     processed: 0,
+    startTime: 0,
     total: 0,
     eta: Infinity,
     totalSize: 0,
     uploaded: 0,
   });
+  const [overAllETA, setOverAllETA] = useState(0);
   const [preparingFiles, setPreparingFiles] = useState(false);
   const filesMetaData = useRef({});
   const [uploadInitiated, setUploadInitiated] = useState(false);
@@ -57,6 +62,27 @@ function FolderUpload({ setUpload }) {
   const folderProgress = useContext(UploadContext);
   const params = useParams();
   const subpath = params["*"];
+
+  // const all_files_eta = (starttime) => {
+  //   const timeElapsed = new Date() - starttime;
+  //   console.log("timeelapsed: ", timeElapsed);
+  //   const uploadSpeed = filesStatus.uploaded / (timeElapsed / 1000);
+  //   console.log("upload speed: ", uploadSpeed, filesStatus.uploaded);
+  //   const time = (filesStatus.totalSize - filesStatus.uploaded) / uploadSpeed;
+  //   console.log("time: ", time, filesStatus.totalSize);
+  //   const eta = formatSeconds(time);
+  //   const speed = formatBytes(uploadSpeed) + "/s";
+  //   setFilesStatus((prev) => ({ ...prev, eta }));
+  // };
+
+  const ETA = (starttime, total, uploaded) => {
+    const timeElapsed = new Date() - starttime;
+    const uploadSpeed = uploaded / (timeElapsed / 1000);
+    const time = (total - uploaded) / uploadSpeed;
+    const eta = formatSeconds(time);
+    const speed = formatBytes(uploadSpeed) + "/s";
+    return { eta, speed };
+  };
 
   useEffect(() => {
     const path = subpath.split("/");
@@ -138,17 +164,101 @@ function FolderUpload({ setUpload }) {
       };
     }
   }, [device, files, pwd]);
+
+  useEffect(() => {
+    console.log("triggered:==>");
+    const { eta } = ETA(
+      filesStatus.startTime,
+      filesStatus.totalSize,
+      filesStatus.uploaded
+    );
+    setFilesStatus((prev) => ({ ...prev, eta: eta }));
+  }, [filesStatus.uploaded]);
+
   useEffect(() => {
     setPreparingFiles(false);
-    if (filesToUpload.length > 0) {
+
+    if (
+      filesToUpload.length > 0 &&
+      socketID &&
+      trackFilesProgress instanceof Map
+    ) {
+      const start = new Date();
+      setFilesStatus((prev) => ({ ...prev, startTime: start }));
+      // const timer = setInterval(() => {
+      //   all_files_eta(start);
+      // }, 1000);
       setUpload("folder");
       setShowProgress(true);
       setUploadCompleted(false);
       const worker = new Worker(new URL("../worker.js", import.meta.url), {
         type: "module",
       });
+
+      const onFileProgress = ({ payload }) => {
+        const { processed, total, uploaded, name, id } = payload;
+        const file = {};
+        file.name = name;
+        file.progress = processed;
+        file.size = formatBytes(total);
+        file.error = null;
+        file.status = "uploading";
+        file.transferred = uploaded;
+        file.transferred_b = formatBytes(uploaded);
+        file.folder = id.split("/").slice(0, -1).join("/");
+        file.bytes = parseInt(total);
+        const { transferred, startTime, bytes } = trackFilesProgress.get(id);
+        file.startTime = startTime;
+        const { eta, speed } = ETA(startTime, bytes, uploaded);
+        file.eta = eta;
+        file.speed = speed;
+        setFilesStatus((prev) => ({
+          ...prev,
+          uploaded: prev.uploaded + uploaded - transferred,
+        }));
+        setTrackFilesProgress((prev) => {
+          prev.set(id, file);
+          return prev;
+        });
+      };
+
+      const onFileUploadDone = ({ payload }) => {
+        const { name, id } = payload;
+        const file = {};
+        file.name = name;
+        file.error = null;
+        file.folder = id.split("/").slice(0, -1).join("/");
+        file.status = "uploaded";
+        setTrackFilesProgress((prev) => {
+          prev.set(id, file);
+          return prev;
+        });
+        setFilesStatus((prev) => ({
+          ...prev,
+          processed: prev.processed + 1,
+        }));
+      };
+
+      const onFileError = ({ payload }) => {
+        const { name, data, id } = payload;
+        const file = {};
+        file.name = name;
+        file.folder = id.split("/").slice(0, -1).join("/");
+        file.status = "failed";
+        file.error = data;
+        setTrackFilesProgress((prev) => {
+          prev.set(id, file);
+          return prev;
+        });
+      };
+
+      socket.on("uploadProgress", onFileProgress);
+      socket.on("done", onFileUploadDone);
+      socket.on("error", onFileError);
+
       worker.postMessage({
         mode: "upload",
+        socket_main_id: socketID,
         filesToUpload,
         metadata: filesMetaData.current,
         pwd,
@@ -158,6 +268,7 @@ function FolderUpload({ setUpload }) {
         trackFilesProgress,
         filesStatus,
       });
+
       worker.onmessage = ({ data }) => {
         const { mode } = data;
         if (mode === "filesStatus_eta") {
@@ -185,14 +296,43 @@ function FolderUpload({ setUpload }) {
           setFilesToUpload([]);
           setUploadCompleted(true);
           console.log("file upload complete");
+          // clearInterval(timer);
           worker.terminate();
+        } else if (mode === "failed") {
+          const { name, id, error } = data;
+          const file = {};
+          file.name = name;
+          file.error = error;
+          file.status = "failed";
+          setTrackFilesProgress((prev) => {
+            prev.set(id, file);
+            return prev;
+          });
+        } else if (mode === "fileUploadInitiated") {
+          const { startTime, id } = data;
+          let file = trackFilesProgress.get(id);
+          file.startTime = startTime;
+          setTrackFilesProgress((prev) => {
+            prev.set(id, file);
+            return prev;
+          });
         }
       };
       worker.onerror = (e) => {
         console.error(e);
       };
     }
-  }, [filesToUpload]);
+  }, [filesToUpload, socket, socketID]);
+
+  useEffect(() => {
+    socket.connect();
+    socket.on("connected", onConnection);
+    return () => socket.disconnect();
+  }, []);
+
+  const onConnection = ({ socketID }) => {
+    setSocketID(socketID);
+  };
 
   const handleFolderSelection = (e) => {
     console.log("triggered before set preparing files");

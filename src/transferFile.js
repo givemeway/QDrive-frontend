@@ -21,6 +21,8 @@ self.window = self;
 importScripts(new URL("../dist/forge.js", import.meta.url));
 
 const uploadFile = (
+  socket_worker_id,
+  socket_main_id,
   file,
   cwd,
   modified,
@@ -45,28 +47,45 @@ const uploadFile = (
       eta = formatSeconds(time);
     };
 
-    const updateFileState = (state, error) => {
-      let body = {
-        name: file.name,
-        progress: progress,
-        status: state,
-        transferred: formatBytes(uploadedBytes),
-        size: formatBytes(file.size),
-        speed: speed,
-        folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
-        eta: eta,
-      };
+    // const updateFileState = (state, error) => {
+    //   let body = {
+    //     name: file.name,
+    //     progress: progress,
+    //     status: state,
+    //     transferred: formatBytes(uploadedBytes),
+    //     size: formatBytes(file.size),
+    //     speed: speed,
+    //     folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
+    //     eta: eta,
+    //   };
 
-      if (error !== null) {
-        body.error = error;
-      }
+    //   if (error !== null) {
+    //     body.error = error;
+    //   }
+    //   postMessage({
+    //     mode: "uploadProgress",
+    //     fileName:
+    //       file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
+    //     fileBody: body,
+    //   });
+    // };
+
+    postMessage({
+      mode: "fileUploadInitiated",
+      startTime: new Date(),
+      id: file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
+    });
+
+    const postFileStatus = (status, error) => {
       postMessage({
-        mode: "uploadProgress",
-        fileName:
+        mode: status,
+        name: file.name,
+        id:
           file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
-        fileBody: body,
+        error: error,
       });
     };
+
     try {
       if (device !== "/") {
         filePath =
@@ -94,8 +113,9 @@ const uploadFile = (
         device = "/";
       }
       if (file.size === 0) {
+        // updateFileState("failed", "Empty File");
+        postFileStatus("failed", "Empty File");
         reject(`Empty file`);
-        updateFileState("failed", "Empty File");
         return;
       }
 
@@ -105,6 +125,11 @@ const uploadFile = (
         mtime: file.lastModifiedDate,
         modified: modified,
         size: file.size,
+        socket_main_id,
+        socket_worker_id,
+        name: file.name,
+        id:
+          file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
       };
 
       let headers = {
@@ -162,28 +187,32 @@ const uploadFile = (
 
       xhr.onload = () => {
         if (xhr.status === 200) {
-          updateFileState("uploaded", null);
+          // updateFileState("uploaded", null);
           clearInterval(timer);
           resolve(xhr.response);
         } else {
           switch (xhr.status) {
             case 500:
-              updateFileState("failed", xhr.response);
+              // updateFileState("failed", xhr.response);
+              postFileStatus("failed", xhr.response);
               clearInterval(timer);
               reject(xhr.response);
               break;
             case 401:
-              updateFileState("failed", xhr.response);
+              // updateFileState("failed", xhr.response);
+              postFileStatus("failed", xhr.response);
               clearInterval(timer);
               reject(xhr.response);
               break;
             case 403:
-              updateFileState("failed", xhr.response);
+              // updateFileState("failed", xhr.response);
+              postFileStatus("failed", xhr.response);
               clearInterval(timer);
               reject(xhr.response);
               break;
             default:
-              updateFileState("failed", xhr.response);
+              // updateFileState("failed", xhr.response);
+              postFileStatus("failed", xhr.response);
               clearInterval(timer);
               reject(xhr.response);
           }
@@ -225,61 +254,70 @@ const uploadFile = (
         reject(e);
       };
 
-      socket.on("uploadStart", ({ start }) => {
-        updateFileState("uploading", null);
-        filesProgress.uploaded = 0;
-        filesStatus = {
-          ...filesStatus,
-          uploaded: filesStatus.uploaded,
-        };
-        postMessage({
-          mode: "filesStatus_uploaded",
-          uploaded: filesStatus.uploaded,
-        });
-      });
+      // socket.on("uploadStart", ({ start }) => {
+      //   updateFileState("uploading", null);
+      //   filesProgress.uploaded = 0;
+      //   filesStatus = {
+      //     ...filesStatus,
+      //     uploaded: filesStatus.uploaded,
+      //   };
+      //   postMessage({
+      //     mode: "filesStatus_uploaded",
+      //     uploaded: filesStatus.uploaded,
+      //   });
+      // });
 
-      socket.on("done", ({ done, data }) => {
-        if (done === "success") {
-          updateFileState("uploaded", null);
-          clearInterval(timer);
-          resolve();
-        } else if (done === "failure") {
-          updateFileState("failed", data);
-          clearInterval(timer);
-          reject();
-        }
-      });
+      // socket.on("done", ({ done, data }) => {
+      //   if (done === "success") {
+      //     updateFileState("uploaded", null);
+      //     clearInterval(timer);
+      //   } else if (done === "failure") {
+      //     updateFileState("failed", data);
+      //     clearInterval(timer);
+      //   }
+      // });
 
-      socket.on("uploadProgress", ({ processed, total, uploaded }) => {
-        progress = processed;
-        if (progress === 100) {
-          updateFileState("uploading", null);
-          filesProgress.uploaded =
-            filesProgress.uploaded + uploaded - uploadedBytes;
-          filesStatus = {
-            ...filesStatus,
-            uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
-          };
-          postMessage({
-            mode: "filesStatus_uploaded",
-            uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
-          });
-          uploadedBytes = uploaded;
-        } else if (progress < 100) {
-          updateFileState("uploading", null);
-          filesProgress.uploaded =
-            filesProgress.uploaded + uploaded - uploadedBytes;
-          filesStatus = {
-            ...filesStatus,
-            uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
-          };
-          postMessage({
-            mode: "filesStatus_uploaded",
-            uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
-          });
-          uploadedBytes = uploaded;
-        }
-      });
+      // socket.on("fileProgress", ({ payload }) => {
+      //   const { uploaded } = payload;
+      //   filesProgress.uploaded =
+      //     filesProgress.uploaded + uploaded - uploadedBytes;
+      //   filesStatus = {
+      //     ...filesStatus,
+      //     uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
+      //   };
+      //   uploadedBytes = uploaded;
+      // });
+
+      // socket.on("uploadProgress", ({ processed, total, uploaded }) => {
+      //   progress = processed;
+      //   if (progress === 100) {
+      //     updateFileState("uploading", null);
+      //     filesProgress.uploaded =
+      //       filesProgress.uploaded + uploaded - uploadedBytes;
+      //     filesStatus = {
+      //       ...filesStatus,
+      //       uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
+      //     };
+      //     postMessage({
+      //       mode: "filesStatus_uploaded",
+      //       uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
+      //     });
+      //     uploadedBytes = uploaded;
+      //   } else if (progress < 100) {
+      //     updateFileState("uploading", null);
+      //     filesProgress.uploaded =
+      //       filesProgress.uploaded + uploaded - uploadedBytes;
+      //     filesStatus = {
+      //       ...filesStatus,
+      //       uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
+      //     };
+      //     postMessage({
+      //       mode: "filesStatus_uploaded",
+      //       uploaded: filesStatus.uploaded + uploaded - uploadedBytes,
+      //     });
+      //     uploadedBytes = uploaded;
+      //   }
+      // });
       // const reader = new FileReader();
 
       // const timeStarted = new Date();
@@ -434,7 +472,7 @@ const uploadFile = (
       //   console.log(err);
       // };
     } catch (err) {
-      updateFileState("failed", err);
+      // updateFileState("failed", err);
       reject(err);
     }
   });
