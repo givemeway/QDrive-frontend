@@ -1,16 +1,11 @@
 /* global importScripts */
 /* global async*/
-/* global io */
 import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { uploadFile } from "./transferFile.js";
 import { csrftokenURL, concurrency } from "./config.js";
-import { formatBytes, formatSeconds } from "./util.js";
-import { socket } from "../src/components/Socket.js";
+import { formatBytes } from "./util.js";
 
 importScripts(new URL("../dist/async.js", import.meta.url));
-// importScripts(
-//   new URL("https://cdn.socket.io/4.1.3/socket.io.js", import.meta.url)
-// );
 
 const FILE = "file";
 const FOLDER = "folder";
@@ -99,89 +94,58 @@ const uploadFiles = async (
   cwd,
   device,
   CSRFToken,
-  totalSize,
-  trackFilesProgress,
   filesStatus,
   metadata
 ) => {
-  const onConnected = async ({ socketID }) => {
-    const socket_worker_id = socketID;
-    console.log("worker socket ID:", socket_worker_id);
-    let eta = Infinity;
-    const filesProgress = { uploaded: 0 };
-    let uploadStarted = false;
-    let newFiles = [];
-    for (let file of files) {
-      if (metadata.hasOwnProperty(file.webkitRelativePath)) {
-        file.modified = metadata[file.webkitRelativePath]["modified"];
-        file.hash = metadata[file.webkitRelativePath]["hash"];
-        file.progress = metadata[file.webkitRelativePath]["progress"];
-        file.id = metadata[file.webkitRelativePath]["id"];
-        file.uuid = metadata[file.webkitRelativePath]["uuid"];
-        file.version = metadata[file.webkitRelativePath]["version"];
-        newFiles.push(file);
-      }
+  let uploadStarted = false;
+  let newFiles = [];
+  for (let file of files) {
+    if (metadata.hasOwnProperty(file.webkitRelativePath)) {
+      file.modified = metadata[file.webkitRelativePath]["modified"];
+      file.hash = metadata[file.webkitRelativePath]["hash"];
+      file.progress = metadata[file.webkitRelativePath]["progress"];
+      file.id = metadata[file.webkitRelativePath]["id"];
+      file.uuid = metadata[file.webkitRelativePath]["uuid"];
+      file.version = metadata[file.webkitRelativePath]["version"];
+      newFiles.push(file);
     }
-    // const ETA = (timeStarted) => {
-    //   const timeElapsed = new Date() - timeStarted;
-    //   const uploadSpeed = filesProgress.uploaded / (timeElapsed / 1000);
-    //   const time = (totalSize - filesProgress.uploaded) / uploadSpeed;
-    //   eta = formatSeconds(time);
-    //   postMessage({ mode: "filesStatus_eta", eta });
-    // };
-    // const timeStarted = new Date();
-    // const timer = setInterval(ETA, 1000, timeStarted);
-    try {
-      filesStatus = { ...filesStatus, total: files.length, processed: 0 };
-      postMessage({
-        mode: "filesStatus_total",
-        total: files.length,
-        processed: 0,
-      });
-      let idx = 0;
-      await async.eachLimit(newFiles, concurrency, async (file) => {
-        try {
-          await uploadFile(
-            socket_worker_id,
-            socket_main_id,
-            file,
-            cwd,
-            file.modified,
-            device,
-            CSRFToken,
-            filesProgress,
-            trackFilesProgress,
-            filesStatus,
-            socket
-          );
-          // filesStatus = {
-          //   ...filesStatus,
-          //   processed: filesStatus.processed + 1,
-          // };
-          console.log(filesStatus.processed, idx);
-          // postMessage({
-          //   mode: "filesStatus_processed",
-          //   processed: filesStatus.processed,
-          // });
+  }
 
-          if (idx === 0) {
-            uploadStarted = true;
-            postMessage({ mode: "uploadInitiated", uploadStarted });
-          }
-          idx++;
-        } catch (err) {
-          console.log(err);
+  try {
+    filesStatus = { ...filesStatus, total: files.length, processed: 0 };
+    postMessage({
+      mode: "filesStatus_total",
+      total: files.length,
+      processed: 0,
+    });
+    let idx = 0;
+    console.log(newFiles);
+    await async.eachLimit(newFiles, concurrency, async (file) => {
+      try {
+        await uploadFile(
+          socket_main_id,
+          file,
+          cwd,
+          file.modified,
+          device,
+          CSRFToken
+        );
+
+        console.log(filesStatus.processed, idx);
+
+        if (idx === 0) {
+          uploadStarted = true;
+          postMessage({ mode: "uploadInitiated", uploadStarted });
         }
-      });
-      // clearInterval(timer);
-      postMessage({ mode: "finish" });
-      socket.disonnect();
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  socket.connect();
-  socket.on("connected", onConnected);
+        idx++;
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    postMessage({ mode: "finish" });
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 onmessage = ({ data }) => {
@@ -196,8 +160,6 @@ onmessage = ({ data }) => {
       pwd,
       device,
       CSRFToken,
-      total,
-      trackFilesProgress,
       filesStatus,
       metadata,
     } = data;
@@ -207,8 +169,6 @@ onmessage = ({ data }) => {
       pwd,
       device,
       CSRFToken,
-      total,
-      trackFilesProgress,
       filesStatus,
       metadata
     );
