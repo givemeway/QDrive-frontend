@@ -1,6 +1,4 @@
-/* global axios */
 /* global forge */
-/* global writer */
 /* global streamSaver */
 
 import { deriveKey } from "./cryptoutil.js";
@@ -55,7 +53,7 @@ function formatSeconds(seconds) {
   let i = Math.floor(Math.log(seconds) / Math.log(60));
   const eta = parseInt(seconds / Math.pow(60, i));
   const unit = units[i];
-  if (eta === NaN || unit === undefined) return " -- ";
+  if (isNaN(eta) || unit === undefined) return " -- ";
   else return parseInt(seconds / Math.pow(60, i)) + " " + units[i];
 }
 
@@ -66,7 +64,7 @@ function formatBytes(bytes) {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   const eta = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
   const unit = sizes[i];
-  if (eta === NaN || unit === undefined) {
+  if (isNaN(eta) || unit === undefined) {
     return " -- ";
   } else
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
@@ -138,7 +136,7 @@ async function saveFile(url) {
       const filename = response.headers
         .get("content-disposition")
         .split(";")[1]
-        .split(/\"/g)[1]
+        .split(/"/g)[1]
         .trim();
       const fileStream = streamSaver.createWriteStream(filename);
       let ts_dec = new TransformStream({
