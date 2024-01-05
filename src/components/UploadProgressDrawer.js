@@ -7,7 +7,6 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMoreOutlined.js";
 import ExpandLessIcon from "@mui/icons-material/ExpandLessOutlined.js";
 import { useState, useEffect } from "react";
-import { formatBytes } from "../util.js";
 import { FixedSizeList as List } from "react-window";
 import { styled } from "@mui/material/styles";
 import React from "react";
@@ -84,6 +83,16 @@ export default React.memo(function UploadProgressDrawer({
                 In Queue
               </Typography>
             )}
+            {val.status === "preparing" && (
+              <Typography fontSize={10} align="left">
+                Preparing..
+              </Typography>
+            )}
+            {val.status === "finalizing" && (
+              <Typography fontSize={10} align="left">
+                Finalizing..
+              </Typography>
+            )}
             {val.status === "failed" && (
               <Typography fontSize={10} align="left">
                 {val.error}
@@ -141,6 +150,9 @@ export default React.memo(function UploadProgressDrawer({
         </Box>
         {val.status === "uploading" && (
           <LinearProgress variant="determinate" value={val.progress} />
+        )}
+        {(val.status === "preparing" || val.status === "finalizing") && (
+          <LinearProgress variant="indeterminate" />
         )}
       </div>
     );
