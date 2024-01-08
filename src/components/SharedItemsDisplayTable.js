@@ -1,7 +1,4 @@
-import DownloadItems from "./DownloadItems";
-
-import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
-import FolderIcon from "@mui/icons-material/FolderRounded";
+import FolderIcon from "./icons/FolderIcon";
 import { DataGrid } from "@mui/x-data-grid";
 
 import React, { useEffect, useContext } from "react";
@@ -14,11 +11,8 @@ import Activity from "./FileActivity.js";
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
 import { ItemSelectionContext, UploadFolderContenxt } from "./UseContext.js";
+import { get_file_icon, svgIconStyle } from "./fileFormats/FileFormat.js";
 
-const multiple = "multiple";
-const file = "file";
-const folder = "folder";
-const fileVersion = "fileVersion";
 const options = {
   year: "numeric",
   month: "short",
@@ -135,11 +129,11 @@ function getFileInfo(files, versionedFiles, id) {
   }
 }
 
-function generateLink(url, folderPath, layout, nav, id) {
+function generateLink(url, folderPath, layout, k, nav, id) {
   if (layout === "dashboard") return url + folderPath;
   if (layout === "share") {
     const dir = folderPath.split(nav)[1];
-    return dir === "" ? url + "/h" : url + "/h" + dir;
+    return dir === "" ? url + "/h?k=" + k : url + "/h" + dir + "?k=" + k;
   }
   if (layout === "transfer") {
     let dir = folderPath.split(nav)[1];
@@ -151,7 +145,7 @@ function generateLink(url, folderPath, layout, nav, id) {
       : url + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
   }
 }
-const columnDef = (path, nav, layout) => {
+const columnDef = (path, nav, layout, k) => {
   return [
     {
       field: "icon",
@@ -161,11 +155,10 @@ const columnDef = (path, nav, layout) => {
       headerAlign: "left",
       editable: false,
       renderCell: (param) => {
-        <FolderIcon sx={iconStyle} />;
         return param.row.item === "folder" ? (
-          <FolderIcon sx={iconStyle} />
+          <FolderIcon style={svgIconStyle} />
         ) : (
-          <FileOpenIcon sx={iconStyle} />
+          get_file_icon(param.row.name)
         );
       },
     },
@@ -181,12 +174,12 @@ const columnDef = (path, nav, layout) => {
           <>
             {cellValues.row.item === "folder" ? (
               <Box sx={flexRowStyle}>
-                {/* <FolderIcon sx={iconStyle} /> */}
                 <Link
                   to={generateLink(
                     path,
                     cellValues.row.path,
                     layout,
+                    k,
                     nav,
                     cellValues.row.id.split(";")[4]
                   )}
@@ -199,7 +192,6 @@ const columnDef = (path, nav, layout) => {
               </Box>
             ) : (
               <Box sx={flexRowStyle}>
-                {/* <FileOpenIcon sx={iconStyle} /> */}
                 <Atag
                   href={cellValues.row.url}
                   rel="noreferrer"
@@ -225,15 +217,6 @@ const columnDef = (path, nav, layout) => {
       editable: false,
     },
     {
-      field: "versions",
-      headerAlign: "center",
-      headerName: "Versions",
-      type: "number",
-      align: "center",
-      flex: 0.1,
-      editable: false,
-    },
-    {
       field: "last_modified",
       headerName: "Modified",
       description: "This column has a value getter and is not sortable.",
@@ -248,17 +231,17 @@ export default React.memo(function DataGridTable({
   path,
   nav,
   loading,
+  k,
 }) {
   let rows = [];
-  const columns = columnDef(path, nav, layout);
+  const columns = columnDef(path, nav, layout, k);
   const [newRows, setNewRows] = React.useState([]);
   const rowClick = React.useRef(false);
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const filteredFiles = React.useRef(new Map([]));
   const versionedFiles = React.useRef({});
   const tempFiles = React.useRef({});
-  const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
-  const { fileIds, directories } = itemsSelected;
+  const { setItemsSelection } = useContext(ItemSelectionContext);
   const data = useContext(UploadFolderContenxt);
   const [activity, setActivity] = React.useState(false);
   const apiRef = useGridApiRef();
@@ -285,49 +268,14 @@ export default React.memo(function DataGridTable({
     });
   };
 
-  useEffect(() => {
-    const files = [];
-    const folders = [];
-    rowSelectionModel.forEach((val) => {
-      const item = val.split(";");
-      if (item[0] === "file") {
-        files.push({
-          id: item[1],
-          path: item[2],
-          file: item[3],
-          origin: item[4],
-        });
-      }
-      if (item[0] === "folder") {
-        folders.push({
-          id: item[1],
-          path: item[2],
-          folder: item[3],
-          uuid: item[4],
-        });
-      }
-    });
-    setItemsSelection((prev) => ({
-      fileIds: [...files],
-      directories: [...folders],
-    }));
-
-    if (rowSelectionModel.length === 1)
-      selectedToEdit.current = rowSelectionModel[0];
-    else {
-      selectedToEdit.current = undefined;
-      setActivity(false);
-    }
-  }, [rowSelectionModel, setItemsSelection]);
-
-  useEffect(() => {
-    return apiRef.current.subscribeEvent("scrollPositionChange", () => {
-      const data = gridRef.current.querySelector(
-        ".MuiDataGrid-virtualScroller"
-      );
-      console.log(data.scrollTop + data.clientHeight, data.scrollHeight);
-    });
-  }, [apiRef]);
+  // useEffect(() => {
+  //   return apiRef.current.subscribeEvent("scrollPositionChange", () => {
+  //     const data = gridRef.current.querySelector(
+  //       ".MuiDataGrid-virtualScroller"
+  //     );
+  //     console.log(data.scrollTop + data.clientHeight, data.scrollHeight);
+  //   });
+  // }, [apiRef]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -362,7 +310,6 @@ export default React.memo(function DataGridTable({
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
       rows = Array.from(filteredFiles.current).map((file) => file[1]);
-      console.log(data.folders);
       rows = [
         ...rows,
         ...data.folders.map((folder) => ({
@@ -379,6 +326,33 @@ export default React.memo(function DataGridTable({
           item: "folder",
         })),
       ];
+
+      const files = [];
+      const folders = [];
+      rows.forEach((val) => {
+        const item = val.id.split(";");
+        if (item[0] === "file") {
+          files.push({
+            id: item[1],
+            path: item[2],
+            file: item[3],
+            origin: item[4],
+          });
+        }
+        if (item[0] === "folder") {
+          folders.push({
+            id: item[1],
+            path: item[2],
+            folder: item[3],
+            uuid: item[4],
+          });
+        }
+      });
+      setItemsSelection(() => ({
+        fileIds: [...files],
+        directories: [...folders],
+      }));
+
       setNewRows(rows);
     } else {
       setNewRows([]);

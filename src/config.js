@@ -121,6 +121,7 @@ export {
   restoreTrashItems,
   signupURL,
   validateUsernameURL,
+  validateShareURL,
   concurrency,
   server,
 };
