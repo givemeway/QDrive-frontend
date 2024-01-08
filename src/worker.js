@@ -119,7 +119,6 @@ const uploadFiles = async (
       processed: 0,
     });
     let idx = 0;
-    console.log(newFiles);
     await async.eachLimit(newFiles, concurrency, async (file) => {
       try {
         await uploadFile(

@@ -1,32 +1,98 @@
-const host = "https://localhost:3001";
-const fileUploadURL = `/app/receiveFiles`;
-const loginURL = `/app/login`;
-const fetchFilesURL = `/app/getCurrentDirFiles`;
-const deleteItemsURL = "/app/delete";
-const filesFoldersURL = `/app/browseFolder`;
-const getSubFoldersURL = "/app/getSubFolders";
-const downloadURL = `/app/downloadFile`;
-const get_download_zip = `/app/get_download_zip`;
-const csrftokenURL = `/app/csrftoken`;
-const downloadItemsURL = "/app/downloadItems";
-const getShareLinkURL = "/app/createShare";
-const getSharedItemsURL = "/app/sh";
-// const moveItemsURL = "/app/moveItems";
-const moveItemsURL = "/app/v2/moveItems";
-const signupURL = "/app/signup";
-const validateUsernameURL = "/app/validateusername";
+const host = process.env.REACT_APP_BASE_API_URL;
+const server = process.env.REACT_APP_BASE_API_URL;
+const PRODUCTION = "production";
+console.log(process.env.REACT_APP_BASE_API_URL, process.env.REACT_APP_ENV);
+const fileUploadURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + `/app/receiveFiles`
+    : `/app/receiveFiles`;
+const loginURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + `/app/login`
+    : `/app/login`;
+const fetchFilesURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + `/app/getCurrentDirFiles`
+    : `/app/getCurrentDirFiles`;
+const deleteItemsURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/delete"
+    : "/app/delete";
+const filesFoldersURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + `/app/browseFolder`
+    : `/app/browseFolder`;
+const getSubFoldersURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/getSubFolders"
+    : "/app/getSubFolders";
+const downloadURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + `/app/downloadFile`
+    : `/app/downloadFile`;
+const get_download_zip =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + `/app/get_download_zip`
+    : `/app/get_download_zip`;
+const csrftokenURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + `/app/csrftoken`
+    : `/app/csrftoken`;
+const downloadItemsURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/downloadItems"
+    : "/app/downloadItems";
+const getShareLinkURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/createShare"
+    : "/app/createShare";
+const getSharedItemsURL =
+  process.env.REACT_APP_ENV === PRODUCTION ? server + "/app/sh" : "/app/sh";
+const moveItemsURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/v2/moveItems"
+    : "/app/v2/moveItems";
+const signupURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/signup"
+    : "/app/signup";
+const validateUsernameURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/validateusername"
+    : "/app/validateusername";
 
-const copyItemsURL = "/app/copyItems";
-const searchURL = "/app/search";
-const deletedItemsURL = "/app/trash";
-const renameURL = "/app/renameItem";
-const trashTotalURL = "/app/trashTotal";
-const getTrashBatchURL = "/app/trashBatch";
-const devicename = "DESKTOP-10RSGE8";
-const username = "sandeep.kumar@idriveinc.com";
-const restoreTrashItems = "/app/restoreTrashItems";
+const copyItemsURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/copyItems"
+    : "/app/copyItems";
+const searchURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/search"
+    : "/app/search";
+const deletedItemsURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/trash"
+    : "/app/trash";
+const renameURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/renameItem"
+    : "/app/renameItem";
+const trashTotalURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/trashTotal"
+    : "/app/trashTotal";
+const getTrashBatchURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/trashBatch"
+    : "/app/trashBatch";
+const restoreTrashItems =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/restoreTrashItems"
+    : "/app/restoreTrashItems";
 const concurrency = 5;
 const cwd = "/";
+const devicename = "DESKTOP-10RSGE8";
+const username = "sandeep.kumar@idriveinc.com";
 
 export {
   fileUploadURL,
@@ -56,4 +122,5 @@ export {
   signupURL,
   validateUsernameURL,
   concurrency,
+  server,
 };
