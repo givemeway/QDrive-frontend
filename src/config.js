@@ -48,6 +48,10 @@ const getShareLinkURL =
     : "/app/createShare";
 const getSharedItemsURL =
   process.env.REACT_APP_ENV === PRODUCTION ? server + "/app/sh" : "/app/sh";
+const validateShareURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/sh/validate"
+    : "/app/sh/validate";
 const moveItemsURL =
   process.env.REACT_APP_ENV === PRODUCTION
     ? server + "/app/v2/moveItems"
@@ -121,6 +125,7 @@ export {
   restoreTrashItems,
   signupURL,
   validateUsernameURL,
+  validateShareURL,
   concurrency,
   server,
 };

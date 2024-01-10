@@ -29,6 +29,7 @@ async function fetchCSRFToken(csrfurl) {
 
 export default function Share({ shareImmediate }) {
   const { fileIds, directories } = useContext(ItemSelectionContext);
+  console.log(fileIds, directories);
   const [type, setType] = useState("");
   const [CSRFToken, setCSRFToken] = useState("");
   const [shareURL, setShareURL] = useState("");
@@ -134,6 +135,7 @@ export default function Share({ shareImmediate }) {
         type: "folder",
       })),
     ];
+
     fetchCSRFToken(csrftokenURL)
       .then((csrftoken) => {
         if (shareImmediate === true) {
@@ -142,7 +144,7 @@ export default function Share({ shareImmediate }) {
         setCSRFToken(csrftoken);
       })
       .catch((err) => console.log(err));
-  }, [shareImmediate]);
+  }, [directories, fileIds, shareImmediate]);
 
   useEffect(() => {
     if (share && CSRFToken !== "" && type !== "") {
