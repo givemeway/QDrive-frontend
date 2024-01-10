@@ -9,7 +9,6 @@ import useDownload from "./hooks/DownloadItemsHook";
 const Download = () => {
   const { fileIds, directories } = useContext(ItemSelectionContext);
   const [initDownload] = useDownload(fileIds, directories);
-
   console.log("download items rendered");
 
   const handleClick = (e) => {

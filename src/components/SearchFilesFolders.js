@@ -2,7 +2,7 @@ import { Box, Button, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-export default function Search({ searchValue }) {
+export default function Search({ searchValue, sx }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState(searchValue);
   const handleChange = (e) => {
@@ -18,13 +18,16 @@ export default function Search({ searchValue }) {
       alignItems="center"
       justifyContent="flex-start"
       columnGap={2}
-      sx={{ margin: 0, padding: 0, height: "33%" }}
+      sx={{ marginTop: 2, padding: 0 }}
     >
       <TextField
         placeholder="search file/folder"
         variant="outlined"
         size="small"
-        sx={{ marginLeft: 2, width: "40%" }}
+        sx={{
+          marginLeft: 2,
+          width: "40%",
+        }}
         value={query}
         onChange={handleChange}
       ></TextField>

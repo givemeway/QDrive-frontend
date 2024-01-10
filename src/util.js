@@ -1,6 +1,4 @@
-/* global axios */
 /* global forge */
-/* global writer */
 /* global streamSaver */
 
 import { deriveKey } from "./cryptoutil.js";
@@ -51,9 +49,12 @@ async function fetchCSRFToken(csrfurl) {
 
 function formatSeconds(seconds) {
   if (seconds === 0) return "0 Seconds";
-  const units = ["seconds", "minutes", "hours", "days"];
+  const units = ["seconds", "minutes", "hours", "days", "years"];
   let i = Math.floor(Math.log(seconds) / Math.log(60));
-  return parseInt(seconds / Math.pow(60, i)) + " " + units[i];
+  const eta = parseInt(seconds / Math.pow(60, i));
+  const unit = units[i];
+  if (isNaN(eta) || unit === undefined) return " -- ";
+  else return parseInt(seconds / Math.pow(60, i)) + " " + units[i];
 }
 
 function formatBytes(bytes) {
@@ -61,7 +62,12 @@ function formatBytes(bytes) {
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  const eta = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
+  const unit = sizes[i];
+  if (isNaN(eta) || unit === undefined) {
+    return " -- ";
+  } else
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 const arrayBufferToHex = (buffer) => {
@@ -130,7 +136,7 @@ async function saveFile(url) {
       const filename = response.headers
         .get("content-disposition")
         .split(";")[1]
-        .split(/\"/g)[1]
+        .split(/"/g)[1]
         .trim();
       const fileStream = streamSaver.createWriteStream(filename);
       let ts_dec = new TransformStream({

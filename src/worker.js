@@ -1,20 +1,14 @@
 /* global importScripts */
 /* global async*/
-/* global io */
 import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { uploadFile } from "./transferFile.js";
 import { csrftokenURL, concurrency } from "./config.js";
-import { formatBytes, formatSeconds } from "./util.js";
+import { formatBytes } from "./util.js";
 
 importScripts(new URL("../dist/async.js", import.meta.url));
-importScripts(
-  new URL("https://cdn.socket.io/4.1.3/socket.io.js", import.meta.url)
-);
 
 const FILE = "file";
 const FOLDER = "folder";
-
-const socket = io("http://localhost:3000");
 
 const findFilesToUpload = async (cwd, filesList, device) => {
   try {
@@ -54,6 +48,7 @@ const findFilesToUpload = async (cwd, filesList, device) => {
         file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
         {
           name: file.name,
+          startTime: 0,
           progress: 0,
           status: "queued",
           size: formatBytes(file.size),
@@ -62,6 +57,7 @@ const findFilesToUpload = async (cwd, filesList, device) => {
           eta: Infinity,
           speed: "",
           transferred: 0,
+          transferred_b: 0,
         },
       ])
     );
@@ -93,17 +89,14 @@ const findFilesToUpload = async (cwd, filesList, device) => {
 };
 
 const uploadFiles = async (
+  socket_main_id,
   files,
   cwd,
   device,
   CSRFToken,
-  totalSize,
-  trackFilesProgress,
   filesStatus,
   metadata
 ) => {
-  let eta = Infinity;
-  const filesProgress = { uploaded: 0 };
   let uploadStarted = false;
   let newFiles = [];
   for (let file of files) {
@@ -117,15 +110,7 @@ const uploadFiles = async (
       newFiles.push(file);
     }
   }
-  const ETA = (timeStarted) => {
-    const timeElapsed = new Date() - timeStarted;
-    const uploadSpeed = filesProgress.uploaded / (timeElapsed / 1000);
-    const time = (totalSize - filesProgress.uploaded) / uploadSpeed;
-    eta = formatSeconds(time);
-    postMessage({ mode: "filesStatus_eta", eta });
-  };
-  const timeStarted = new Date();
-  const timer = setInterval(ETA, 1000, timeStarted);
+
   try {
     filesStatus = { ...filesStatus, total: files.length, processed: 0 };
     postMessage({
@@ -137,25 +122,15 @@ const uploadFiles = async (
     await async.eachLimit(newFiles, concurrency, async (file) => {
       try {
         await uploadFile(
+          socket_main_id,
           file,
           cwd,
           file.modified,
           device,
-          CSRFToken,
-          filesProgress,
-          trackFilesProgress,
-          filesStatus,
-          socket
+          CSRFToken
         );
-        filesStatus = {
-          ...filesStatus,
-          processed: filesStatus.processed + 1,
-        };
+
         console.log(filesStatus.processed, idx);
-        postMessage({
-          mode: "filesStatus_processed",
-          processed: filesStatus.processed,
-        });
 
         if (idx === 0) {
           uploadStarted = true;
@@ -166,7 +141,6 @@ const uploadFiles = async (
         console.log(err);
       }
     });
-    clearInterval(timer);
     postMessage({ mode: "finish" });
   } catch (err) {
     console.log(err);
@@ -180,22 +154,20 @@ onmessage = ({ data }) => {
     findFilesToUpload(pwd, files, device);
   } else if (mode === "upload") {
     const {
+      socket_main_id,
       filesToUpload,
       pwd,
       device,
       CSRFToken,
-      total,
-      trackFilesProgress,
       filesStatus,
       metadata,
     } = data;
     uploadFiles(
+      socket_main_id,
       filesToUpload,
       pwd,
       device,
       CSRFToken,
-      total,
-      trackFilesProgress,
       filesStatus,
       metadata
     );

@@ -32,7 +32,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
   };
 }); // TypeScript only: need a type cast here because https://github.com/Microsoft/TypeScript/issues/26591
 
-export default function CustomizedBreadcrumbs({ queue, layout, link }) {
+export default function CustomizedBreadcrumbs({ queue, layout, link, k }) {
   let label;
   return (
     <Breadcrumbs
@@ -48,7 +48,7 @@ export default function CustomizedBreadcrumbs({ queue, layout, link }) {
         padding: 0,
       }}
     >
-      {(layout === "share" || layout == "dashboard") &&
+      {(layout === "share" || layout === "dashboard") &&
         queue.map((dir, idx) => {
           if (dir === "/") {
             label = "Home";
@@ -60,7 +60,7 @@ export default function CustomizedBreadcrumbs({ queue, layout, link }) {
           return (
             <StyledBreadcrumb
               component={Link}
-              to={link}
+              to={k ? link + "?k=" + k : link}
               label={label}
               key={link}
               icon={label === "Home" ? <HomeIcon fontSize="small" /> : <></>}
