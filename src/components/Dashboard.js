@@ -37,6 +37,7 @@ const Dashboard = () => {
   const csrftoken = useFetchCSRFToken(csrftokenURL);
   const [total, fetchTotal] = useFetchTotal();
   const [edit, setEdit] = useState({
+    mode: "edit",
     editStart: undefined,
     editStop: undefined,
     edited: undefined,

@@ -1,18 +1,27 @@
-import { DataGrid } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridRowModes,
+  GridRowEditStopReasons,
+} from "@mui/x-data-grid";
 import FolderIcon from "./icons/FolderIcon";
 
 import React, { useEffect, useContext } from "react";
-import { Typography, Box } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Typography, Box, Button } from "@mui/material";
+import { Link, useParams } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
 import { useGridApiRef } from "@mui/x-data-grid";
 import Activity from "./FileActivity.js";
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
+import AddIcon from "@mui/icons-material/Add";
+import { v4 as uuidv4 } from "uuid";
+
 import {
   EditContext,
   ItemSelectionContext,
   ModalContext,
+  PathContext,
   RightClickContext,
   UploadFolderContenxt,
 } from "./UseContext.js";
@@ -260,6 +269,7 @@ export default React.memo(function DataGridTable({
   let rows = [];
   const columns = columnDef(path, nav, layout);
   const [newRows, setNewRows] = React.useState([]);
+  const [rowModesModel, setRowModesModel] = React.useState([]);
   const rowClick = React.useRef(false);
   const [coords, setCoords] = React.useState({ x: 0, y: 0 });
   const [paginationModel, setPaginationModel] = React.useState({
@@ -272,8 +282,16 @@ export default React.memo(function DataGridTable({
   const versionedFiles = React.useRef({});
   const tempFiles = React.useRef({});
   const originFileId = React.useRef("");
+  const [deleteOldId, setDeleteOldId] = React.useState({
+    delete: undefined,
+    id: "",
+    old_id: "",
+    row: {},
+  });
   const ref = React.useRef();
   const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
+  const params = useParams();
+  const subpath = params["*"];
   const { fileIds, directories } = itemsSelected;
   const data = useContext(UploadFolderContenxt);
   const { edit, setEdit } = useContext(EditContext);
@@ -286,6 +304,7 @@ export default React.memo(function DataGridTable({
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
   const [rename] = useRename(fileIds, directories, edit, setEdit);
+  console.log(subpath);
   const fileContextProps = {
     setOpenContext,
     setOpen,
@@ -326,20 +345,9 @@ export default React.memo(function DataGridTable({
 
   console.log("table rendered");
 
-  const processRowUpdate = (newRow) => {
-    rename();
-    setEdit((prev) => ({
-      ...prev,
-      val: newRow.name,
-      editStop: true,
-      editStart: false,
-    }));
-    return newRow;
+  const handleRowModesModelChange = (newRowsModesModel) => {
+    setRowModesModel(newRowsModesModel);
   };
-
-  const handleRowModesModelChange = () => {};
-
-  const rowModesModel = () => {};
 
   const onRowSelectionModelChange = (newRowSelectionModel) => {
     if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
@@ -394,6 +402,105 @@ export default React.memo(function DataGridTable({
       onContextMenu: contextMenu,
       style: { cursor: "context-menu" },
     },
+    toolbar: { setNewRows, setRowModesModel },
+  };
+
+  const getPath = (subpath, name) => {
+    if (subpath === "home") {
+      return {
+        path: "/" + name,
+        device: name,
+        folder: name,
+      };
+    } else {
+      const path = subpath.split("/")[1] + name;
+      const device = subpath.split("/")[1].split("/")[1];
+      const folder = name;
+      return { path, device, folder };
+    }
+  };
+
+  const processRowUpdate = (newRow) => {
+    if (edit.mode === "edit") {
+      rename();
+      setEdit((prev) => ({
+        ...prev,
+        val: newRow.name,
+        editStop: true,
+        editStart: false,
+      }));
+    } else if (edit.mode === "insert") {
+      const temp_id = newRow.id;
+      const id = `folder;${temp_id};${getPath(subpath, newRow.name).path};${
+        getPath(subpath, newRow.name).folder
+      };${temp_id};${getPath(subpath, newRow.name).device}`;
+      newRow.path = getPath(subpath, newRow.name).path;
+      delete newRow.id;
+      console.log(newRow);
+      setEdit((prev) => ({
+        ...prev,
+        mode: "edit",
+        val: newRow.name,
+        editStop: true,
+        editStart: false,
+      }));
+      setDeleteOldId((prev) => ({
+        ...prev,
+        delete: true,
+        id: id,
+        old_id: temp_id,
+        row: { ...newRow },
+      }));
+      newRow.id = id;
+    }
+
+    return newRow;
+  };
+
+  const handleRowEditStop = (params, event) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
+    }
+  };
+  const EditToolbar = (props) => {
+    const { setNewRows, setRowModesModel } = props;
+    // id: `folder;${folder.uuid};${folder.path};${folder.folder};${folder.uuid};${folder.device}`,
+    const id = uuidv4();
+    // const id = `folder;${folderId};${getPath(subpath, "New Folder").path};${
+    //   getPath(subpath, "New Folder").folder
+    // };${folderId};${getPath(subpath, "New Folder").device}`;
+
+    const handleClick = () => {
+      setEdit((prev) => ({ ...prev, mode: "insert", editStart: true }));
+      selectedToEdit.current = id;
+      setNewRows((oldRows) => [
+        ...oldRows,
+        {
+          id,
+          icon: "icon",
+          name: "New Folder",
+          size: "--",
+          item: "folder",
+          versions: "--",
+          last_modified: new Date().toLocaleDateString("en-in", options),
+        },
+      ]);
+      setRowModesModel((oldModel) => ({
+        ...oldModel,
+        [id]: {
+          mode: GridRowModes.Edit,
+          fieldToFocus: "name",
+        },
+      }));
+    };
+
+    return (
+      <GridToolbarContainer>
+        <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+          Add record
+        </Button>
+      </GridToolbarContainer>
+    );
   };
 
   const rowClicked = (params, event, details) => {
@@ -462,13 +569,35 @@ export default React.memo(function DataGridTable({
   // }, [apiRef]);
 
   useEffect(() => {
-    if (selectedToEdit.current && edit.editStart) {
+    if (selectedToEdit.current && edit.mode === "insert" && edit.editStart) {
       const params = { id: selectedToEdit.current, field: "name" };
       apiRef.current.startCellEditMode(params);
       setEdit((prev) => ({ ...prev, editing: true }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiRef, edit.editStart]);
+
+  useEffect(() => {
+    if (selectedToEdit.current && edit.mode === "insert" && edit.editStart) {
+      const params = { id: selectedToEdit.current };
+      apiRef.current.startRowEditMode(params);
+    }
+  }, [apiRef, edit.editStart, edit.mode]);
+
+  useEffect(() => {
+    if (deleteOldId.delete) {
+      apiRef.current.updateRows([
+        { id: deleteOldId.old_id, _action: "delete" },
+      ]);
+      apiRef.current.updateRows([{ id: deleteOldId.id, ...deleteOldId.row }]);
+    }
+  }, [
+    apiRef,
+    deleteOldId.delete,
+    deleteOldId.id,
+    deleteOldId.old_id,
+    deleteOldId.row,
+  ]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -535,6 +664,7 @@ export default React.memo(function DataGridTable({
         initialState={initialState}
         pageSizeOptions={[5, 10, 15, 20, 50, 100]}
         checkboxSelection
+        slots={{ toolbar: EditToolbar }}
         slotProps={slotProps}
         loading={loading}
         disableVirtualization={false}
@@ -542,9 +672,10 @@ export default React.memo(function DataGridTable({
         processRowUpdate={processRowUpdate}
         onProcessRowUpdateError={(err) => console.log(err)}
         editMode="cell"
-        // rowModesModel={rowModesModel}
-        // onRowModesModelChange={handleRowModesModelChange}
+        rowModesModel={rowModesModel}
+        onRowModesModelChange={handleRowModesModelChange}
         onRowSelectionModelChange={onRowSelectionModelChange}
+        onRowEditStop={handleRowEditStop}
         rowSelectionModel={rowSelectionModel}
         rowHeight={40}
         density={"standard"}
