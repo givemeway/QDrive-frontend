@@ -316,7 +316,36 @@ export default React.memo(function DataGridTable({
     ref,
   };
 
+  const initialState = {
+    pagination: {
+      paginationModel: {
+        pageSize: 50,
+      },
+    },
+  };
+
   console.log("table rendered");
+
+  const processRowUpdate = (newRow) => {
+    rename();
+    setEdit((prev) => ({
+      ...prev,
+      val: newRow.name,
+      editStop: true,
+      editStart: false,
+    }));
+    return newRow;
+  };
+
+  const handleRowModesModelChange = () => {};
+
+  const rowModesModel = () => {};
+
+  const onRowSelectionModelChange = (newRowSelectionModel) => {
+    if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
+    rowClick.current = false;
+  };
+
   const contextMenu = (event) => {
     event.preventDefault();
     const type = event.currentTarget.getAttribute("data-id").split(";")[0];
@@ -355,8 +384,16 @@ export default React.memo(function DataGridTable({
         }
       }
     });
+
     setOpenContext(true);
     setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
+  };
+
+  const slotProps = {
+    row: {
+      onContextMenu: contextMenu,
+      style: { cursor: "context-menu" },
+    },
   };
 
   const rowClicked = (params, event, details) => {
@@ -495,46 +532,25 @@ export default React.memo(function DataGridTable({
         ref={gridRef}
         apiRef={apiRef}
         columns={columns}
-        initialState={{
-          pagination: {
-            paginationModel: {
-              pageSize: 50,
-            },
-          },
-        }}
+        initialState={initialState}
         pageSizeOptions={[5, 10, 15, 20, 50, 100]}
         checkboxSelection
-        slotProps={{
-          row: {
-            onContextMenu: contextMenu,
-            style: { cursor: "context-menu" },
-          },
-        }}
+        slotProps={slotProps}
         loading={loading}
         disableVirtualization={false}
         onRowClick={rowClicked}
-        processRowUpdate={(newRow) => {
-          rename();
-          setEdit((prev) => ({
-            ...prev,
-            val: newRow.name,
-            editStop: true,
-            editStart: false,
-          }));
-          return newRow;
-        }}
+        processRowUpdate={processRowUpdate}
         onProcessRowUpdateError={(err) => console.log(err)}
         editMode="cell"
-        onRowSelectionModelChange={(newRowSelectionModel) => {
-          if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
-          rowClick.current = false;
-        }}
+        // rowModesModel={rowModesModel}
+        // onRowModesModelChange={handleRowModesModelChange}
+        onRowSelectionModelChange={onRowSelectionModelChange}
         rowSelectionModel={rowSelectionModel}
-        // hideFooter={true}
         rowHeight={40}
         density={"standard"}
         sx={dataGridStyle}
         keepNonExistentRowsSelected
+        // hideFooter={true}
       />
       {openContext &&
         (selectionType === fileVersion || selectionType === file) && (
