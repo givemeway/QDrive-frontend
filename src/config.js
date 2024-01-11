@@ -93,6 +93,10 @@ const restoreTrashItems =
   process.env.REACT_APP_ENV === PRODUCTION
     ? server + "/app/restoreTrashItems"
     : "/app/restoreTrashItems";
+const deleteTrashURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/deleteTrashItems"
+    : "/app/deleteTrashItems";
 const concurrency = 5;
 const cwd = "/";
 const devicename = "DESKTOP-10RSGE8";
@@ -128,4 +132,5 @@ export {
   validateShareURL,
   concurrency,
   server,
+  deleteTrashURL,
 };
