@@ -446,13 +446,8 @@ export default React.memo(function DataGridTable({
       newRow.id = id;
       selectedToEdit.current = id;
       createFolder(newRow.name);
-      // setDeleteOldId((prev) => ({
-      //   ...prev,
-      //   delete: true,
-      //   id: id,
-      //   old_id: tempRow.current.id,
-      //   row: { ...newRow },
-      // }));
+      setEdit((prev) => ({ ...prev, edited: true }));
+
       console.log(newRow);
     }
 
@@ -524,8 +519,8 @@ export default React.memo(function DataGridTable({
   };
 
   useEffect(() => {
-    if (edit.mode === "insert" && createFolderResponse.success) {
-      alert(createFolderResponse.msg);
+    if (edit.mode === "insert" && createFolderResponse.success && edit.edited) {
+      // alert(createFolderResponse.msg);
       setDeleteOldId((prev) => ({
         ...prev,
         delete: true,
@@ -533,27 +528,17 @@ export default React.memo(function DataGridTable({
         old_id: tempRow.current.id,
         row: { ...tempRow.current.row },
       }));
-      setEdit((prev) => ({
-        ...prev,
-        mode: "edit",
-        val: tempRow.current.row?.name,
-        editStop: true,
-        editStart: false,
-      }));
-    } else if (edit.mode === "insert" && !createFolderResponse.success) {
+    } else if (
+      edit.mode === "insert" &&
+      !createFolderResponse.success &&
+      edit.edited
+    ) {
       setDeleteOldId((prev) => ({
         ...prev,
         delete: false,
         id: selectedToEdit.current,
         old_id: tempRow.current.id,
         row: { ...tempRow.current.row },
-      }));
-      setEdit((prev) => ({
-        ...prev,
-        mode: "edit",
-        val: tempRow.current.row?.name,
-        editStop: true,
-        editStart: false,
       }));
     }
   }, [createFolderResponse, edit.mode, setEdit]);
@@ -596,17 +581,8 @@ export default React.memo(function DataGridTable({
     }
   }, [rowSelectionModel, setItemsSelection]);
 
-  // useEffect(() => {
-  //   return apiRef.current.subscribeEvent("scrollPositionChange", () => {
-  //     const data = gridRef.current.querySelector(
-  //       ".MuiDataGrid-virtualScroller"
-  //     );
-  //     console.log(data.scrollTop + data.clientHeight, data.scrollHeight);
-  //   });
-  // }, [apiRef]);
-
   useEffect(() => {
-    if (selectedToEdit.current && edit.mode === "insert" && edit.editStart) {
+    if (selectedToEdit.current && edit.editStart) {
       const params = { id: selectedToEdit.current, field: "name" };
       apiRef.current.startCellEditMode(params);
       setEdit((prev) => ({ ...prev, editing: true }));
@@ -622,12 +598,13 @@ export default React.memo(function DataGridTable({
   }, [apiRef, edit.editStart, edit.mode]);
 
   useEffect(() => {
-    if (deleteOldId.delete && edit.mode === "insert") {
+    if (deleteOldId.delete && edit.mode === "insert" && edit.edited) {
       apiRef.current.updateRows([
         { id: deleteOldId.old_id, _action: "delete" },
       ]);
       apiRef.current.updateRows([{ id: deleteOldId.id, ...deleteOldId.row }]);
-    } else if (!deleteOldId.delete && edit.mode === "insert") {
+    } else if (!deleteOldId.delete && edit.mode === "insert" && edit.edited) {
+      apiRef.current.updateRows([{ id: deleteOldId.id, _action: "delete" }]);
       apiRef.current.updateRows([
         { id: deleteOldId.old_id, _action: "delete" },
       ]);
