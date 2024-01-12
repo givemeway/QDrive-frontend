@@ -32,6 +32,7 @@ import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
 import Share from "./Share";
 import { get_file_icon, svgIconStyle } from "./fileFormats/FileFormat.js";
 import useRename from "./hooks/RenameItemHook";
+import useCreateFolder from "./hooks/CreateFolderHook.js";
 
 const multiple = "multiple";
 const file = "file";
@@ -303,7 +304,9 @@ export default React.memo(function DataGridTable({
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
+  const tempRow = React.useRef({ id: null, row: null });
   const [rename] = useRename(fileIds, directories, edit, setEdit);
+  const [createFolder, createFolderResponse] = useCreateFolder(subpath);
   console.log(subpath);
   const fileContextProps = {
     setOpenContext,
@@ -421,6 +424,7 @@ export default React.memo(function DataGridTable({
   };
 
   const processRowUpdate = (newRow) => {
+    console.log(edit);
     if (edit.mode === "edit") {
       rename();
       setEdit((prev) => ({
@@ -430,28 +434,26 @@ export default React.memo(function DataGridTable({
         editStart: false,
       }));
     } else if (edit.mode === "insert") {
-      const temp_id = newRow.id;
-      const id = `folder;${temp_id};${getPath(subpath, newRow.name).path};${
-        getPath(subpath, newRow.name).folder
-      };${temp_id};${getPath(subpath, newRow.name).device}`;
+      tempRow.current.id = newRow.id;
+      const id = `folder;${tempRow.current.id};${
+        getPath(subpath, newRow.name).path
+      };${getPath(subpath, newRow.name).folder};${tempRow.current.id};${
+        getPath(subpath, newRow.name).device
+      }`;
       newRow.path = getPath(subpath, newRow.name).path;
       delete newRow.id;
-      console.log(newRow);
-      setEdit((prev) => ({
-        ...prev,
-        mode: "edit",
-        val: newRow.name,
-        editStop: true,
-        editStart: false,
-      }));
-      setDeleteOldId((prev) => ({
-        ...prev,
-        delete: true,
-        id: id,
-        old_id: temp_id,
-        row: { ...newRow },
-      }));
+      tempRow.current.row = newRow;
       newRow.id = id;
+      selectedToEdit.current = id;
+      createFolder(newRow.name);
+      // setDeleteOldId((prev) => ({
+      //   ...prev,
+      //   delete: true,
+      //   id: id,
+      //   old_id: tempRow.current.id,
+      //   row: { ...newRow },
+      // }));
+      console.log(newRow);
     }
 
     return newRow;
@@ -522,6 +524,41 @@ export default React.memo(function DataGridTable({
   };
 
   useEffect(() => {
+    if (edit.mode === "insert" && createFolderResponse.success) {
+      alert(createFolderResponse.msg);
+      setDeleteOldId((prev) => ({
+        ...prev,
+        delete: true,
+        id: selectedToEdit.current,
+        old_id: tempRow.current.id,
+        row: { ...tempRow.current.row },
+      }));
+      setEdit((prev) => ({
+        ...prev,
+        mode: "edit",
+        val: tempRow.current.row?.name,
+        editStop: true,
+        editStart: false,
+      }));
+    } else if (edit.mode === "insert" && !createFolderResponse.success) {
+      setDeleteOldId((prev) => ({
+        ...prev,
+        delete: false,
+        id: selectedToEdit.current,
+        old_id: tempRow.current.id,
+        row: { ...tempRow.current.row },
+      }));
+      setEdit((prev) => ({
+        ...prev,
+        mode: "edit",
+        val: tempRow.current.row?.name,
+        editStop: true,
+        editStart: false,
+      }));
+    }
+  }, [createFolderResponse, edit.mode, setEdit]);
+
+  useEffect(() => {
     const files = [];
     const folders = [];
     rowSelectionModel.forEach((val) => {
@@ -585,11 +622,15 @@ export default React.memo(function DataGridTable({
   }, [apiRef, edit.editStart, edit.mode]);
 
   useEffect(() => {
-    if (deleteOldId.delete) {
+    if (deleteOldId.delete && edit.mode === "insert") {
       apiRef.current.updateRows([
         { id: deleteOldId.old_id, _action: "delete" },
       ]);
       apiRef.current.updateRows([{ id: deleteOldId.id, ...deleteOldId.row }]);
+    } else if (!deleteOldId.delete && edit.mode === "insert") {
+      apiRef.current.updateRows([
+        { id: deleteOldId.old_id, _action: "delete" },
+      ]);
     }
   }, [
     apiRef,
@@ -597,6 +638,7 @@ export default React.memo(function DataGridTable({
     deleteOldId.id,
     deleteOldId.old_id,
     deleteOldId.row,
+    edit.mode,
   ]);
 
   useEffect(() => {
