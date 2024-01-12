@@ -19,6 +19,8 @@ import { get_file_icon } from "./fileFormats/FileFormat";
 import TrashModal from "./Modal/TrashModal";
 import { TrashContext } from "./UseContext";
 import BulkTrashModal from "./Modal/BulkTrashModal";
+import BulkTrashDeleteModal from "./Modal/BulkTrashDeleteModal";
+
 import DeleteForeverIcon from "@mui/icons-material/DeleteForeverSharp";
 const options = {
   year: "numeric",
@@ -211,6 +213,7 @@ export default React.memo(function DataGridTable() {
   const [selectedItems, setSelectedItems] = React.useState([]);
   const [deletedItems, initFetchDeleted, deletedLoaded] =
     useFetchDeletedItems();
+  const [openBulkTrashDelete, setOpenBulkTrashDelete] = React.useState(false);
 
   const [restoring, setRestoring] = React.useState(false);
 
@@ -220,12 +223,20 @@ export default React.memo(function DataGridTable() {
     setOpenTrashItems(true);
   };
 
+  const handleBulkTrashDelete = () => {
+    setOpenBulkTrashDelete(true);
+  };
+
   const rowClicked = (params, event, details) => {
     setSelectedItems([]);
     setRowSelectionModel((prev) => {
       if (prev.length > 0) {
-        if (prev.includes(params.id))
-          return prev.filter((id) => id !== params.id);
+        if (prev.includes(params.id)) {
+          const filtered = prev.filter((id) => id !== params.id);
+          setSelectedItems(filtered);
+          return filtered;
+        }
+        setSelectedItems([...prev, params.id]);
         return [...prev, params.id];
       } else if (prev.length === 0) {
         console.log("trigger modal action");
@@ -383,6 +394,18 @@ export default React.memo(function DataGridTable() {
             <TrashModal />
           </TrashContext.Provider>
         )}
+        {openBulkTrashDelete && (
+          <TrashContext.Provider
+            value={{
+              openBulkTrashDelete,
+              setOpenBulkTrashDelete,
+              selectedItems,
+              setRestoring,
+            }}
+          >
+            <BulkTrashDeleteModal />
+          </TrashContext.Provider>
+        )}
         {openTrashItems && (
           <TrashContext.Provider
             value={{
@@ -406,6 +429,9 @@ export default React.memo(function DataGridTable() {
             justifyContent: "center",
           }}
         >
+          <Typography align="center">
+            {selectedItems.length} item selected
+          </Typography>
           <Button
             variant="contained"
             sx={restoreButtonStyle}
@@ -418,6 +444,7 @@ export default React.memo(function DataGridTable() {
             variant="text"
             sx={deleteButtonStyle}
             startIcon={<DeleteForeverIcon />}
+            onClick={handleBulkTrashDelete}
           >
             Permanently delete
           </Button>
