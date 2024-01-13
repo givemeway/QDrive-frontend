@@ -5,28 +5,7 @@ import Header from "./HomePageHeader";
 import * as React from "react";
 import useValidateLogin from "./hooks/LoginHook";
 import { useNavigate } from "react-router-dom";
-import Snackbar from "@mui/material/Snackbar";
-import MuiAlert from "@mui/material/Alert";
-
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
-const MessageSnackBar = ({ msg, severity, setMessage }) => {
-  const [open, setOpen] = useState(true);
-  const handleClose = () => {
-    setOpen(false);
-    setMessage(false);
-  };
-  console.log({ msg, severity });
-  return (
-    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-      <Alert onClose={handleClose} severity={severity} sx={{ width: "100%" }}>
-        {msg}
-      </Alert>
-    </Snackbar>
-  );
-};
+import MessageSnackBar from "./Snackbar/SnackBar";
 
 const Login = () => {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });

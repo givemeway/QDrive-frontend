@@ -348,10 +348,6 @@ export default React.memo(function DataGridTable({
 
   console.log("table rendered");
 
-  const handleRowModesModelChange = (newRowsModesModel) => {
-    setRowModesModel(newRowsModesModel);
-  };
-
   const onRowSelectionModelChange = (newRowSelectionModel) => {
     if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
     rowClick.current = false;
@@ -408,23 +404,7 @@ export default React.memo(function DataGridTable({
     toolbar: { setNewRows, setRowModesModel },
   };
 
-  const getPath = (subpath, name) => {
-    if (subpath === "home") {
-      return {
-        path: "/" + name,
-        device: name,
-        folder: name,
-      };
-    } else {
-      const path = subpath.split("/")[1] + name;
-      const device = subpath.split("/")[1].split("/")[1];
-      const folder = name;
-      return { path, device, folder };
-    }
-  };
-
   const processRowUpdate = (newRow) => {
-    console.log(edit);
     if (edit.mode === "edit") {
       rename();
       setEdit((prev) => ({
@@ -433,71 +413,8 @@ export default React.memo(function DataGridTable({
         editStop: true,
         editStart: false,
       }));
-    } else if (edit.mode === "insert") {
-      tempRow.current.id = newRow.id;
-      const id = `folder;${tempRow.current.id};${
-        getPath(subpath, newRow.name).path
-      };${getPath(subpath, newRow.name).folder};${tempRow.current.id};${
-        getPath(subpath, newRow.name).device
-      }`;
-      newRow.path = getPath(subpath, newRow.name).path;
-      delete newRow.id;
-      tempRow.current.row = newRow;
-      newRow.id = id;
-      selectedToEdit.current = id;
-      createFolder(newRow.name);
-      setEdit((prev) => ({ ...prev, edited: true }));
-
-      console.log(newRow);
     }
-
     return newRow;
-  };
-
-  const handleRowEditStop = (params, event) => {
-    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
-      event.defaultMuiPrevented = true;
-    }
-  };
-  const EditToolbar = (props) => {
-    const { setNewRows, setRowModesModel } = props;
-    // id: `folder;${folder.uuid};${folder.path};${folder.folder};${folder.uuid};${folder.device}`,
-    const id = uuidv4();
-    // const id = `folder;${folderId};${getPath(subpath, "New Folder").path};${
-    //   getPath(subpath, "New Folder").folder
-    // };${folderId};${getPath(subpath, "New Folder").device}`;
-
-    const handleClick = () => {
-      setEdit((prev) => ({ ...prev, mode: "insert", editStart: true }));
-      selectedToEdit.current = id;
-      setNewRows((oldRows) => [
-        ...oldRows,
-        {
-          id,
-          icon: "icon",
-          name: "New Folder",
-          size: "--",
-          item: "folder",
-          versions: "--",
-          last_modified: new Date().toLocaleDateString("en-in", options),
-        },
-      ]);
-      setRowModesModel((oldModel) => ({
-        ...oldModel,
-        [id]: {
-          mode: GridRowModes.Edit,
-          fieldToFocus: "name",
-        },
-      }));
-    };
-
-    return (
-      <GridToolbarContainer>
-        <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-          Add record
-        </Button>
-      </GridToolbarContainer>
-    );
   };
 
   const rowClicked = (params, event, details) => {
@@ -517,31 +434,6 @@ export default React.memo(function DataGridTable({
       }
     });
   };
-
-  useEffect(() => {
-    if (edit.mode === "insert" && createFolderResponse.success && edit.edited) {
-      // alert(createFolderResponse.msg);
-      setDeleteOldId((prev) => ({
-        ...prev,
-        delete: true,
-        id: selectedToEdit.current,
-        old_id: tempRow.current.id,
-        row: { ...tempRow.current.row },
-      }));
-    } else if (
-      edit.mode === "insert" &&
-      !createFolderResponse.success &&
-      edit.edited
-    ) {
-      setDeleteOldId((prev) => ({
-        ...prev,
-        delete: false,
-        id: selectedToEdit.current,
-        old_id: tempRow.current.id,
-        row: { ...tempRow.current.row },
-      }));
-    }
-  }, [createFolderResponse, edit.mode, setEdit]);
 
   useEffect(() => {
     const files = [];
@@ -589,34 +481,6 @@ export default React.memo(function DataGridTable({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiRef, edit.editStart]);
-
-  useEffect(() => {
-    if (selectedToEdit.current && edit.mode === "insert" && edit.editStart) {
-      const params = { id: selectedToEdit.current };
-      apiRef.current.startRowEditMode(params);
-    }
-  }, [apiRef, edit.editStart, edit.mode]);
-
-  useEffect(() => {
-    if (deleteOldId.delete && edit.mode === "insert" && edit.edited) {
-      apiRef.current.updateRows([
-        { id: deleteOldId.old_id, _action: "delete" },
-      ]);
-      apiRef.current.updateRows([{ id: deleteOldId.id, ...deleteOldId.row }]);
-    } else if (!deleteOldId.delete && edit.mode === "insert" && edit.edited) {
-      apiRef.current.updateRows([{ id: deleteOldId.id, _action: "delete" }]);
-      apiRef.current.updateRows([
-        { id: deleteOldId.old_id, _action: "delete" },
-      ]);
-    }
-  }, [
-    apiRef,
-    deleteOldId.delete,
-    deleteOldId.id,
-    deleteOldId.old_id,
-    deleteOldId.row,
-    edit.mode,
-  ]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -683,7 +547,6 @@ export default React.memo(function DataGridTable({
         initialState={initialState}
         pageSizeOptions={[5, 10, 15, 20, 50, 100]}
         checkboxSelection
-        slots={{ toolbar: EditToolbar }}
         slotProps={slotProps}
         loading={loading}
         disableVirtualization={false}
@@ -692,9 +555,7 @@ export default React.memo(function DataGridTable({
         onProcessRowUpdateError={(err) => console.log(err)}
         editMode="cell"
         rowModesModel={rowModesModel}
-        onRowModesModelChange={handleRowModesModelChange}
         onRowSelectionModelChange={onRowSelectionModelChange}
-        onRowEditStop={handleRowEditStop}
         rowSelectionModel={rowSelectionModel}
         rowHeight={40}
         density={"standard"}
