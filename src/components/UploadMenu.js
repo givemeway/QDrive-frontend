@@ -1,7 +1,8 @@
 import { Box, Divider, Stack } from "@mui/material";
 import React, { useState, useContext } from "react";
 
-import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
+// import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
+import CreateNewFolderIcon from "./CreateFolder.js";
 import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
@@ -51,10 +52,7 @@ export default React.memo(function UploadMenu() {
           </UploadContext.Provider>
           <Divider orientation="vertical" />
 
-          <CreateNewFolderIcon
-            color="primary"
-            sx={{ cursor: "pointer", fontSize: 25 }}
-          />
+          <CreateNewFolderIcon />
 
           <Divider orientation="vertical" />
           {(fileIds.length > 0 || directories.length > 0) && (

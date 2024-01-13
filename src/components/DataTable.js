@@ -1,18 +1,27 @@
-import { DataGrid } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridRowModes,
+  GridRowEditStopReasons,
+} from "@mui/x-data-grid";
 import FolderIcon from "./icons/FolderIcon";
 
 import React, { useEffect, useContext } from "react";
-import { Typography, Box } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Typography, Box, Button } from "@mui/material";
+import { Link, useParams } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
 import { useGridApiRef } from "@mui/x-data-grid";
 import Activity from "./FileActivity.js";
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
+import AddIcon from "@mui/icons-material/Add";
+import { v4 as uuidv4 } from "uuid";
+
 import {
   EditContext,
   ItemSelectionContext,
   ModalContext,
+  PathContext,
   RightClickContext,
   UploadFolderContenxt,
 } from "./UseContext.js";
@@ -23,6 +32,7 @@ import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
 import Share from "./Share";
 import { get_file_icon, svgIconStyle } from "./fileFormats/FileFormat.js";
 import useRename from "./hooks/RenameItemHook";
+import useCreateFolder from "./hooks/CreateFolderHook.js";
 
 const multiple = "multiple";
 const file = "file";
@@ -260,6 +270,7 @@ export default React.memo(function DataGridTable({
   let rows = [];
   const columns = columnDef(path, nav, layout);
   const [newRows, setNewRows] = React.useState([]);
+  const [rowModesModel, setRowModesModel] = React.useState([]);
   const rowClick = React.useRef(false);
   const [coords, setCoords] = React.useState({ x: 0, y: 0 });
   const [paginationModel, setPaginationModel] = React.useState({
@@ -272,8 +283,16 @@ export default React.memo(function DataGridTable({
   const versionedFiles = React.useRef({});
   const tempFiles = React.useRef({});
   const originFileId = React.useRef("");
+  const [deleteOldId, setDeleteOldId] = React.useState({
+    delete: undefined,
+    id: "",
+    old_id: "",
+    row: {},
+  });
   const ref = React.useRef();
   const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
+  const params = useParams();
+  const subpath = params["*"];
   const { fileIds, directories } = itemsSelected;
   const data = useContext(UploadFolderContenxt);
   const { edit, setEdit } = useContext(EditContext);
@@ -285,7 +304,10 @@ export default React.memo(function DataGridTable({
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
+  const tempRow = React.useRef({ id: null, row: null });
   const [rename] = useRename(fileIds, directories, edit, setEdit);
+  const [createFolder, createFolderResponse] = useCreateFolder(subpath);
+  console.log(subpath);
   const fileContextProps = {
     setOpenContext,
     setOpen,
@@ -325,21 +347,6 @@ export default React.memo(function DataGridTable({
   };
 
   console.log("table rendered");
-
-  const processRowUpdate = (newRow) => {
-    rename();
-    setEdit((prev) => ({
-      ...prev,
-      val: newRow.name,
-      editStop: true,
-      editStart: false,
-    }));
-    return newRow;
-  };
-
-  const handleRowModesModelChange = () => {};
-
-  const rowModesModel = () => {};
 
   const onRowSelectionModelChange = (newRowSelectionModel) => {
     if (!rowClick.current) setRowSelectionModel(newRowSelectionModel);
@@ -394,6 +401,20 @@ export default React.memo(function DataGridTable({
       onContextMenu: contextMenu,
       style: { cursor: "context-menu" },
     },
+    toolbar: { setNewRows, setRowModesModel },
+  };
+
+  const processRowUpdate = (newRow) => {
+    if (edit.mode === "edit") {
+      rename();
+      setEdit((prev) => ({
+        ...prev,
+        val: newRow.name,
+        editStop: true,
+        editStart: false,
+      }));
+    }
+    return newRow;
   };
 
   const rowClicked = (params, event, details) => {
@@ -451,15 +472,6 @@ export default React.memo(function DataGridTable({
       setActivity(false);
     }
   }, [rowSelectionModel, setItemsSelection]);
-
-  // useEffect(() => {
-  //   return apiRef.current.subscribeEvent("scrollPositionChange", () => {
-  //     const data = gridRef.current.querySelector(
-  //       ".MuiDataGrid-virtualScroller"
-  //     );
-  //     console.log(data.scrollTop + data.clientHeight, data.scrollHeight);
-  //   });
-  // }, [apiRef]);
 
   useEffect(() => {
     if (selectedToEdit.current && edit.editStart) {
@@ -542,8 +554,7 @@ export default React.memo(function DataGridTable({
         processRowUpdate={processRowUpdate}
         onProcessRowUpdateError={(err) => console.log(err)}
         editMode="cell"
-        // rowModesModel={rowModesModel}
-        // onRowModesModelChange={handleRowModesModelChange}
+        rowModesModel={rowModesModel}
         onRowSelectionModelChange={onRowSelectionModelChange}
         rowSelectionModel={rowSelectionModel}
         rowHeight={40}

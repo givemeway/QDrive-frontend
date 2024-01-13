@@ -97,6 +97,10 @@ const deleteTrashURL =
   process.env.REACT_APP_ENV === PRODUCTION
     ? server + "/app/deleteTrashItems"
     : "/app/deleteTrashItems";
+const createFolderURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/createFolder"
+    : "/app/createFolder";
 const concurrency = 5;
 const cwd = "/";
 const devicename = "DESKTOP-10RSGE8";
@@ -133,4 +137,5 @@ export {
   concurrency,
   server,
   deleteTrashURL,
+  createFolderURL,
 };

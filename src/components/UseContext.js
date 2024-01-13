@@ -10,6 +10,7 @@ const RightClickContext = createContext();
 const FolderExplorerContext = createContext();
 const PanelContext = createContext();
 const TrashContext = createContext();
+const NotificationContext = createContext();
 export {
   PathContext,
   UploadContext,
@@ -22,4 +23,5 @@ export {
   FolderExplorerContext,
   PanelContext,
   TrashContext,
+  NotificationContext,
 };

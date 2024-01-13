@@ -1,6 +1,7 @@
 import { Grid, Box, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import Search from "./SearchFilesFolders";
+import SnackBar from "./Snackbar/SnackBar.js";
 
 import NavigatePanel from "./Panel";
 import Header from "./Header";
@@ -13,6 +14,7 @@ import {
   SnackBarContext,
   EditContext,
   FolderExplorerContext,
+  NotificationContext,
 } from "./UseContext";
 
 import { csrftokenURL, trashTotalURL } from "../config";
@@ -36,7 +38,13 @@ const Dashboard = () => {
   const [isSearch, setIsSearch] = useState(false);
   const csrftoken = useFetchCSRFToken(csrftokenURL);
   const [total, fetchTotal] = useFetchTotal();
+  const [notify, setNotify] = useState({
+    show: false,
+    msg: "",
+    severity: null,
+  });
   const [edit, setEdit] = useState({
+    mode: "edit",
     editStart: undefined,
     editStop: undefined,
     edited: undefined,
@@ -108,103 +116,117 @@ const Dashboard = () => {
   }, [total]);
 
   return (
-    <Grid container columns={2} wrap="nowrap">
-      <Grid item sx={{ width: 240, height: "100vh" }}>
-        <FolderExplorerContext.Provider
-          value={{
-            nodeIDToExpand: "/" + subpath.split("/").slice(1).join("/"),
-            breadCrumb: breadCrumb,
-          }}
-        >
-          <PanelContext.Provider value={{ setTabSelected }}>
-            <NavigatePanel />
-          </PanelContext.Provider>
-        </FolderExplorerContext.Provider>
-      </Grid>
-      <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
-        <Grid container sx={{ height: "100%" }}>
-          <Grid
-            item
-            xs={12}
-            sx={{
-              height: tabSelected === 4 ? "15%" : "20%",
-              margin: 0,
-              padding: 0,
-            }}
-          >
-            <Search searchValue={searchValue} />
-            {tabSelected !== 4 && (
-              <Header
-                queue={breadCrumb}
-                searchValue={searchValue}
-                search={isSearch}
-              />
-            )}
+    <>
+      <NotificationContext.Provider value={setNotify}>
+        <Grid container columns={2} wrap="nowrap">
+          <Grid item sx={{ width: 240, height: "100vh" }}>
+            <FolderExplorerContext.Provider
+              value={{
+                nodeIDToExpand: "/" + subpath.split("/").slice(1).join("/"),
+                breadCrumb: breadCrumb,
+              }}
+            >
+              <PanelContext.Provider value={{ setTabSelected }}>
+                <NavigatePanel />
+              </PanelContext.Provider>
+            </FolderExplorerContext.Provider>
           </Grid>
-          {tabSelected !== 4 && (
-            <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
-              <SnackBarContext.Provider value={{ setItemDeletion }}>
-                <UploadFolderContenxt.Provider value={{ setData }}>
-                  <ItemSelectionContext.Provider value={itemsSelected}>
-                    <PathContext.Provider value={subpath}>
-                      <EditContext.Provider value={{ edit, setEdit }}>
-                        <PanelContext.Provider value={tabSelected}>
-                          <Menu />
-                        </PanelContext.Provider>
-                      </EditContext.Provider>
-                    </PathContext.Provider>
-                  </ItemSelectionContext.Provider>
-                </UploadFolderContenxt.Provider>
-              </SnackBarContext.Provider>
-            </Grid>
-          )}
           <Grid
             item
-            xs={12}
-            sx={{
-              height: tabSelected === 4 ? "85%" : "75%",
-              margin: 0,
-              padding: 0,
-            }}
+            sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}
           >
-            {!dataLoaded ? (
-              <Box
+            <Grid container sx={{ height: "100%" }}>
+              <Grid
+                item
+                xs={12}
                 sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "column",
+                  height: tabSelected === 4 ? "15%" : "20%",
+                  margin: 0,
+                  padding: 0,
                 }}
               >
-                <CircularProgress />
-                <Typography align="center">Loading...</Typography>
-              </Box>
-            ) : (
-              <SnackBarContext.Provider
-                value={{ itemDeletion, setItemDeletion }}
+                <Search searchValue={searchValue} />
+                {tabSelected !== 4 && (
+                  <Header
+                    queue={breadCrumb}
+                    searchValue={searchValue}
+                    search={isSearch}
+                  />
+                )}
+              </Grid>
+              {tabSelected !== 4 && (
+                <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
+                  <SnackBarContext.Provider value={{ setItemDeletion }}>
+                    <UploadFolderContenxt.Provider value={{ setData }}>
+                      <ItemSelectionContext.Provider value={itemsSelected}>
+                        <PathContext.Provider value={subpath}>
+                          <EditContext.Provider value={{ edit, setEdit }}>
+                            <PanelContext.Provider value={tabSelected}>
+                              <Menu />
+                            </PanelContext.Provider>
+                          </EditContext.Provider>
+                        </PathContext.Provider>
+                      </ItemSelectionContext.Provider>
+                    </UploadFolderContenxt.Provider>
+                  </SnackBarContext.Provider>
+                </Grid>
+              )}
+              <Grid
+                item
+                xs={12}
+                sx={{
+                  height: tabSelected === 4 ? "85%" : "75%",
+                  margin: 0,
+                  padding: 0,
+                }}
               >
-                <UploadFolderContenxt.Provider value={data}>
-                  <ItemSelectionContext.Provider
-                    value={{
-                      itemsSelected,
-                      setItemsSelection,
+                {!dataLoaded ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      flexDirection: "column",
                     }}
                   >
-                    <PathContext.Provider value={location.pathname}>
-                      <EditContext.Provider value={{ edit, setEdit }}>
-                        <PanelContext.Provider value={tabSelected}>
-                          <MainPanel />
-                        </PanelContext.Provider>
-                      </EditContext.Provider>
-                    </PathContext.Provider>
-                  </ItemSelectionContext.Provider>
-                </UploadFolderContenxt.Provider>
-              </SnackBarContext.Provider>
-            )}
+                    <CircularProgress />
+                    <Typography align="center">Loading...</Typography>
+                  </Box>
+                ) : (
+                  <SnackBarContext.Provider
+                    value={{ itemDeletion, setItemDeletion }}
+                  >
+                    <UploadFolderContenxt.Provider value={data}>
+                      <ItemSelectionContext.Provider
+                        value={{
+                          itemsSelected,
+                          setItemsSelection,
+                        }}
+                      >
+                        <PathContext.Provider value={location.pathname}>
+                          <EditContext.Provider value={{ edit, setEdit }}>
+                            <PanelContext.Provider value={tabSelected}>
+                              <MainPanel />
+                            </PanelContext.Provider>
+                          </EditContext.Provider>
+                        </PathContext.Provider>
+                      </ItemSelectionContext.Provider>
+                    </UploadFolderContenxt.Provider>
+                  </SnackBarContext.Provider>
+                )}
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
-      </Grid>
-    </Grid>
+      </NotificationContext.Provider>
+      {notify.show && (
+        <SnackBar
+          msg={notify.msg}
+          severity={notify.severity}
+          setMessage={setNotify}
+        />
+      )}
+    </>
   );
 };
 
