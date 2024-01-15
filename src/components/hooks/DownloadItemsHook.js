@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { csrftokenURL, get_download_zip } from "../../config.js";
+import { csrftokenURL, get_download_zip, server } from "../../config.js";
 import useFetchCSRFToken from "./FetchCSRFToken.js";
 
 function useDownload(fileIds, directories) {
@@ -36,10 +36,7 @@ function useDownload(fileIds, directories) {
         .then((res) => res.json())
         .then((data) => {
           const { key } = data;
-          window.open(
-            `https://localhost:3001/app/downloadItems?key=${key}&dl=1`,
-            "_parent"
-          );
+          window.open(`${server}/app/downloadItems?key=${key}&dl=1`, "_parent");
           setIsDownload(false);
         })
         .catch((err) => console.error(err));

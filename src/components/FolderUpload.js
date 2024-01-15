@@ -3,11 +3,7 @@ import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded"
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useContext, useRef } from "react";
 import { filesFoldersURL } from "../config.js";
-import {
-  PathContext,
-  UploadContext,
-  UploadFolderContenxt,
-} from "./UseContext.js";
+
 import { Button } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { Typography, Box } from "@mui/material";
@@ -15,6 +11,8 @@ import Snackbar from "@mui/material/Snackbar";
 import CircularProgress from "@mui/material/CircularProgress";
 import { socket } from "./Socket.js";
 import { formatBytes, formatSeconds } from "../util.js";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { dataAtom, subpathAtom, uploadAtom } from "../Recoil/Store/atoms.js";
 
 function CustomButton({ children }) {
   return (
@@ -35,7 +33,7 @@ function CustomButton({ children }) {
   );
 }
 
-function FolderUpload({ setUpload }) {
+function FolderUpload() {
   const [files, setFiles] = useState([]);
   const [pwd, setPWD] = useState("/");
   const [device, setDevice] = useState("/");
@@ -56,9 +54,9 @@ function FolderUpload({ setUpload }) {
   const [preparingFiles, setPreparingFiles] = useState(false);
   const filesMetaData = useRef({});
   const [uploadInitiated, setUploadInitiated] = useState(false);
-  const { setData } = useContext(UploadFolderContenxt);
-  const path = useContext(PathContext);
-  const folderProgress = useContext(UploadContext);
+  const setData = useSetRecoilState(dataAtom);
+  const path = useRecoilValue(subpathAtom);
+  const [folderProgress, setUpload] = useRecoilState(uploadAtom);
   const params = useParams();
   const subpath = params["*"];
 
@@ -190,19 +188,23 @@ function FolderUpload({ setUpload }) {
         file.transferred_b = formatBytes(uploaded);
         file.folder = id.split("/").slice(0, -1).join("/");
         file.bytes = parseInt(total);
-        const { transferred, startTime, bytes } = trackFilesProgress.get(id);
-        file.startTime = startTime;
-        const { eta, speed } = ETA(startTime, bytes, uploaded);
-        file.eta = eta;
-        file.speed = speed;
-        setFilesStatus((prev) => ({
-          ...prev,
-          uploaded: prev.uploaded + uploaded - transferred,
-        }));
-        setTrackFilesProgress((prev) => {
-          prev.set(id, file);
-          return prev;
-        });
+        file.id = id;
+        const data = trackFilesProgress.get(id);
+        if (data) {
+          const { transferred, startTime, bytes } = data;
+          file.startTime = startTime;
+          const { eta, speed } = ETA(startTime, bytes, uploaded);
+          file.eta = eta;
+          file.speed = speed;
+          setFilesStatus((prev) => ({
+            ...prev,
+            uploaded: prev.uploaded + uploaded - transferred,
+          }));
+          setTrackFilesProgress((prev) => {
+            prev.set(id, file);
+            return prev;
+          });
+        }
       };
 
       const onFileUploadedToDestination = ({ payload }) => {
@@ -210,6 +212,7 @@ function FolderUpload({ setUpload }) {
         const file = {};
         file.name = name;
         file.error = null;
+        file.id = id;
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "finalizing";
         setTrackFilesProgress((prev) => {
@@ -223,6 +226,7 @@ function FolderUpload({ setUpload }) {
         const file = {};
         file.name = name;
         file.error = null;
+        file.id = id;
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "uploaded";
         setTrackFilesProgress((prev) => {
@@ -239,6 +243,7 @@ function FolderUpload({ setUpload }) {
         const { name, data, id } = payload;
         const file = {};
         file.name = name;
+        file.id = id;
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "failed";
         file.error = data;
@@ -298,6 +303,7 @@ function FolderUpload({ setUpload }) {
           file.name = name;
           file.error = error;
           file.status = "failed";
+          file.id = id;
           setTrackFilesProgress((prev) => {
             prev.set(id, file);
             return prev;
@@ -307,6 +313,7 @@ function FolderUpload({ setUpload }) {
           let file = trackFilesProgress.get(id);
           file.startTime = startTime;
           file.status = "preparing";
+          file.id = id;
           setTrackFilesProgress((prev) => {
             prev.set(id, file);
             return prev;
@@ -384,7 +391,7 @@ function FolderUpload({ setUpload }) {
           uploadCompleted={uploadCompleted}
           filesStatus={filesStatus}
           showProgress={showProgress}
-          setUpload={setUpload}
+          // setUpload={setUpload}
         />
       )}
       <Snackbar

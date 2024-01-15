@@ -18,6 +18,8 @@ import { useConstant } from "@react-spring/shared";
 import { NotificationContext, PathContext } from "../UseContext";
 import useCreateFolder from "../hooks/CreateFolderHook";
 import { useNavigate } from "react-router";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { snackBarAtom, subpathAtom } from "../../Recoil/Store/atoms";
 
 const mainContainerStyle = {
   position: "absolute",
@@ -75,8 +77,10 @@ export default function CreateFolderModal({ open, setOpen }) {
   const navigate = useNavigate();
   const [create, setCreate] = useState(false);
 
-  const subpath = useContext(PathContext);
-  const NotifyStatus = useContext(NotificationContext);
+  // const subpath = useContext(PathContext);
+  const subpath = useRecoilValue(subpathAtom);
+  // const NotifyStatus = useContext(NotificationContext);
+  const NotifyStatus = useSetRecoilState(snackBarAtom);
 
   const [createFolder, createFolderResponse] = useCreateFolder(subpath);
   const handleChange = (e) => {

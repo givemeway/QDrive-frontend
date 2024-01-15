@@ -5,9 +5,12 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import { ItemSelectionContext } from "./UseContext";
 
 import useDownload from "./hooks/DownloadItemsHook";
+import { useRecoilValue } from "recoil";
+import { itemsSelectedAtom } from "../Recoil/Store/atoms";
 
 const Download = () => {
-  const { fileIds, directories } = useContext(ItemSelectionContext);
+  // const { fileIds, directories } = useContext(ItemSelectionContext);
+  const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
   const [initDownload] = useDownload(fileIds, directories);
   console.log("download items rendered");
 

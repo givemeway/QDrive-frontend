@@ -27,7 +27,6 @@ export default function useCreateFolder(subpath) {
       (async () => {
         try {
           const res = await axios.post(url, {}, { headers: headers });
-          console.log(res);
           setResponse(() => ({
             success: res.data.success,
             msg: res.data.msg,

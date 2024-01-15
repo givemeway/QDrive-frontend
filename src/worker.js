@@ -130,8 +130,6 @@ const uploadFiles = async (
           CSRFToken
         );
 
-        console.log(filesStatus.processed, idx);
-
         if (idx === 0) {
           uploadStarted = true;
           postMessage({ mode: "uploadInitiated", uploadStarted });

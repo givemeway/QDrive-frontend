@@ -1,29 +1,24 @@
-import {
-  DataGrid,
-  GridToolbarContainer,
-  GridRowModes,
-  GridRowEditStopReasons,
-} from "@mui/x-data-grid";
+import { DataGrid } from "@mui/x-data-grid";
 import FolderIcon from "./icons/FolderIcon";
 
-import React, { useEffect, useContext } from "react";
-import { Typography, Box, Button } from "@mui/material";
+import React, { useEffect } from "react";
+import { Typography, Box } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
 import { Link as Atag } from "@mui/material";
 import { useGridApiRef } from "@mui/x-data-grid";
 import Activity from "./FileActivity.js";
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
-import AddIcon from "@mui/icons-material/Add";
-import { v4 as uuidv4 } from "uuid";
+import {
+  itemsSelectedAtom,
+  editAtom,
+  dataAtom,
+} from "../Recoil/Store/atoms.js";
 
 import {
-  EditContext,
   ItemSelectionContext,
   ModalContext,
-  PathContext,
   RightClickContext,
-  UploadFolderContenxt,
 } from "./UseContext.js";
 import Modal from "./Modal";
 import MUltipleSelectionOverlayMenu from "./context/MultipleSelectionContext";
@@ -32,7 +27,8 @@ import FileVersionSelectionOverlayMenu from "./context/FileVersionContext";
 import Share from "./Share";
 import { get_file_icon, svgIconStyle } from "./fileFormats/FileFormat.js";
 import useRename from "./hooks/RenameItemHook";
-import useCreateFolder from "./hooks/CreateFolderHook.js";
+
+import { useRecoilState, useRecoilValue } from "recoil";
 
 const multiple = "multiple";
 const file = "file";
@@ -100,7 +96,7 @@ const typoGraphyStyle = {
   flexGrow: 1,
   textAlign: "left",
   padding: 0,
-  margin: 0,
+  margin: 2,
 };
 
 const iconStyle = {
@@ -127,7 +123,7 @@ const buildCellValueForFile = (file) => {
     )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
       file.filename
     )}&uuid=${encodeURIComponent(file.uuid)}`,
-    url: `https://localhost:3001${downloadURL}?file=${encodeURIComponent(
+    url: `http://localhost:3001${downloadURL}?file=${encodeURIComponent(
       file.filename
     )}&uuid=${encodeURIComponent(file.uuid)}&db=files`,
     origin: file.origin,
@@ -183,7 +179,7 @@ const columnDef = (path, nav, layout) => {
         return param.row.item === "folder" ? (
           <FolderIcon style={svgIconStyle} />
         ) : (
-          get_file_icon(param.row.name)
+          get_file_icon(param.row.name, param.row.url)
         );
       },
     },
@@ -273,10 +269,6 @@ export default React.memo(function DataGridTable({
   const [rowModesModel, setRowModesModel] = React.useState([]);
   const rowClick = React.useRef(false);
   const [coords, setCoords] = React.useState({ x: 0, y: 0 });
-  const [paginationModel, setPaginationModel] = React.useState({
-    page: 0,
-    pageSize: 50,
-  });
   const [openContext, setOpenContext] = React.useState(null);
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const filteredFiles = React.useRef(new Map([]));
@@ -290,12 +282,12 @@ export default React.memo(function DataGridTable({
     row: {},
   });
   const ref = React.useRef();
-  const { setItemsSelection, itemsSelected } = useContext(ItemSelectionContext);
+  const [selected, setItemsSelection] = useRecoilState(itemsSelectedAtom);
   const params = useParams();
   const subpath = params["*"];
-  const { fileIds, directories } = itemsSelected;
-  const data = useContext(UploadFolderContenxt);
-  const { edit, setEdit } = useContext(EditContext);
+  const { fileIds, directories } = selected;
+  const data = useRecoilValue(dataAtom);
+  const [edit, setEdit] = useRecoilState(editAtom);
   const [open, setOpen] = React.useState(false);
   const [selectionType, setSelectionType] = React.useState("");
   const [share, setShare] = React.useState(false);
@@ -304,9 +296,7 @@ export default React.memo(function DataGridTable({
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
-  const tempRow = React.useRef({ id: null, row: null });
   const [rename] = useRename(fileIds, directories, edit, setEdit);
-  const [createFolder, createFolderResponse] = useCreateFolder(subpath);
   console.log(subpath);
   const fileContextProps = {
     setOpenContext,
@@ -566,34 +556,34 @@ export default React.memo(function DataGridTable({
       {openContext &&
         (selectionType === fileVersion || selectionType === file) && (
           <RightClickContext.Provider value={fileContextProps}>
-            <ItemSelectionContext.Provider value={itemsSelected}>
+            <ItemSelectionContext.Provider value={selected}>
               <FileVersionSelectionOverlayMenu />
             </ItemSelectionContext.Provider>
           </RightClickContext.Provider>
         )}
       {openContext && selectionType === folder && (
         <RightClickContext.Provider value={folderContextProps}>
-          <ItemSelectionContext.Provider value={itemsSelected}>
+          <ItemSelectionContext.Provider value={selected}>
             <FolderSelectionOverlayMenu />
           </ItemSelectionContext.Provider>
         </RightClickContext.Provider>
       )}
       {openContext && selectionType === multiple && (
         <RightClickContext.Provider value={multipleSelectionContext}>
-          <ItemSelectionContext.Provider value={itemsSelected}>
+          <ItemSelectionContext.Provider value={selected}>
             <MUltipleSelectionOverlayMenu />
           </ItemSelectionContext.Provider>
         </RightClickContext.Provider>
       )}
       {open && mode !== null && (
-        <ItemSelectionContext.Provider value={itemsSelected}>
+        <ItemSelectionContext.Provider value={selected}>
           <ModalContext.Provider value={{ open, setOpen }}>
             <Modal mode={mode} />
           </ModalContext.Provider>
         </ItemSelectionContext.Provider>
       )}
       {share && (
-        <ItemSelectionContext.Provider value={itemsSelected}>
+        <ItemSelectionContext.Provider value={selected}>
           <Share shareImmediate={true} />
         </ItemSelectionContext.Provider>
       )}

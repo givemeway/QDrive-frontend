@@ -3,9 +3,11 @@ import { Snackbar, Box, Button, Typography, IconButton } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import CloseIcon from "@mui/icons-material/Close";
 import { SnackBarContext } from "./UseContext";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { itemsDeletionAtom } from "../Recoil/Store/atoms";
 
 const DeleteSnackBar = () => {
-  const { itemDeletion, setItemDeletion } = useContext(SnackBarContext);
+  const [itemDeletion, setItemDeletion] = useRecoilState(itemsDeletionAtom);
   const { isOpen, isDeleting, itemsDeleted, total, itemsFailed } = itemDeletion;
 
   const handleClose = (e, reason) => {

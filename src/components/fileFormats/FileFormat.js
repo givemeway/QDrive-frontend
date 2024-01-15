@@ -7,6 +7,8 @@ import PdfIcon from "../icons/PdfIcon";
 import ExcelIcon from "../icons/ExcelIcon";
 import FileIcon from "../icons/FileIcon";
 import PictureIcon from "../icons/PictureIcon";
+import { ImageListItem } from "@mui/material";
+import Image from "mui-image";
 
 const svgIconStyle = {
   backgroundColor: "#F7F5F2",
@@ -43,9 +45,30 @@ const file_format = {
   gif: <PictureIcon style={svgIconStyle} />,
 };
 
-function get_file_icon(filename) {
+function get_file_icon(filename, url) {
   const ext = filename.split(".").slice(-1)[0];
-  if (file_format.hasOwnProperty(ext)) return file_format[ext];
+  if (file_format.hasOwnProperty(ext))
+    if (
+      ext === "jpg" ||
+      ext === "jpeg" ||
+      ext === "tiff" ||
+      ext === "png" ||
+      ext === "gif"
+    ) {
+      return (
+        <Image
+          src={`${url}?w=28&h=28&fit=crop&auto=format`}
+          srcSet={`${url}?w=28&h=28&fit=crop&auto=format&dpr=2 2x`}
+          b
+          // src={`${url}`}
+          // srcSet={`${url}`}
+          showLoading={file_format[ext]}
+          errorIcon={file_format[ext]}
+        />
+      );
+    } else {
+      return file_format[ext];
+    }
   else return <FileIcon style={svgIconStyle} />;
 }
 

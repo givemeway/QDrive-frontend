@@ -7,16 +7,19 @@ import { BrowserRouter } from "react-router-dom";
 import { SnackbarProvider } from "notistack";
 import { ThemeProvider } from "@emotion/react";
 import theme from "./theme.js";
+import { RecoilRoot } from "recoil";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <BrowserRouter>
-    <ThemeProvider theme={theme}>
-      <SnackbarProvider>
-        <App />
-      </SnackbarProvider>
-    </ThemeProvider>
-  </BrowserRouter>
+  <RecoilRoot>
+    <BrowserRouter>
+      <ThemeProvider theme={theme}>
+        <SnackbarProvider>
+          <App />
+        </SnackbarProvider>
+      </ThemeProvider>
+    </BrowserRouter>
+  </RecoilRoot>
 );
 
 // If you want to start measuring performance in your app, pass a function
