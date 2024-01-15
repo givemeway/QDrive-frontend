@@ -15,6 +15,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import IconExpandedTreeItem from "./CustomTreeItem";
 import { FolderExplorerContext } from "./UseContext";
+import { useRecoilValue } from "recoil";
+import { folderExplorerSelector } from "../Recoil/Store/selector";
 
 const HOME = "/dashboard/home";
 
@@ -58,7 +60,7 @@ const fetchFoldersFromServer = async (path) => {
 
 export default function CustomizedTreeView() {
   const navigate = useNavigate();
-  const { nodeIDToExpand, breadCrumb } = useContext(FolderExplorerContext);
+  const { nodeIDToExpand, breadCrumb } = useRecoilValue(folderExplorerSelector);
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
   console.log("Modal rendered");

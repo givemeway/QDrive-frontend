@@ -3,8 +3,11 @@ import { Button } from "@mui/material";
 import { useContext } from "react";
 import { EditContext } from "./UseContext";
 import useInitRename from "./hooks/InitRenameItemHook";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import { editAtom } from "../Recoil/Store/atoms";
 export default function RenameItem() {
-  const { setEdit } = useContext(EditContext);
+  // const { setEdit } = useContext(EditContext);
+  const setEdit = useSetRecoilState(editAtom);
   const [initRename] = useInitRename(setEdit);
 
   const handleClick = () => {

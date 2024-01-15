@@ -6,6 +6,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import useFetchDeletedItems from "./hooks/FetchDeletedItems";
 import { PanelContext, UploadFolderContenxt } from "./UseContext";
 import { useNavigate } from "react-router-dom";
+import { useSetRecoilState } from "recoil";
+import { tabSelectedAtom } from "../Recoil/Store/atoms";
 
 const style = {
   display: "flex",
@@ -46,7 +48,7 @@ const Tab = ({ children }) => {
 const Panel = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { setTabSelected } = useContext(PanelContext);
+  const setTabSelected = useSetRecoilState(tabSelectedAtom);
 
   console.log("side panel rendered");
   const handleClick = () => {

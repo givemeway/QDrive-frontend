@@ -12,14 +12,23 @@ import { useParams } from "react-router-dom";
 import useFetchItems from "./hooks/FetchCurrentDirectoryItems";
 import useFetchCSRFToken from "./hooks/FetchCSRFToken";
 import useDeleteItems from "./hooks/DeleteItemsHook";
+import { useRecoilState, useSetRecoilState, useRecoilValue } from "recoil";
+import {
+  dataAtom,
+  itemsDeletionAtom,
+  itemsSelectedAtom,
+} from "../Recoil/Store/atoms";
 
 const DeleteItems = () => {
   const CSRFToken = useFetchCSRFToken(csrftokenURL);
-  const { fileIds, directories } = useContext(ItemSelectionContext);
+  // const { fileIds, directories } = useContext(ItemSelectionContext);
+  const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
   const [isDeleting, setIsDeleting] = useState(null);
   const [isDeleted, setIsDeleted] = useState(null);
-  const { setData } = useContext(UploadFolderContenxt);
-  const { setItemDeletion } = useContext(SnackBarContext);
+  // const { setData } = useContext(UploadFolderContenxt);
+  const setData = useSetRecoilState(dataAtom);
+  // const { setItemDeletion } = useContext(SnackBarContext);
+  const setItemDeletion = useSetRecoilState(itemsDeletionAtom);
   const params = useParams();
   const subpath = params["*"];
 

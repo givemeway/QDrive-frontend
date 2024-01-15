@@ -5,9 +5,11 @@ import DeleteSnackBar from "./SnackBar.js";
 import Table from "./DataTable.js";
 import DeletedItemsTable from "./DeletedFiles.js";
 import { PanelContext } from "./UseContext.js";
+import { useRecoilValue } from "recoil";
+import { tabSelectedAtom } from "../Recoil/Store/atoms.js";
 
 export default React.memo(function MainPanel() {
-  const tabSelected = useContext(PanelContext);
+  const tabSelected = useRecoilValue(tabSelectedAtom);
   return (
     <Stack
       display="flex"

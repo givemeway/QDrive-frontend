@@ -5,9 +5,12 @@ import Search from "./SearchFilesFolders";
 import { useEffect, useState } from "react";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspaceRounded";
 import { useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { breadCrumbAtom } from "../Recoil/Store/atoms";
 
-const Header = ({ queue, searchValue, search }) => {
+const Header = ({ search }) => {
   const [showBreadCrumb, setShowBreadCrumb] = useState(true);
+  const queue = useRecoilValue(breadCrumbAtom);
   const navigate = useNavigate();
   useEffect(() => {
     if (search) {

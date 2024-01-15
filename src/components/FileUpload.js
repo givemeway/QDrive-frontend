@@ -3,17 +3,14 @@ import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { filesFoldersURL } from "../config.js";
 import { socket } from "./Socket.js";
 import { formatBytes, formatSeconds } from "../util.js";
-import {
-  PathContext,
-  UploadContext,
-  UploadFolderContenxt,
-} from "./UseContext.js";
 import { Button, Snackbar, Box, Typography } from "@mui/material";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { dataAtom, subpathAtom, uploadAtom } from "../Recoil/Store/atoms.js";
 
 const ETA = (starttime, total, uploaded) => {
   const timeElapsed = new Date() - starttime;
@@ -43,7 +40,7 @@ function CustomButton({ children }) {
   );
 }
 
-function FilesUpload({ setUpload }) {
+function FilesUpload() {
   const [files, setFiles] = useState([]);
   const filesMetaData = useRef({});
   const [socketID, setSocketID] = useState(undefined);
@@ -64,9 +61,12 @@ function FilesUpload({ setUpload }) {
     uploaded: 0,
   });
   const [preparingFiles, setPreparingFiles] = useState(false);
-  const { setData } = useContext(UploadFolderContenxt);
-  const path = useContext(PathContext);
-  const fileProgress = useContext(UploadContext);
+  const setData = useSetRecoilState(dataAtom);
+  // const path = useContext(PathContext);
+  const path = useRecoilValue(subpathAtom);
+  // const fileProgress = useContext(UploadContext);
+  const [fileProgress, setUpload] = useRecoilState(uploadAtom);
+
   const params = useParams();
   const subpath = params["*"];
 
@@ -189,23 +189,27 @@ function FilesUpload({ setUpload }) {
         file.size = formatBytes(total);
         file.error = null;
         file.status = "uploading";
+        file.id = id;
         file.transferred = uploaded;
         file.transferred_b = formatBytes(uploaded);
         file.folder = id.split("/").slice(0, -1).join("/");
         file.bytes = parseInt(total);
-        const { transferred, startTime, bytes } = trackFilesProgress.get(id);
-        file.startTime = startTime;
-        const { eta, speed } = ETA(startTime, bytes, uploaded);
-        file.eta = eta;
-        file.speed = speed;
-        setFilesStatus((prev) => ({
-          ...prev,
-          uploaded: prev.uploaded + uploaded - transferred,
-        }));
-        setTrackFilesProgress((prev) => {
-          prev.set(id, file);
-          return prev;
-        });
+        const data = trackFilesProgress.get(id);
+        if (data) {
+          const { transferred, startTime, bytes } = data;
+          file.startTime = startTime;
+          const { eta, speed } = ETA(startTime, bytes, uploaded);
+          file.eta = eta;
+          file.speed = speed;
+          setFilesStatus((prev) => ({
+            ...prev,
+            uploaded: prev.uploaded + uploaded - transferred,
+          }));
+          setTrackFilesProgress((prev) => {
+            prev.set(id, file);
+            return prev;
+          });
+        }
       };
 
       const onFileUploadedToDestination = ({ payload }) => {
@@ -213,6 +217,7 @@ function FilesUpload({ setUpload }) {
         const file = {};
         file.name = name;
         file.error = null;
+        file.id = id;
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "finalizing";
         setTrackFilesProgress((prev) => {
@@ -226,6 +231,7 @@ function FilesUpload({ setUpload }) {
         const file = {};
         file.name = name;
         file.error = null;
+        file.id = id;
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "uploaded";
         setTrackFilesProgress((prev) => {
@@ -242,6 +248,7 @@ function FilesUpload({ setUpload }) {
         const { name, data, id } = payload;
         const file = {};
         file.name = name;
+        file.id = id;
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "failed";
         file.error = data;
@@ -300,6 +307,7 @@ function FilesUpload({ setUpload }) {
           const file = {};
           file.name = name;
           file.error = error;
+          file.id = id;
           file.status = "failed";
           setTrackFilesProgress((prev) => {
             prev.set(id, file);
@@ -310,6 +318,7 @@ function FilesUpload({ setUpload }) {
           let file = trackFilesProgress.get(id);
           file.startTime = startTime;
           file.status = "preparing";
+          file.id = id;
           setTrackFilesProgress((prev) => {
             prev.set(id, file);
             return prev;
@@ -388,7 +397,7 @@ function FilesUpload({ setUpload }) {
           uploadCompleted={uploadCompleted}
           filesStatus={filesStatus}
           showProgress={showProgress}
-          setUpload={setUpload}
+          // setUpload={setUpload}
         />
       )}
       <Snackbar

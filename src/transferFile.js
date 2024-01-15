@@ -13,7 +13,6 @@ importScripts(new URL("../dist/forge.js", import.meta.url));
 const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
   return new Promise(async (resolve, reject) => {
     let filePath;
-
     postMessage({
       mode: "fileUploadInitiated",
       startTime: new Date(),
@@ -65,7 +64,7 @@ const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
       let fileStat = {
         atimeMs: file.lastModified,
         mtimeMs: file.lastModified,
-        mtime: file.lastModifiedDate,
+        mtime: file.lastModified,
         modified: modified,
         size: file.size,
         socket_main_id,

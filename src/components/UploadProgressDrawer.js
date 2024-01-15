@@ -6,11 +6,13 @@ import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMoreOutlined.js";
 import ExpandLessIcon from "@mui/icons-material/ExpandLessOutlined.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FixedSizeList as List } from "react-window";
 import { styled } from "@mui/material/styles";
 import React from "react";
 import Draggable from "react-draggable";
+import { useSetRecoilState } from "recoil";
+import { uploadAtom } from "../Recoil/Store/atoms";
 
 const SlowLinearProgress = styled(LinearProgress)({
   "& .MuiLinearProgress-bar": {
@@ -24,10 +26,10 @@ export default React.memo(function UploadProgressDrawer({
   uploadCompleted,
   filesStatus,
   showProgress,
-  setUpload,
 }) {
   const [expandProgress, setExpandProgress] = useState(true);
   const [progressBlock, setProgressBlock] = useState("block");
+  const setUpload = useSetRecoilState(uploadAtom);
   const close = () => {
     setExpandProgress((prev) => !prev);
   };
@@ -40,7 +42,7 @@ export default React.memo(function UploadProgressDrawer({
   }, [expandProgress]);
   console.log("drawer rendered");
 
-  function Row({ index, style }) {
+  const Row = useCallback(({ index, style }) => {
     const [key, val] = Array.from(trackFilesProgress)[index];
     return (
       <div style={style} key={key}>
@@ -156,7 +158,8 @@ export default React.memo(function UploadProgressDrawer({
         )}
       </div>
     );
-  }
+  });
+
   return (
     <Draggable>
       <Box

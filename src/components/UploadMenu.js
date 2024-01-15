@@ -16,12 +16,18 @@ import Share from "./Share.js";
 import MoveItems from "./MoveItems.js";
 import RenameItem from "./RenameItem.js";
 import CopyItems from "./CopyItems.js";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+  itemsSelectedAtom,
+  tabSelectedAtom,
+  uploadAtom,
+} from "../Recoil/Store/atoms.js";
 
 export default React.memo(function UploadMenu() {
-  const [upload, setUpload] = useState(null);
+  const [upload, setUpload] = useRecoilState(uploadAtom);
   console.log("upload menu rendered");
-  const { fileIds, directories } = useContext(ItemSelectionContext);
-  const tabSelected = useContext(PanelContext);
+  const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
+  const tabSelected = useRecoilValue(tabSelectedAtom);
 
   return (
     <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
@@ -41,15 +47,15 @@ export default React.memo(function UploadMenu() {
             padding: 0,
           }}
         >
-          <UploadContext.Provider value={upload}>
-            <FolderUpload setUpload={setUpload} />
-          </UploadContext.Provider>
+          {/* <UploadContext.Provider value={upload}> */}
+          <FolderUpload />
+          {/* </UploadContext.Provider> */}
 
           <Divider orientation="vertical" />
 
-          <UploadContext.Provider value={upload}>
-            <FilesUpload setUpload={setUpload} />
-          </UploadContext.Provider>
+          {/* <UploadContext.Provider value={upload}> */}
+          <FilesUpload />
+          {/* </UploadContext.Provider> */}
           <Divider orientation="vertical" />
 
           <CreateNewFolderIcon />

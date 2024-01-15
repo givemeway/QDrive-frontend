@@ -25,6 +25,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import IconExpandedTreeItem from "./CustomTreeItem";
 import { ModalContext } from "./UseContext";
+import { useRecoilValue } from "recoil";
+import { itemsSelectedAtom } from "../Recoil/Store/atoms";
 
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);
@@ -74,7 +76,8 @@ const fetchFoldersFromServer = async (path) => {
 export default function CustomizedTreeView({ mode }) {
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
-  const { fileIds, directories } = useContext(ItemSelectionContext);
+  // const { fileIds, directories } = useContext(ItemSelectionContext);
+  const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
   const { open, setOpen } = useContext(ModalContext);
   console.log("Modal rendered");
   const toPath = useRef("/");

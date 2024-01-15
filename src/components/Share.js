@@ -21,6 +21,8 @@ import { useContext, useRef, useEffect, useState } from "react";
 import { csrftokenURL, getShareLinkURL, host } from "../config";
 import { Modal, Box, Typography } from "@mui/material";
 import { FixedSizeList } from "react-window";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { itemsSelectedAtom } from "../Recoil/Store/atoms";
 async function fetchCSRFToken(csrfurl) {
   const response = await fetch(csrfurl);
   const { CSRFToken } = await response.json();
@@ -28,8 +30,7 @@ async function fetchCSRFToken(csrfurl) {
 }
 
 export default function Share({ shareImmediate }) {
-  const { fileIds, directories } = useContext(ItemSelectionContext);
-  console.log(fileIds, directories);
+  const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
   const [type, setType] = useState("");
   const [CSRFToken, setCSRFToken] = useState("");
   const [shareURL, setShareURL] = useState("");
