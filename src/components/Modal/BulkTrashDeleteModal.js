@@ -21,6 +21,22 @@ import { get_file_icon, svgIconStyle } from "../fileFormats/FileFormat";
 import CollapsibleBreadCrumbs from "../breadCrumbs/CollapsibleBreadCrumbs";
 import useRestoreItems from "../hooks/RestoreItemHook";
 import useDeleteTrashItems from "../hooks/DeleteTrashItemsHook";
+import {
+  useRecoilState,
+  useRecoilValue,
+  useRecoilValueLoadable,
+  useSetRecoilState,
+} from "recoil";
+
+import { Suspense } from "react";
+import {
+  statusNotificationAtom,
+  trashDeleteStatusAtom,
+} from "../../Recoil/Store/atoms";
+import {
+  CSRFTokenSelector,
+  deleteTrashItemsSelector,
+} from "../../Recoil/Store/selector";
 
 const options = {
   year: "numeric",
@@ -147,9 +163,32 @@ export default function BulkTrashDeleteModal() {
   const [loading, setLoading] = React.useState(true);
   const [allItems, setAllItems] = React.useState([]);
   const [deleteTrash, deleteStatus, init] = useDeleteTrashItems(selectedItems);
-  const handleRestore = () => {
+  // const setTrash = useSetRecoilState(trashDeleteStatusAtom);
+  // const getCSRFToken = useRecoilValueLoadable(CSRFTokenSelector);
+  // const setNotifyStatus = useSetRecoilState(statusNotificationAtom);
+  // const CSRFToken = getCSRFToken.getValue();
+  // console.log(CSRFToken);
+  // const trashDeleteStatus = useRecoilValueLoadable(
+  //   deleteTrashItemsSelector({
+  //     items: selectedItems,
+  //     CSRFToken,
+  //   })
+  // );
+  const handleRestore = async () => {
     // setOpenBulkTrashDelete(false);
     init();
+    // setTrash((prev) => ({
+    //   ...prev,
+    //   status: "deleting",
+    //   total: selectedItems.length,
+    // }));
+    // setNotifyStatus((prev) => ({
+    //   ...prev,
+    //   fn: trashDeleteStatus,
+    //   open: true,
+    //   operation_type: "Deleting Trash Items",
+    // }));
+    // setOpenBulkTrashDelete(false);
   };
 
   React.useEffect(() => {

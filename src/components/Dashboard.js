@@ -34,6 +34,7 @@ import {
   snackBarAtom,
   subpathAtom,
 } from "../Recoil/Store/atoms.js";
+import { StatusNotification } from "./StatusNotification.js";
 
 const Dashboard = () => {
   const setData = useSetRecoilState(dataAtom);
@@ -166,6 +167,7 @@ const Dashboard = () => {
           setMessage={setNotify}
         />
       )}
+      {/* <StatusNotification /> */}
     </>
   );
 };

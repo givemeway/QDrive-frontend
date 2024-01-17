@@ -90,3 +90,30 @@ export const uploadAtom = atom({
   key: "uploadAtom",
   default: null,
 });
+
+export const trashDeleteStatusAtom = atom({
+  key: "trashDeleteStatusAtom",
+  default: {
+    status: undefined,
+    success: undefined,
+    msg: "",
+    pass: 0,
+    fail: 0,
+    total: 0,
+  },
+});
+
+export const statusNotificationAtom = atom({
+  key: "statusNotificationAtom",
+  default: {
+    open: undefined,
+    operation_type: "",
+    progress: undefined,
+    fn: () => {},
+  },
+});
+
+export const CSRFTokenAtom = atom({
+  key: "CSRFTokenAtom",
+  default: "",
+});
