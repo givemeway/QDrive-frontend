@@ -8,18 +8,22 @@ import { SnackbarProvider } from "notistack";
 import { ThemeProvider } from "@emotion/react";
 import theme from "./theme.js";
 import { RecoilRoot } from "recoil";
+import { store } from "./app/store.js";
+import { Provider } from "react-redux";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <RecoilRoot>
-    <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <SnackbarProvider>
-          <App />
-        </SnackbarProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  </RecoilRoot>
+  <Provider store={store}>
+    <RecoilRoot>
+      <BrowserRouter>
+        <ThemeProvider theme={theme}>
+          <SnackbarProvider>
+            <App />
+          </SnackbarProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </RecoilRoot>
+  </Provider>
 );
 
 // If you want to start measuring performance in your app, pass a function

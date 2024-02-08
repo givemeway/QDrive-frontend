@@ -2,12 +2,17 @@ import { useState } from "react";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { Button } from "@mui/material";
 import { ModalContext } from "./UseContext.js";
+import { COPY } from "../config.js";
 import Modal from "./Modal.js";
-const COPY = "copy";
+
 export default function CopyItems() {
   const [open, setOpen] = useState(false);
   const handleClick = () => {
     setOpen(true);
+  };
+
+  const onClose = () => {
+    setOpen(false);
   };
   return (
     <>
@@ -26,11 +31,7 @@ export default function CopyItems() {
       >
         <ContentCopyIcon sx={{ cursor: "pointer", fontSize: 25 }} />
       </Button>
-      {open && (
-        <ModalContext.Provider value={{ open, setOpen }}>
-          <Modal mode={COPY} />
-        </ModalContext.Provider>
-      )}
+      {open && <Modal mode={COPY} open={open} onClose={onClose} />}
     </>
   );
 }

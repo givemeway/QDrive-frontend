@@ -4,13 +4,11 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
-import { filesFoldersURL } from "../config.js";
 import { socket } from "./Socket.js";
 import { formatBytes, formatSeconds } from "../util.js";
 import { Button, Snackbar, Box, Typography } from "@mui/material";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { dataAtom, subpathAtom, uploadAtom } from "../Recoil/Store/atoms.js";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { subpathAtom, uploadAtom } from "../Recoil/Store/atoms.js";
 
 const ETA = (starttime, total, uploaded) => {
   const timeElapsed = new Date() - starttime;
@@ -61,69 +59,8 @@ function FilesUpload() {
     uploaded: 0,
   });
   const [preparingFiles, setPreparingFiles] = useState(false);
-  const setData = useSetRecoilState(dataAtom);
-  // const path = useContext(PathContext);
   const path = useRecoilValue(subpathAtom);
-  // const fileProgress = useContext(UploadContext);
   const [fileProgress, setUpload] = useRecoilState(uploadAtom);
-
-  const params = useParams();
-  const subpath = params["*"];
-
-  useEffect(() => {
-    const path = subpath.split("/");
-    console.log("inside file status");
-    if (
-      path[0] === "home" &&
-      filesToUpload.length > 0 &&
-      (filesStatus.processed % 10 === 0 || filesStatus.total <= 10)
-    ) {
-      console.log("10 files uploaded");
-      let homedir;
-      let curDir;
-
-      if (path.length === 1) {
-        homedir = "/";
-        curDir = "/";
-      } else {
-        curDir = path.slice(2).join("/");
-
-        if (curDir.length === 0) {
-          curDir = "/";
-        }
-        homedir = path[1];
-      }
-      const headers = {
-        "X-CSRF-Token": CSRFToken,
-        "Content-type": "application/x-www-form-urlencoded",
-        devicename: homedir,
-        currentdirectory: curDir,
-        username: "sandeep.kumar@idriveinc.com",
-        sortorder: "ASC",
-      };
-      const options = {
-        method: "POST",
-        credentials: "include",
-        mode: "cors",
-        headers: headers,
-      };
-      fetch(filesFoldersURL + "/", options)
-        .then((res) => res.json())
-        .then((data) => {
-          setData(() => {
-            return data;
-          });
-        })
-        .catch((err) => console.log(err));
-    }
-  }, [
-    CSRFToken,
-    filesStatus.processed,
-    filesStatus.total,
-    filesToUpload.length,
-    setData,
-    subpath,
-  ]);
 
   useEffect(() => {
     if (files.length > 0) {

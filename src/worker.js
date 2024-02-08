@@ -61,7 +61,24 @@ const findFilesToUpload = async (cwd, filesList, device) => {
         },
       ])
     );
-
+    let trackFilesProgress_obj = {};
+    for (const file of files) {
+      const id =
+        file.webkitRelativePath === "" ? file.name : file.webkitRelativePath;
+      trackFilesProgress_obj[id] = {
+        name: file.name,
+        startTime: 0,
+        progress: 0,
+        status: "queued",
+        size: formatBytes(file.size),
+        bytes: file.size,
+        folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
+        eta: Infinity,
+        speed: "",
+        transferred: 0,
+        transferred_b: 0,
+      };
+    }
     let metadata = {};
     files.forEach((file) => {
       metadata[file.webkitRelativePath] = {};
@@ -77,6 +94,7 @@ const findFilesToUpload = async (cwd, filesList, device) => {
       mode: "filesToUpload",
       CSRFToken,
       trackFilesProgress,
+      trackFilesProgress_obj,
       totalSize,
       toBeUploaded: files,
       metadata,

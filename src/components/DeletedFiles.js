@@ -22,6 +22,10 @@ import BulkTrashModal from "./Modal/BulkTrashModal";
 import BulkTrashDeleteModal from "./Modal/BulkTrashDeleteModal";
 
 import DeleteForeverIcon from "@mui/icons-material/DeleteForeverSharp";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedTrashBatch } from "../features/trash/selectedTrashBatch";
+import { useGetCSRFTokenQuery } from "../features/api/apiSlice";
+import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice";
 const options = {
   year: "numeric",
   month: "short",
@@ -204,7 +208,7 @@ export default React.memo(function DataGridTable() {
   const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
-  const [data, setData] = React.useState([]);
+  const [items, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [openTrashItem, setOpenTrashItem] = React.useState(false);
   const [openTrashItems, setOpenTrashItems] = React.useState(false);
@@ -214,9 +218,10 @@ export default React.memo(function DataGridTable() {
   const [deletedItems, initFetchDeleted, deletedLoaded] =
     useFetchDeletedItems();
   const [openBulkTrashDelete, setOpenBulkTrashDelete] = React.useState(false);
+  const { isLoading, isSuccess, isError, data } = useGetCSRFTokenQuery();
 
   const [restoring, setRestoring] = React.useState(false);
-
+  const dispatch = useDispatch();
   console.log("deleted -- table rendered");
 
   const handleBulkRestore = () => {
@@ -241,13 +246,21 @@ export default React.memo(function DataGridTable() {
       } else if (prev.length === 0) {
         console.log("trigger modal action");
         setOpenTrashItem(true);
-        setSelectedTrashItem(params.row);
+        // setSelectedTrashItem(params.row);
+        dispatch(setSelectedTrashBatch({ ...params.row }));
         // bring the modal window
         // make a api call to fetch details
         return [];
       }
     });
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      const { CSRFToken } = data ? data : { CSRFToken: "" };
+      dispatch(setCSRFToken(CSRFToken));
+    }
+  }, [isSuccess]);
 
   useEffect(() => {
     setLoading(true);
@@ -270,10 +283,10 @@ export default React.memo(function DataGridTable() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    if (!Array.isArray(data)) {
+    if (!Array.isArray(items)) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
 
-      rows.current = data.files.map((file) => ({
+      rows.current = items.files.map((file) => ({
         id: file.id,
         item: "file",
         name: file.name,
@@ -286,7 +299,7 @@ export default React.memo(function DataGridTable() {
 
       rows.current = [
         ...rows.current,
-        ...data.folders.map((folder) => ({
+        ...items.folders.map((folder) => ({
           id: folder.id,
           item: "folder",
           name: folder.name,
@@ -299,7 +312,7 @@ export default React.memo(function DataGridTable() {
       ];
       rows.current = [
         ...rows.current,
-        ...data.file.map((file) => ({
+        ...items.file.map((file) => ({
           id: file.uuid,
           item: "singleFile",
           name: file.filename,
@@ -319,7 +332,7 @@ export default React.memo(function DataGridTable() {
     //   setNewRows([]);
     //   setLoading(false);
     // }
-  }, [data, loading]);
+  }, [items, loading]);
 
   return (
     <Box
@@ -410,7 +423,6 @@ export default React.memo(function DataGridTable() {
               openTrashItems,
               setOpenTrashItems,
               selectedItems,
-              setRestoring,
             }}
           >
             <BulkTrashModal />

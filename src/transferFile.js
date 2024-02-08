@@ -15,7 +15,7 @@ const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
     let filePath;
     postMessage({
       mode: "fileUploadInitiated",
-      startTime: new Date(),
+      startTime: Date.now(),
       id: file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
     });
 

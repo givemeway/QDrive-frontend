@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
@@ -20,6 +20,12 @@ import useFetchTrashBatch from "../hooks/FetchTrashBatchHook";
 import { get_file_icon, svgIconStyle } from "../fileFormats/FileFormat";
 import CollapsibleBreadCrumbs from "../breadCrumbs/CollapsibleBreadCrumbs";
 import useRestoreItems from "../hooks/RestoreItemHook";
+import { CustomBlueButton } from "../Buttons/BlueButton";
+import { GreyButton } from "../Buttons/GreyButton";
+import { useDispatch, useSelector } from "react-redux";
+import { setCSRFToken } from "../../features/csrftoken/csrfTokenSlice";
+import { setOperation } from "../../features/operation/operationSlice";
+import { useGetCSRFTokenQuery } from "../../features/api/apiSlice";
 
 const options = {
   year: "numeric",
@@ -29,8 +35,6 @@ const options = {
   minute: "numeric",
   hour12: true,
 };
-
-const headingStyle = { fontSize: 18, color: "#1A1918", fontWeight: 600 };
 
 const listItemIconStyle = {
   display: "flex",
@@ -102,23 +106,6 @@ const scrollContainerStyle = {
   marginTop: 2,
 };
 
-const cancelButtonStyle = {
-  background: "#F5EFE5E0",
-  color: "#1A1918",
-  textTransform: "none",
-  width: 75,
-  fontWeight: 900,
-  "&:hover": { background: "#F5EFE5" },
-};
-
-const restoreAllButtonStyle = {
-  background: "#0061FEE0",
-  fontWeight: 900,
-  color: "#F2F7FF",
-  "&:hover": { background: "#0061FE" },
-  textTransform: "none",
-};
-
 const buttonContainer = {
   display: "flex",
   flexDirection: "row",
@@ -136,24 +123,41 @@ function EllipsisTypoGraphy({ children }) {
 }
 
 export default function BulkTrashModal() {
-  const { openTrashItems, setOpenTrashItems, selectedItems, setRestoring } =
+  const { openTrashItems, setOpenTrashItems, selectedItems } =
     React.useContext(TrashContext);
   const [loading, setLoading] = React.useState(true);
   const [allItems, setAllItems] = React.useState([]);
-  const [restoreTrash, restoreStatus, init] = useRestoreItems(selectedItems);
+
+  const items = useGetCSRFTokenQuery();
+  const operation = useSelector((state) => state.operation);
+  const dispatch = useDispatch();
+
+  const { CSRFToken } = !items?.data ? { CSRFToken: "" } : items?.data;
 
   const handleRestore = () => {
-    // setOpenTrashItems(false);
-    init();
+    dispatch(
+      setOperation({
+        ...operation,
+        type: "RESTORETRASH",
+        status: "initialized",
+        data: selectedItems,
+      })
+    );
+    setOpenTrashItems(false);
   };
 
-  React.useEffect(() => {
-    if (restoreTrash) {
-      setRestoring(true);
-    } else {
-      setRestoring(false);
+  useEffect(() => {
+    if (CSRFToken && items.isSuccess) {
+      dispatch(setCSRFToken(CSRFToken));
+      dispatch(
+        setOperation({
+          ...operation,
+          type: "RESTORETRASH",
+          status: "uninitialized",
+        })
+      );
     }
-  }, [restoreTrash, restoreStatus]);
+  }, [CSRFToken, items.isSuccess]);
 
   React.useEffect(() => {
     setAllItems(selectedItems);
@@ -237,7 +241,6 @@ export default function BulkTrashModal() {
     >
       <Fade in={openTrashItems}>
         <Box sx={mainContainerStyle}>
-          {/* <Typography sx={headingStyle}>{selectedItems[0].name}</Typography> */}
           <Box sx={scrollContainerStyle}>
             {loading && <CircularProgress />}
             {!loading && (
@@ -268,22 +271,16 @@ export default function BulkTrashModal() {
             )}
           </Box>
           <Box sx={buttonContainer}>
-            <Button
-              variant="contained"
-              disableRipple
-              sx={cancelButtonStyle}
+            <GreyButton
+              text={"Cancel"}
               onClick={() => setOpenTrashItems(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              disableRipple
-              variant="contained"
-              sx={restoreAllButtonStyle}
+              style={{ width: "150px", height: "40px" }}
+            />
+            <CustomBlueButton
+              text={"Restore All Files"}
               onClick={handleRestore}
-            >
-              Restore all Files
-            </Button>
+              style={{ width: "150px", height: "40px" }}
+            />
           </Box>
         </Box>
       </Fade>

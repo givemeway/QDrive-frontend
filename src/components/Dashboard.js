@@ -35,6 +35,7 @@ import {
   subpathAtom,
 } from "../Recoil/Store/atoms.js";
 import { StatusNotification } from "./StatusNotification.js";
+import AvatarMenu from "./AvatarMenu.js";
 
 const Dashboard = () => {
   const setData = useSetRecoilState(dataAtom);
@@ -55,21 +56,21 @@ const Dashboard = () => {
   setSubPath(subpath);
 
   console.log("dashboard rendered ", subpath);
-  const [items, breadCrumbQueue, getItems, itemsLoaded] = useFetchItems(
-    subpath,
-    csrftoken
-  );
+  // const [items, breadCrumbQueue, getItems, itemsLoaded] = useFetchItems(
+  //   subpath,
+  //   csrftoken
+  // );
 
   const [searchResult, initSearch, searchLoaded, searchParam] =
     useFetchSearchItems(subpath, csrftoken);
 
-  useEffect(() => {
-    if (itemsLoaded) {
-      setData(items);
-      setBreadCrumb(breadCrumbQueue);
-      setDataLoaded(true);
-    }
-  }, [breadCrumbQueue, items, itemsLoaded]);
+  // useEffect(() => {
+  //   if (itemsLoaded) {
+  //     setData(items);
+  //     setBreadCrumb(breadCrumbQueue);
+  //     setDataLoaded(true);
+  //   }
+  // }, [breadCrumbQueue, items, itemsLoaded]);
 
   useEffect(() => {
     if (searchLoaded) {
@@ -85,7 +86,7 @@ const Dashboard = () => {
 
     const path = subpath.split("/");
     if (path[0] === "home") {
-      getItems();
+      // getItems();
       setTabSelected(1);
     } else if (path[0] === "search") {
       setSearchValue(searchParam);
@@ -119,13 +120,10 @@ const Dashboard = () => {
                 padding: 0,
               }}
             >
+              {/* <AvatarMenu /> */}
               <Search searchValue={searchValue} />
-              {tabSelected !== 4 && (
-                <Header
-                  // queue={breadCrumb}
-                  search={isSearch}
-                />
-              )}
+
+              {tabSelected !== 4 && <Header search={isSearch} />}
             </Grid>
             {tabSelected !== 4 && (
               <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
@@ -141,7 +139,7 @@ const Dashboard = () => {
                 padding: 0,
               }}
             >
-              {!dataLoaded ? (
+              {/* {!dataLoaded ? (
                 <Box
                   sx={{
                     display: "flex",
@@ -155,7 +153,8 @@ const Dashboard = () => {
                 </Box>
               ) : (
                 <MainPanel />
-              )}
+              )} */}
+              <MainPanel />
             </Grid>
           </Grid>
         </Grid>
@@ -167,7 +166,7 @@ const Dashboard = () => {
           setMessage={setNotify}
         />
       )}
-      {/* <StatusNotification /> */}
+      <StatusNotification timeout={5000} />
     </>
   );
 };

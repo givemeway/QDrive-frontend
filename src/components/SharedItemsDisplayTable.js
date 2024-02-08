@@ -12,6 +12,8 @@ import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
 import { ItemSelectionContext, UploadFolderContenxt } from "./UseContext.js";
 import { get_file_icon, svgIconStyle } from "./fileFormats/FileFormat.js";
+import { useSetRecoilState } from "recoil";
+import { itemsSelectedAtom } from "../Recoil/Store/atoms.js";
 
 const options = {
   year: "numeric",
@@ -241,14 +243,16 @@ export default React.memo(function DataGridTable({
   const filteredFiles = React.useRef(new Map([]));
   const versionedFiles = React.useRef({});
   const tempFiles = React.useRef({});
-  const { setItemsSelection } = useContext(ItemSelectionContext);
+  // const { setItemsSelection } = useContext(ItemSelectionContext);
+  const setItemsSelection = useSetRecoilState(itemsSelectedAtom);
+
   const data = useContext(UploadFolderContenxt);
   const [activity, setActivity] = React.useState(false);
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
 
-  console.log("table rendered");
+  console.log("shared display rendered");
 
   const rowClicked = (params, event, details) => {
     selectedToEdit.current = params.id;
@@ -278,12 +282,15 @@ export default React.memo(function DataGridTable({
   // }, [apiRef]);
 
   useEffect(() => {
+    console.log(data);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     if (!loading) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       versionedFiles.current = {};
       tempFiles.current = {};
+      // console.log(data);
       data.files.forEach((file) => {
+        console.log(file);
         const fileItem = buildCellValueForFile(file);
         if (!filteredFiles.current.has(file.origin)) {
           filteredFiles.current.set(file.origin, fileItem);

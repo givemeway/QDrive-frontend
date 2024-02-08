@@ -5,37 +5,24 @@ import Stack from "@mui/material/Stack";
 import { useState } from "react";
 import FolderRounded from "@mui/icons-material/FolderRounded";
 import { TreeView } from "@mui/x-tree-view/TreeView";
-import {
-  Button,
-  Modal,
-  Typography,
-  Divider,
-  Snackbar,
-  CircularProgress,
-} from "@mui/material";
+import { Button, Modal, Typography, Divider } from "@mui/material";
 import { useEffect, useContext, useRef } from "react";
-import {
-  copyItemsURL,
-  csrftokenURL,
-  getSubFoldersURL,
-  moveItemsURL,
-} from "../config";
-import { ItemSelectionContext } from "./UseContext";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import IconExpandedTreeItem from "./CustomTreeItem";
 import { ModalContext } from "./UseContext";
 import { useRecoilValue } from "recoil";
 import { itemsSelectedAtom } from "../Recoil/Store/atoms";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  useGetCSRFTokenQuery,
+  useGetFoldersMutation,
+} from "../features/api/apiSlice";
+import SpinnerGIF from "./icons/SpinnerGIF";
+import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice";
+import { setOperation } from "../features/operation/operationSlice";
+import { MOVE, COPY } from "../config";
 
-async function fetchCSRFToken(csrfurl) {
-  const response = await fetch(csrfurl);
-  const { CSRFToken } = await response.json();
-  return CSRFToken;
-}
-
-const MOVE = "move";
-const COPY = "copy";
 const style = {
   position: "absolute",
   display: "flex",
@@ -53,91 +40,52 @@ const style = {
   p: 4,
 };
 
-const fetchFoldersFromServer = async (path) => {
-  const CSRFToken = await fetchCSRFToken(csrftokenURL);
-  const headers = {
-    "X-CSRF-Token": CSRFToken,
-    "Content-Type": "application/x-www-form-urlencoded",
-    path: path,
-    username: "sandeep.kumar@idriveinc.com",
-    sortorder: "ASC",
-  };
-  const options = {
-    credentials: "include",
-    method: "POST",
-    headers: headers,
-  };
-
-  const res = await fetch(getSubFoldersURL, options);
-  const newFolders = await res.json();
-  return newFolders;
-};
-
-export default function CustomizedTreeView({ mode }) {
+const FolderTreeView = ({ CSRFToken, setToPath, toPath, setNodeSelected }) => {
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
-  // const { fileIds, directories } = useContext(ItemSelectionContext);
-  const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
-  const { open, setOpen } = useContext(ModalContext);
-  console.log("Modal rendered");
-  const toPath = useRef("/");
-  const [nodeSelected, setNodeSelected] = useState(false);
-  const [openSnackbar, setOpenSnackBarOpen] = useState(false);
-  const [move, setMove] = useState({
-    initiated: false,
-    moving: false,
-    moved: false,
-    movedItems: 0,
-    movedFailed: 0,
-  });
+  const clickedNode = useRef("1");
+  const [getFoldersMutation, getFolders] = useGetFoldersMutation();
+  let { status, isLoading, isError, isSuccess, data } = getFolders;
+  console.log(status);
+  if (!data) {
+    data = {};
+    data.folders = [];
+  }
 
-  console.log("mode: ", mode);
+  useEffect(() => {
+    setExpanded(["1"]);
+    getFoldersMutation({ path: toPath, CSRFToken });
+  }, []);
 
-  const handleClose = () => {
-    setOpen(false);
-    setOpenSnackBarOpen(false);
-  };
+  useEffect(() => {
+    if (status === "fulfilled" && data.folders.length > 0 && isSuccess) {
+      setExpanded((prev) => [...prev, clickedNode.current]);
 
-  const handleSubmit = async () => {
-    setMove((prev) => ({ ...prev, initiated: true, moving: true }));
-    setOpenSnackBarOpen(true);
-    const CSRFToken = await fetchCSRFToken(csrftokenURL);
-    const headers = {
-      "X-CSRF-Token": CSRFToken,
-      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-    };
-    const body = {
-      files: fileIds.length > 0 ? fileIds : null,
-      folders: directories.length > 0 ? directories : null,
-    };
-    console.log(body);
-    let url;
-    if (mode === MOVE) url = moveItemsURL;
-    else if (mode === COPY) url = copyItemsURL;
-    const res = await axios.post(url + `?to=${toPath.current}`, body, {
-      headers: headers,
-    });
-    console.log(res.data);
-    setMove((prev) => ({
-      ...prev,
-      initiated: false,
-      moving: false,
-      moved: true,
-      movedItems: res.data.moved,
-      moveFailed: res.data.failed,
-    }));
-  };
+      setFolders((prevFolders) => {
+        if (prevFolders.length > 0) {
+          return updateNode(prevFolders, clickedNode.current, data.folders);
+        } else {
+          return data.folders;
+        }
+      });
+    } else if (
+      status === "fulfilled" &&
+      data.folders.length === 0 &&
+      isSuccess
+    ) {
+      setExpanded((prev) => {
+        return prev.includes(clickedNode.current)
+          ? prev.filter((el) => el !== clickedNode.current)
+          : [...prev, clickedNode.current];
+      });
+    }
+  }, [data.folders, isSuccess, status]);
 
   const handleClick = async (path, nodeId) => {
     // Fetch folders from server while expanding
-    let newFolders = [];
-    console.log("handled click - ", nodeId);
-    console.log(nodeId);
     if (!expanded.includes(nodeId)) {
-      newFolders = (await fetchFoldersFromServer(path)).folders;
-      // Find the clicked node and update its children
-      setExpanded((prev) => [...prev, nodeId]);
-      setFolders((prevFolders) => updateNode(prevFolders, nodeId, newFolders));
+      clickedNode.current = nodeId;
+      getFoldersMutation({ path, CSRFToken });
     } else {
       setExpanded((prev) => {
         return prev.includes(nodeId)
@@ -147,27 +95,35 @@ export default function CustomizedTreeView({ mode }) {
     }
   };
 
+  const handleSelect = (event, nodeId) => {
+    if (nodeId === "1") {
+      setToPath("/");
+      setNodeSelected(true);
+    } else {
+      setToPath(nodeId.split(";")[1]);
+      setNodeSelected(true);
+    }
+  };
+  const handleNodeToggle = (event, nodeIds) => {
+    setExpanded(nodeIds);
+  };
+
   const updateNode = (nodes, nodeId, newChildren) => {
     return nodes.map((node) => {
       if (node.uuid + ";" + node.path === nodeId) {
-        // This is the clicked node, update its children
         return { ...node, children: newChildren };
       } else if (node.children) {
-        // This node has children, recurse on the children
         return {
           ...node,
           children: updateNode(node.children, nodeId, newChildren),
         };
       } else {
-        // This node is not the clicked node and it has no children, leave it as is
         return node;
       }
     });
   };
 
   const renderTree = (nodes) => {
-    console.log(nodes);
-    console.log(expanded);
     return nodes.map((node) => (
       <IconExpandedTreeItem
         nodeId={`${node.uuid};${node.path}`}
@@ -202,56 +158,124 @@ export default function CustomizedTreeView({ mode }) {
       </IconExpandedTreeItem>
     ));
   };
-  useEffect(() => {
-    (async () => setFolders((await fetchFoldersFromServer("/")).folders))();
-    setExpanded(["1"]);
-  }, []);
 
-  const handleSelect = (event, nodeId) => {
-    setNodeSelected(true);
-    if (nodeId === "1") {
-      toPath.current = "/";
-      console.log(toPath.current);
-    } else {
-      console.log(nodeId.split(";")[1]);
-      toPath.current = nodeId.split(";")[1];
+  return (
+    <TreeView
+      aria-label="customized"
+      defaultExpanded={["1"]}
+      defaultCollapseIcon={<ExpandMoreIcon />}
+      defaultExpandIcon={<ChevronRightIcon />}
+      onNodeSelect={handleSelect}
+      onNodeToggle={handleNodeToggle}
+      expanded={expanded}
+      sx={{ overflowX: "hidden", height: 500, width: "100%" }}
+    >
+      <IconExpandedTreeItem nodeId="1" label="Home">
+        {renderTree(folders)}
+      </IconExpandedTreeItem>
+    </TreeView>
+  );
+};
+
+export default function CustomizedTreeView({ mode, open, onClose }) {
+  const operation = useSelector((state) => state.operation);
+  const items = useGetCSRFTokenQuery();
+
+  const { data, isLoading, isError, isSuccess } = items;
+  const { CSRFToken } = data ? data : { CSRFToken: "" };
+  const dispatch = useDispatch();
+  const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
+  const [nodeSelected, setNodeSelected] = useState(false);
+  console.log("Modal rendered-->", mode);
+  const [toPath, setToPath] = useState("/");
+
+  useEffect(() => {
+    if (isSuccess) {
+      dispatch(setCSRFToken(CSRFToken));
+      if (mode === MOVE) {
+        dispatch(
+          setOperation({
+            ...operation,
+            type: MOVE,
+            status: "uninitialized",
+          })
+        );
+      } else if (mode === COPY) {
+        dispatch(
+          setOperation({
+            ...operation,
+            type: COPY,
+            status: "uninitialized",
+          })
+        );
+      }
     }
-  };
-  const handleNodeToggle = (event, nodeIds) => {
-    setExpanded(nodeIds);
+  }, [isSuccess]);
+
+  const handleSubmit = async () => {
+    const body = {
+      files: fileIds.length > 0 ? fileIds : null,
+      folders: directories.length > 0 ? directories : null,
+    };
+
+    if (mode === MOVE) {
+      dispatch(
+        setOperation({
+          ...operation,
+          type: MOVE,
+          status: "initialized",
+          data: { body, to: toPath },
+        })
+      );
+    } else if (mode === COPY) {
+      dispatch(
+        setOperation({
+          ...operation,
+          type: COPY,
+          status: "initialized",
+          data: { body, to: toPath },
+        })
+      );
+    }
+    onClose(mode);
   };
 
   return (
     <>
-      {!move.initiated && !move.moved && (
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <Typography variant="h6" component="h2">
-              {mode === MOVE && <>Move </>} {mode === COPY && <>Copy </>}
-              {fileIds.length + directories.length} Item(s) to...
-            </Typography>
-            <Divider orientation="horizontal" />
-            <TreeView
-              aria-label="customized"
-              defaultExpanded={["1"]}
-              defaultCollapseIcon={<ExpandMoreIcon />}
-              defaultExpandIcon={<ChevronRightIcon />}
-              // defaultEndIcon={<ExpandMoreIcon />}
-              onNodeSelect={handleSelect}
-              onNodeToggle={handleNodeToggle}
-              expanded={expanded}
-              sx={{ overflowX: "hidden", height: 500, width: "100%" }}
-            >
-              <IconExpandedTreeItem nodeId="1" label="Home">
-                {renderTree(folders)}
-              </IconExpandedTreeItem>
-            </TreeView>
-            <Divider orientation="horizontal" />
+      <Modal
+        open={open}
+        onClose={onClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Typography variant="h6" component="h2">
+            {mode === MOVE && <>Move </>} {mode === COPY && <>Copy </>}
+            {fileIds.length + directories.length} Item(s) to...
+          </Typography>
+          <Divider orientation="horizontal" />
+          {isSuccess && (
+            <FolderTreeView
+              CSRFToken={CSRFToken}
+              toPath={toPath}
+              setToPath={setToPath}
+              setNodeSelected={setNodeSelected}
+            />
+          )}
+          {isLoading && (
+            <div className="flex justify-center items-center">
+              <SpinnerGIF style={{ width: "50px", height: "50px" }} />
+            </div>
+          )}
+          {isError && (
+            <Modal>
+              <Box sx={style}>
+                <Typography>Something went wrong</Typography>
+              </Box>
+            </Modal>
+          )}
+          <Divider orientation="horizontal" />
+          {isSuccess && (
             <Stack
               sx={{
                 display: "flex",
@@ -272,7 +296,7 @@ export default function CustomizedTreeView({ mode }) {
                   fontWeight: 900,
                   "&:hover": { backgroundColor: "#F5EFE5F0" },
                 }}
-                onClick={handleClose}
+                onClick={onClose}
               >
                 Cancel
               </Button>
@@ -288,54 +312,14 @@ export default function CustomizedTreeView({ mode }) {
                   "&:hover": { backgroundColor: "#BBB5AEF0" },
                   textTransform: "none",
                 }}
-                onClick={() => handleSubmit(toPath)}
+                onClick={() => handleSubmit()}
               >
                 {mode === MOVE && <>Move </>} {mode === COPY && <>Copy </>}
               </Button>
             </Stack>
-          </Box>
-        </Modal>
-      )}
-      {openSnackbar && (
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={5000}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          onClose={handleClose}
-          message={
-            <Box
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="flex-start"
-              gap={2}
-            >
-              {move.moving && <CircularProgress />}
-              {move.moving && (
-                <Typography>
-                  {mode === MOVE && <>Move </>} {mode === COPY && <>Copy </>}{" "}
-                  {fileIds.length + directories.length} items
-                </Typography>
-              )}
-              {move.moved && (
-                <>
-                  <Typography>
-                    {mode === MOVE && <>Moved </>}{" "}
-                    {mode === COPY && <>Copied </>} {move.movedItems} items
-                  </Typography>
-                  {move.movedFailed > 0 && (
-                    <Typography>
-                      {mode === MOVE && <>Move </>}{" "}
-                      {mode === COPY && <>Copy </>} Failed for{" "}
-                      {move.movedFailed} items
-                    </Typography>
-                  )}
-                </>
-              )}
-            </Box>
-          }
-        ></Snackbar>
-      )}
+          )}
+        </Box>
+      </Modal>
     </>
   );
 }

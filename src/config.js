@@ -101,10 +101,36 @@ const createFolderURL =
   process.env.REACT_APP_ENV === PRODUCTION
     ? server + "/app/createFolder"
     : "/app/createFolder";
+const getFileVersionURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/getFileVersion"
+    : "/app/getFileVersion";
 const concurrency = 5;
 const cwd = "/";
 const devicename = "DESKTOP-10RSGE8";
 const username = "sandeep.kumar@idriveinc.com";
+const RENAME = "RENAME";
+const COPY = "COPY";
+const DOWNLOAD = "DOWNLOAD";
+const MOVE = "MOVE";
+const SHARE = "SHARE";
+const DELETE = "DELETE";
+const DELETETRASH = "DELETETRASH";
+const EMPTYTRASH = "EMPTYTRASH";
+const RESTORETRASH = "RESTORETRASH";
+const pageSize = 50;
+const multiple = "multiple";
+const file = "file";
+const folder = "folder";
+const fileVersion = "fileVersion";
+const timeOpts = {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+  hour12: true,
+};
 
 export {
   fileUploadURL,
@@ -138,4 +164,20 @@ export {
   server,
   deleteTrashURL,
   createFolderURL,
+  RENAME,
+  COPY,
+  MOVE,
+  pageSize,
+  multiple,
+  file,
+  folder,
+  fileVersion,
+  timeOpts,
+  SHARE,
+  DELETE,
+  DOWNLOAD,
+  DELETETRASH,
+  RESTORETRASH,
+  EMPTYTRASH,
+  getFileVersionURL,
 };

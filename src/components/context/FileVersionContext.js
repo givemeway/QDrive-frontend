@@ -5,7 +5,7 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
-import useOutSideClick from "../useOutsideClick";
+import useOutSideClick from "../hooks/useOutsideClick";
 import InfoIcon from "@mui/icons-material/Info";
 import { ItemSelectionContext, RightClickContext } from "../UseContext";
 import { useContext, useEffect } from "react";

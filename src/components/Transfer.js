@@ -8,6 +8,8 @@ import Download from "./DownloadItems.js";
 import BreadCrumb from "./breadCrumbs/CollapsibleBreadUnderLinedCrumbs";
 import { ItemSelectionContext, UploadFolderContenxt } from "./UseContext";
 import useFetchCSRFToken from "./hooks/FetchCSRFToken.js";
+import { useRecoilState } from "recoil";
+import { itemsSelectedAtom } from "../Recoil/Store/atoms.js";
 
 const sharedBoxStyle = {
   display: "flex",
@@ -40,10 +42,12 @@ export default function Transfer() {
   const [dirNav, setDirNav] = useState("");
   const share = useRef({ nav: "h", itemId: "", nav_tracking: 0, rel: "" });
   const tempBreadCrumbs = useRef(new Map(Object.entries({ "/": "/" })));
-  const [itemsSelected, setItemsSelection] = useState({
-    fileIds: [],
-    directories: [],
-  });
+  // const [itemsSelected, setItemsSelection] = useState({
+  //   fileIds: [],
+  //   directories: [],
+  // });
+  console.log("Transfer");
+  const [itemsSelected, setItemsSelection] = useRecoilState(itemsSelectedAtom);
 
   const CSRFToken = useFetchCSRFToken(csrftokenURL);
   const [validateShare, setValidateShare] = useState(undefined);

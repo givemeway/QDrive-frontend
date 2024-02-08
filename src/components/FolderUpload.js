@@ -1,8 +1,7 @@
 import React from "react";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
-import { useState, useEffect, useContext, useRef } from "react";
-import { filesFoldersURL } from "../config.js";
+import { useState, useEffect, useRef } from "react";
 
 import { Button } from "@mui/material";
 import { useParams } from "react-router-dom";
@@ -11,8 +10,14 @@ import Snackbar from "@mui/material/Snackbar";
 import CircularProgress from "@mui/material/CircularProgress";
 import { socket } from "./Socket.js";
 import { formatBytes, formatSeconds } from "../util.js";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { dataAtom, subpathAtom, uploadAtom } from "../Recoil/Store/atoms.js";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { subpathAtom, uploadAtom } from "../Recoil/Store/atoms.js";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setFilesMetaData,
+  setFilesProgress,
+  setOverAllProgress,
+} from "../features/filesupload/uploadingFiles.slice.jsx";
 
 function CustomButton({ children }) {
   return (
@@ -54,61 +59,23 @@ function FolderUpload() {
   const [preparingFiles, setPreparingFiles] = useState(false);
   const filesMetaData = useRef({});
   const [uploadInitiated, setUploadInitiated] = useState(false);
-  const setData = useSetRecoilState(dataAtom);
   const path = useRecoilValue(subpathAtom);
   const [folderProgress, setUpload] = useRecoilState(uploadAtom);
   const params = useParams();
   const subpath = params["*"];
+  console.log("upload folder rendered");
+  // const { overAllProgress } = useSelector((state) => state.overAllProgress);
+  // console.log(overAllProgress);
+  // const dispatch = useDispatch();
 
   const ETA = (starttime, total, uploaded) => {
-    const timeElapsed = new Date() - starttime;
+    const timeElapsed = Date.now() - starttime;
     const uploadSpeed = uploaded / (timeElapsed / 1000);
     const time = (total - uploaded) / uploadSpeed;
     const eta = formatSeconds(time);
     const speed = formatBytes(uploadSpeed) + "/s";
     return { eta, speed };
   };
-
-  useEffect(() => {
-    const path = subpath.split("/");
-    if (path[0] === "home" && uploadInitiated) {
-      let homedir;
-      let curDir;
-
-      if (path.length === 1) {
-        homedir = "/";
-        curDir = "/";
-      } else {
-        curDir = path.slice(2).join("/");
-
-        if (curDir.length === 0) {
-          curDir = "/";
-        }
-        homedir = path[1];
-      }
-      const headers = {
-        "X-CSRF-Token": CSRFToken,
-        "Content-type": "application/x-www-form-urlencoded",
-        devicename: homedir,
-        currentdirectory: curDir,
-        sortorder: "ASC",
-      };
-      const options = {
-        method: "POST",
-        credentials: "include",
-        mode: "cors",
-        headers: headers,
-      };
-      fetch(filesFoldersURL + "/", options)
-        .then((res) => res.json())
-        .then((data) => {
-          setData(() => {
-            return data;
-          });
-        })
-        .catch((err) => console.log(err));
-    }
-  }, [CSRFToken, setData, subpath, uploadInitiated]);
 
   useEffect(() => {
     if (files.length > 0) {
@@ -123,6 +90,7 @@ function FolderUpload() {
           const {
             CSRFToken,
             trackFilesProgress,
+            trackFilesProgress_obj,
             totalSize,
             total,
             toBeUploaded,
@@ -130,12 +98,15 @@ function FolderUpload() {
           } = data;
           setCSRFToken(CSRFToken);
           setTrackFilesProgress(() => trackFilesProgress);
+          // dispatch(setFilesProgress(trackFilesProgress_obj));
           setFilesStatus((prev) => ({
             ...prev,
             totalSize: totalSize,
             total: total,
           }));
+          // dispatch(setOverAllProgress({ totalSize: totalSize, total: total }));
           filesMetaData.current = metadata;
+          // dispatch(setFilesMetaData(metadata));
           setFilesToUpload(toBeUploaded);
           setFiles([]);
           worker.terminate();
@@ -200,10 +171,16 @@ function FolderUpload() {
             ...prev,
             uploaded: prev.uploaded + uploaded - transferred,
           }));
+          // dispatch(
+          //   setOverAllProgress({
+          //     uploaded: overAllProgress.uploaded + uploaded - transferred,
+          //   })
+          // );
           setTrackFilesProgress((prev) => {
             prev.set(id, file);
             return prev;
           });
+          // dispatch(setFilesProgress({ [id]: file }));
         }
       };
 
@@ -219,6 +196,7 @@ function FolderUpload() {
           prev.set(id, file);
           return prev;
         });
+        // dispatch(setFilesProgress({ [id]: file }));
       };
 
       const onFileUploadDone = ({ payload }) => {
@@ -233,6 +211,12 @@ function FolderUpload() {
           prev.set(id, file);
           return prev;
         });
+        // dispatch(setFilesProgress({ [id]: file }));
+        // dispatch(
+        //   setOverAllProgress({
+        //     processed: overAllProgress.processed + 1,
+        //   })
+        // );
         setFilesStatus((prev) => ({
           ...prev,
           processed: prev.processed + 1,
@@ -337,7 +321,6 @@ function FolderUpload() {
   };
 
   const handleFolderSelection = (e) => {
-    console.log("triggered before set preparing files");
     setPreparingFiles(true);
     setUploadInitiated(false);
     setFiles(
@@ -347,7 +330,6 @@ function FolderUpload() {
       })
     );
 
-    console.log("inside folder upload component");
     const subpart = path.split("/").slice(1);
     if (subpart.length === 0) {
       setDevice("/");
@@ -357,6 +339,7 @@ function FolderUpload() {
       const actualPath = subpart.slice(1).join("/");
       setPWD(actualPath.length === 0 ? "/" : actualPath);
     }
+    e.target.value = null;
   };
   return (
     <>
@@ -378,6 +361,7 @@ function FolderUpload() {
             type="file"
             webkitdirectory={"true"}
             onChange={handleFolderSelection}
+            onBlur={(e) => console.log("onblur")}
           />
           <DriveFolderUploadIcon
             color="primary"

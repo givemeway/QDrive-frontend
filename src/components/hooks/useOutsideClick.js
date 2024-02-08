@@ -3,14 +3,16 @@ import { useEffect } from "react";
 const useOutSideClick = (ref, callback) => {
   const handleClick = (e) => {
     if (ref.current && !ref.current.contains(e.target)) {
+      console.log("close call back added");
       callback();
     }
   };
 
   useEffect(() => {
-    document.addEventListener("click", handleClick);
+    console.log("<-->event click added-->");
+    document.addEventListener("mousedown", handleClick);
     return () => {
-      document.removeEventListener("click", handleClick);
+      document.removeEventListener("mousedown", handleClick);
     };
   });
 };

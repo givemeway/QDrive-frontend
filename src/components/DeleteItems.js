@@ -1,99 +1,80 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
-import { csrftokenURL } from "../config";
-import {
-  ItemSelectionContext,
-  UploadFolderContenxt,
-  SnackBarContext,
-} from "./UseContext";
 
-import { useParams } from "react-router-dom";
-import useFetchItems from "./hooks/FetchCurrentDirectoryItems";
-import useFetchCSRFToken from "./hooks/FetchCSRFToken";
-import useDeleteItems from "./hooks/DeleteItemsHook";
-import { useRecoilState, useSetRecoilState, useRecoilValue } from "recoil";
-import {
-  dataAtom,
-  itemsDeletionAtom,
-  itemsSelectedAtom,
-} from "../Recoil/Store/atoms";
+import { useRecoilValue } from "recoil";
+import { itemsSelectedAtom } from "../Recoil/Store/atoms";
+import { useDispatch, useSelector } from "react-redux";
+import { DeleteModal } from "./Modal/DeleteModal";
+import { setOperation } from "../features/operation/operationSlice";
+import { useGetCSRFTokenQuery } from "../features/api/apiSlice";
+import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice";
+import { DELETE } from "../config";
 
 const DeleteItems = () => {
-  const CSRFToken = useFetchCSRFToken(csrftokenURL);
-  // const { fileIds, directories } = useContext(ItemSelectionContext);
   const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
-  const [isDeleting, setIsDeleting] = useState(null);
-  const [isDeleted, setIsDeleted] = useState(null);
-  // const { setData } = useContext(UploadFolderContenxt);
-  const setData = useSetRecoilState(dataAtom);
-  // const { setItemDeletion } = useContext(SnackBarContext);
-  const setItemDeletion = useSetRecoilState(itemsDeletionAtom);
-  const params = useParams();
-  const subpath = params["*"];
 
-  const [items, , getItems, itemsLoaded] = useFetchItems(subpath, CSRFToken);
-  const [initDelete, , deleted, failed, itemsDeleted] = useDeleteItems(
-    fileIds,
-    directories,
-    CSRFToken
-  );
+  const items = useGetCSRFTokenQuery();
+
+  const { CSRFToken } = !items?.data ? { CSRFToken: "" } : items?.data;
+
   console.log("delete item rendered");
 
-  const handleDelete = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setItemDeletion((prev) => ({
-      ...prev,
-      isDeleting: true,
-      isOpen: true,
-      total: fileIds.length + directories.length,
-    }));
-    setIsDeleting(true);
-    setIsDeleted(false);
+  const operation = useSelector((state) => state.operation);
+  const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
+
+  const handleClick = () => {
+    console.log("DELETE triggered");
+    setOpen(true);
+    console.log("initialized");
+    dispatch(
+      setOperation({
+        ...operation,
+        type: DELETE,
+        status: "uninitialized",
+      })
+    );
+  };
+
+  const onSubmit = () => {
+    console.log("triggered submit");
+    const body = { fileIds, directories };
+    dispatch(
+      setOperation({
+        ...operation,
+        type: DELETE,
+        status: "initialized",
+        data: body,
+      })
+    );
+    setOpen(false);
+  };
+
+  const onClose = () => {
+    setOpen(false);
   };
 
   useEffect(() => {
-    if (itemsLoaded && isDeleted) {
-      setData(items);
+    if (CSRFToken && items.isSuccess) {
+      dispatch(setCSRFToken(CSRFToken));
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemsLoaded]);
-
-  useEffect(() => {
-    if (deleted) {
-      setItemDeletion((prev) => ({
-        ...prev,
-        isDeleting: false,
-        itemsFailed: failed,
-        itemsDeleted: itemsDeleted,
-      }));
-      setIsDeleted(true);
-      setIsDeleting(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deleted, failed, itemsDeleted]);
-
-  useEffect(() => {
-    if (isDeleted) {
-      getItems();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDeleted]);
-
-  useEffect(() => {
-    if (isDeleting) {
-      initDelete();
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDeleting]);
+  }, [CSRFToken, items.isSuccess]);
 
   return (
     <>
+      {open && (
+        <DeleteModal
+          title={"Delete Items"}
+          content={"Are you sure you want to delete Items?"}
+          open={open}
+          onClose={onClose}
+          onSubmit={onSubmit}
+        />
+      )}
+
       <Button
-        onClick={handleDelete}
+        onClick={handleClick}
         variant="outlined"
         disableRipple
         sx={{

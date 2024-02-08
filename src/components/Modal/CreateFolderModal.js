@@ -20,6 +20,8 @@ import useCreateFolder from "../hooks/CreateFolderHook";
 import { useNavigate } from "react-router";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { snackBarAtom, subpathAtom } from "../../Recoil/Store/atoms";
+import { GreyButton } from "../Buttons/GreyButton";
+import { CustomBlueButton } from "../Buttons/BlueButton";
 
 const mainContainerStyle = {
   position: "absolute",
@@ -30,7 +32,7 @@ const mainContainerStyle = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 450,
-  height: 200,
+  height: 250,
   bgcolor: "background.paper",
   border: "2px solid #737373",
   //   boxShadow: 10,
@@ -199,22 +201,17 @@ export default function CreateFolderModal({ open, setOpen }) {
                   width: "100%",
                 }}
               >
-                <Button
-                  disableRipple
-                  variant="contained"
-                  sx={cancelButtonStyle}
+                <GreyButton
+                  text={"Cancel"}
                   onClick={handleClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disableRipple
-                  variant="contained"
-                  sx={createButtonStyle}
+                  style={{ width: "75px", height: "40px" }}
+                />
+
+                <CustomBlueButton
+                  text={"Create"}
                   onClick={handleCreate}
-                >
-                  Create
-                </Button>
+                  style={{ width: "75px", height: "40px" }}
+                />
               </Box>
             </Stack>
           </Box>

@@ -1,11 +1,10 @@
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
 import { useState } from "react";
 import { ModalContext } from "./UseContext";
+import { MOVE } from "../config";
 
 import { Button } from "@mui/material";
 import Modal from "./Modal";
-
-const MOVE = "move";
 
 export default function MoveItems() {
   const [open, setOpen] = useState(false);
@@ -13,6 +12,11 @@ export default function MoveItems() {
   const handleClick = () => {
     setOpen(true);
   };
+
+  const onClose = () => {
+    setOpen(false);
+  };
+
   return (
     <>
       <Button
@@ -30,11 +34,7 @@ export default function MoveItems() {
       >
         <DriveFileMoveIcon sx={{ cursor: "pointer", fontSize: 25 }} />
       </Button>
-      {open && (
-        <ModalContext.Provider value={{ open, setOpen }}>
-          <Modal mode={MOVE} />
-        </ModalContext.Provider>
-      )}
+      {open && <Modal mode={MOVE} open={open} onClose={onClose} />}
     </>
   );
 }

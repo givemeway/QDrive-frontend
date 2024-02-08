@@ -8,7 +8,7 @@ import { Link as Atag } from "@mui/material";
 import { useGridApiRef } from "@mui/x-data-grid";
 import Activity from "./FileActivity.js";
 import { formatBytes } from "../util.js";
-import { downloadURL } from "../config.js";
+import { downloadURL, server } from "../config.js";
 import {
   itemsSelectedAtom,
   editAtom,
@@ -29,6 +29,11 @@ import { get_file_icon, svgIconStyle } from "./fileFormats/FileFormat.js";
 import useRename from "./hooks/RenameItemHook";
 
 import { useRecoilState, useRecoilValue } from "recoil";
+import { useDispatch, useSelector } from "react-redux";
+import { setEdit } from "../features/rename/renameSlice.jsx";
+import { setOperation } from "../features/operation/operationSlice.jsx";
+
+const RENAME = "RENAME";
 
 const multiple = "multiple";
 const file = "file";
@@ -123,7 +128,7 @@ const buildCellValueForFile = (file) => {
     )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
       file.filename
     )}&uuid=${encodeURIComponent(file.uuid)}`,
-    url: `http://localhost:3001${downloadURL}?file=${encodeURIComponent(
+    url: `${server}${downloadURL}?file=${encodeURIComponent(
       file.filename
     )}&uuid=${encodeURIComponent(file.uuid)}&db=files`,
     origin: file.origin,
@@ -287,7 +292,10 @@ export default React.memo(function DataGridTable({
   const subpath = params["*"];
   const { fileIds, directories } = selected;
   const data = useRecoilValue(dataAtom);
-  const [edit, setEdit] = useRecoilState(editAtom);
+  // const [edit, setEdit] = useRecoilState(editAtom);
+  const edit = useSelector((state) => state.rename);
+  const operation = useSelector((state) => state.operation);
+
   const [open, setOpen] = React.useState(false);
   const [selectionType, setSelectionType] = React.useState("");
   const [share, setShare] = React.useState(false);
@@ -296,7 +304,9 @@ export default React.memo(function DataGridTable({
   const apiRef = useGridApiRef();
   const gridRef = React.useRef();
   const selectedToEdit = React.useRef();
-  const [rename] = useRename(fileIds, directories, edit, setEdit);
+  // const [rename] = useRename(fileIds, directories, edit, setEdit);
+  const dispatch = useDispatch();
+
   console.log(subpath);
   const fileContextProps = {
     setOpenContext,
@@ -396,13 +406,49 @@ export default React.memo(function DataGridTable({
 
   const processRowUpdate = (newRow) => {
     if (edit.mode === "edit") {
-      rename();
-      setEdit((prev) => ({
-        ...prev,
-        val: newRow.name,
-        editStop: true,
-        editStart: false,
-      }));
+      let body = {};
+      if (fileIds.length > 0) {
+        body.type = "fi";
+        body.uuid = fileIds[0].origin;
+        body.to = newRow.name;
+        body.device = fileIds[0].device;
+        body.dir = fileIds[0].dir;
+        body.filename = fileIds[0].file;
+      } else {
+        body.type = "fo";
+        body.uuid = directories[0].uuid;
+        body.device = directories[0].device;
+        body.folder = directories[0].folder;
+        body.oldPath = directories[0].path;
+        let path_array = directories[0].path.split("/").slice(0, -1);
+        path_array.push(newRow.name);
+        body.to = path_array.join("/");
+      }
+      // rename();
+      dispatch(
+        setOperation({
+          ...operation,
+          type: RENAME,
+          status: "initialized",
+          data: body,
+        })
+      );
+      dispatch(
+        setEdit({
+          mode: "idle",
+          editStart: undefined,
+          editStop: undefined,
+          edited: undefined,
+          editing: undefined,
+          val: "",
+        })
+      );
+      // setEdit((prev) => ({
+      //   ...prev,
+      //   val: newRow.name,
+      //   editStop: true,
+      //   editStart: false,
+      // }));
     }
     return newRow;
   };
@@ -468,6 +514,9 @@ export default React.memo(function DataGridTable({
       const params = { id: selectedToEdit.current, field: "name" };
       apiRef.current.startCellEditMode(params);
       setEdit((prev) => ({ ...prev, editing: true }));
+      dispatch(
+        setOperation({ ...operation, type: RENAME, status: "uninitialized" })
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiRef, edit.editStart]);

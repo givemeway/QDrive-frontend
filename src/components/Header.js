@@ -7,10 +7,12 @@ import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspaceRounded"
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { breadCrumbAtom } from "../Recoil/Store/atoms";
+import { useSelector } from "react-redux";
 
 const Header = ({ search }) => {
   const [showBreadCrumb, setShowBreadCrumb] = useState(true);
-  const queue = useRecoilValue(breadCrumbAtom);
+  // const queue = useRecoilValue(breadCrumbAtom);
+  const queue = useSelector((state) => state.breadCrumbs);
   const navigate = useNavigate();
   useEffect(() => {
     if (search) {

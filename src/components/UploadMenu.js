@@ -47,19 +47,11 @@ export default React.memo(function UploadMenu() {
             padding: 0,
           }}
         >
-          {/* <UploadContext.Provider value={upload}> */}
           <FolderUpload />
-          {/* </UploadContext.Provider> */}
-
           <Divider orientation="vertical" />
-
-          {/* <UploadContext.Provider value={upload}> */}
           <FilesUpload />
-          {/* </UploadContext.Provider> */}
           <Divider orientation="vertical" />
-
           <CreateNewFolderIcon />
-
           <Divider orientation="vertical" />
           {(fileIds.length > 0 || directories.length > 0) && (
             <>
@@ -76,7 +68,6 @@ export default React.memo(function UploadMenu() {
               <Share />
               <Divider orientation="vertical" />
               <DeleteItems />
-              <Divider orientation="vertical" />
               <Divider orientation="vertical" />
             </>
           )}

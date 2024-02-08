@@ -46,7 +46,7 @@ const file_format = {
 };
 
 function get_file_icon(filename, url) {
-  const ext = filename.split(".").slice(-1)[0];
+  const ext = filename?.split(".").slice(-1)[0];
   if (file_format.hasOwnProperty(ext))
     if (
       ext === "jpg" ||
@@ -59,7 +59,6 @@ function get_file_icon(filename, url) {
         <Image
           src={`${url}?w=28&h=28&fit=crop&auto=format`}
           srcSet={`${url}?w=28&h=28&fit=crop&auto=format&dpr=2 2x`}
-          b
           // src={`${url}`}
           // srcSet={`${url}`}
           showLoading={file_format[ext]}

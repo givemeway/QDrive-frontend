@@ -20,6 +20,13 @@ import useFetchTrashBatch from "../hooks/FetchTrashBatchHook";
 import { get_file_icon, svgIconStyle } from "../fileFormats/FileFormat";
 import CollapsibleBreadCrumbs from "../breadCrumbs/CollapsibleBreadCrumbs";
 import useRestoreItems from "../hooks/RestoreItemHook";
+import { useDispatch, useSelector } from "react-redux";
+import { useGetBatchTrashItemsMutation } from "../../features/api/apiSlice";
+import { setOperation } from "../../features/operation/operationSlice";
+import SpinnerGIF from "../icons/SpinnerGIF";
+import { setSelectedTrashBatch } from "../../features/trash/selectedTrashBatch";
+import { GreyButton } from "../Buttons/GreyButton";
+import { CustomBlueButton } from "../Buttons/BlueButton";
 
 const options = {
   year: "numeric",
@@ -29,6 +36,9 @@ const options = {
   minute: "numeric",
   hour12: true,
 };
+
+const singleFile = "singleFile";
+const bulk = "bulk";
 
 const headingStyle = { fontSize: 18, color: "#1A1918", fontWeight: 600 };
 
@@ -136,40 +146,82 @@ function EllipsisTypoGraphy({ children }) {
 }
 
 export default function TrashModal() {
-  const { openTrashItem, setOpenTrashItem, selectedTrashItem, setRestoring } =
-    React.useContext(TrashContext);
+  const { openTrashItem, setOpenTrashItem } = React.useContext(TrashContext);
+  console.log("trash batch modal rendered");
 
-  const [items, loaded] = useFetchTrashBatch(selectedTrashItem);
-  const [loading, setLoading] = React.useState(true);
   const [allItems, setAllItems] = React.useState([]);
-  const [restoreTrash, restoreStatus, init] = useRestoreItems([
-    selectedTrashItem,
-  ]);
+  const dispatch = useDispatch();
+
+  const { CSRFToken } = useSelector((state) => state.csrfToken);
+  const selectedTrashBatch = useSelector((state) => state.selectedTrashBatch);
+  const operation = useSelector((state) => state.operation);
+
+  const [getBatchTrashItems, params] = useGetBatchTrashItemsMutation();
+  const { isLoading, isError, isSuccess, data } = params;
+
+  const { name, path, begin, items, end, item, id } = selectedTrashBatch;
 
   const handleRestore = () => {
-    // setOpenTrashItem(false);
-    init();
+    dispatch(
+      setOperation({
+        ...operation,
+        type: "RESTORETRASH",
+        status: "initialized",
+        data: [selectedTrashBatch],
+      })
+    );
+    setOpenTrashItem(false);
   };
 
-  const handleClose = () => setOpenTrashItem(false);
+  const handleClose = () => {
+    dispatch(
+      setSelectedTrashBatch({
+        name: "",
+        path: "",
+        begin: "",
+        items: undefined,
+        end: "",
+        item: "",
+        id: "",
+        limit: { begin: 0, end: 0 },
+      })
+    );
+    setOpenTrashItem(false);
+  };
 
-  React.useEffect(() => {
-    if (restoreTrash) {
-      setRestoring(true);
+  const fetchTrashBatchItems = (path, name, begin, end) => {
+    let params = "";
+    if (item === singleFile) {
+      params = `id=${id}&item=${singleFile}`;
     } else {
-      setRestoring(false);
+      params = `path=${path}&folder=${name}&begin=${begin}&end=${end}&item=${bulk}`;
     }
-  }, [restoreTrash, restoreStatus]);
+    getBatchTrashItems({ params, CSRFToken });
+  };
 
   React.useEffect(() => {
-    setLoading(true);
+    dispatch(
+      setOperation({
+        ...operation,
+        type: "RESTORETRASH",
+        status: "uninitialized",
+      })
+    );
+    if (items === undefined) {
+      fetchTrashBatchItems(path, name, begin, end);
+    } else {
+      for (const _item of items) {
+        const { name, path, limit } = _item;
+        fetchTrashBatchItems(path, name, limit.begin, limit.end);
+      }
+    }
   }, []);
 
   React.useEffect(() => {
-    if (loaded && items.length > 0) {
-      setAllItems(items);
-      if (selectedTrashItem?.items) {
-        selectedTrashItem?.items.forEach((item) => {
+    if (isSuccess && data.length > 0) {
+      setAllItems(data);
+      if (selectedTrashBatch?.items) {
+        selectedTrashBatch?.items.forEach((item) => {
           if (!item?.root) {
             setAllItems((prev) => [
               {
@@ -185,9 +237,8 @@ export default function TrashModal() {
           }
         });
       }
-      setLoading(false);
     }
-  }, [loaded, items]);
+  }, [isSuccess, data]);
 
   function RenderRows({ style, index }) {
     return (
@@ -260,10 +311,12 @@ export default function TrashModal() {
     >
       <Fade in={openTrashItem}>
         <Box sx={mainContainerStyle}>
-          <Typography sx={headingStyle}>{selectedTrashItem.name}</Typography>
+          <Typography sx={headingStyle}>{name}</Typography>
           <Box sx={scrollContainerStyle}>
-            {loading && <CircularProgress />}
-            {!loading && (
+            {isLoading && (
+              <SpinnerGIF style={{ height: "50px", width: "50px" }} />
+            )}
+            {isSuccess && (
               <React.Fragment>
                 <Box sx={scrollContainerHeaderStyle}>
                   <Typography
@@ -289,24 +342,19 @@ export default function TrashModal() {
                 </FixedSizeList>
               </React.Fragment>
             )}
+            {isError && <div>Something went wrong</div>}
           </Box>
           <Box sx={buttonContainer}>
-            <Button
-              variant="contained"
-              disableRipple
-              sx={cancelButtonStyle}
-              onClick={() => setOpenTrashItem(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              disableRipple
-              variant="contained"
-              sx={restoreAllButtonStyle}
+            <GreyButton
+              text={"Cancel"}
+              style={{ width: "150px", height: "40px" }}
+              onClick={handleClose}
+            />
+            <CustomBlueButton
+              text={"Restore all Files"}
+              style={{ width: "150px", height: "40px" }}
               onClick={handleRestore}
-            >
-              Restore all Files
-            </Button>
+            />
           </Box>
         </Box>
       </Fade>

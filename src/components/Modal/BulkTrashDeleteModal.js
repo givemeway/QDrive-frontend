@@ -28,6 +28,11 @@ import {
   useSetRecoilState,
 } from "recoil";
 
+import {
+  useDeleteTrashItemsMutation,
+  useGetCSRFTokenQuery,
+} from "../../features/api/apiSlice";
+
 import { Suspense } from "react";
 import {
   statusNotificationAtom,
@@ -37,6 +42,11 @@ import {
   CSRFTokenSelector,
   deleteTrashItemsSelector,
 } from "../../Recoil/Store/selector";
+import useFetchCSRFToken from "../hooks/FetchCSRFToken";
+import { csrftokenURL } from "../../config";
+import { useDispatch, useSelector } from "react-redux";
+import { setCSRFToken } from "../../features/csrftoken/csrfTokenSlice";
+import { setOperation } from "../../features/operation/operationSlice";
 
 const options = {
   year: "numeric",
@@ -160,48 +170,44 @@ export default function BulkTrashDeleteModal() {
     setRestoring,
   } = React.useContext(TrashContext);
 
-  const [loading, setLoading] = React.useState(true);
   const [allItems, setAllItems] = React.useState([]);
-  const [deleteTrash, deleteStatus, init] = useDeleteTrashItems(selectedItems);
-  // const setTrash = useSetRecoilState(trashDeleteStatusAtom);
-  // const getCSRFToken = useRecoilValueLoadable(CSRFTokenSelector);
-  // const setNotifyStatus = useSetRecoilState(statusNotificationAtom);
-  // const CSRFToken = getCSRFToken.getValue();
-  // console.log(CSRFToken);
-  // const trashDeleteStatus = useRecoilValueLoadable(
-  //   deleteTrashItemsSelector({
-  //     items: selectedItems,
-  //     CSRFToken,
-  //   })
-  // );
+  const dispatch = useDispatch();
+  const operation = useSelector((state) => state.operation);
+
+  const items = useGetCSRFTokenQuery();
+  const { data, status, isLoading, isError, isSuccess } = items;
+
+  const { CSRFToken } = data ? data : { CSRFToken: "" };
+  console.log("bulk trash rendered");
+
   const handleRestore = async () => {
-    // setOpenBulkTrashDelete(false);
-    init();
-    // setTrash((prev) => ({
-    //   ...prev,
-    //   status: "deleting",
-    //   total: selectedItems.length,
-    // }));
-    // setNotifyStatus((prev) => ({
-    //   ...prev,
-    //   fn: trashDeleteStatus,
-    //   open: true,
-    //   operation_type: "Deleting Trash Items",
-    // }));
-    // setOpenBulkTrashDelete(false);
+    dispatch(
+      setOperation({
+        ...operation,
+        type: "DELETETRASH",
+        status: "initialized",
+        data: selectedItems,
+      })
+    );
+    setOpenBulkTrashDelete(false);
+    console.log("closed");
   };
 
   React.useEffect(() => {
-    if (deleteTrash) {
-      setRestoring(true);
-    } else {
-      setRestoring(false);
+    if (isSuccess) {
+      dispatch(setCSRFToken(CSRFToken));
+      dispatch(
+        setOperation({
+          ...operation,
+          type: "DELETETRASH",
+          status: "uninitialized",
+        })
+      );
     }
-  }, [deleteTrash, deleteStatus]);
+  }, [isSuccess]);
 
   React.useEffect(() => {
     setAllItems(selectedItems);
-    setLoading(false);
   }, []);
 
   const handleClose = () => setOpenBulkTrashDelete(false);
@@ -281,54 +287,57 @@ export default function BulkTrashDeleteModal() {
     >
       <Fade in={openBulkTrashDelete}>
         <Box sx={mainContainerStyle}>
-          {/* <Typography sx={headingStyle}>{selectedItems[0].name}</Typography> */}
-          <Box sx={scrollContainerStyle}>
-            {loading && <CircularProgress />}
-            {!loading && (
-              <React.Fragment>
-                <Box sx={scrollContainerHeaderStyle}>
-                  <Typography
-                    variant={"span"}
-                    sx={scrollContainerHeaderTextStyle}
+          {isLoading && <CircularProgress />}
+          {isSuccess && (
+            <>
+              <Box sx={scrollContainerStyle}>
+                <React.Fragment>
+                  <Box sx={scrollContainerHeaderStyle}>
+                    <Typography
+                      variant={"span"}
+                      sx={scrollContainerHeaderTextStyle}
+                    >
+                      Name
+                    </Typography>
+                    <Typography
+                      variant={"span"}
+                      sx={{ ...scrollContainerHeaderTextStyle, marginRight: 2 }}
+                    >
+                      Deleted
+                    </Typography>
+                  </Box>
+                  <FixedSizeList
+                    itemCount={allItems.length}
+                    itemSize={50}
+                    height={300}
+                    width={"100%"}
                   >
-                    Name
-                  </Typography>
-                  <Typography
-                    variant={"span"}
-                    sx={{ ...scrollContainerHeaderTextStyle, marginRight: 2 }}
-                  >
-                    Deleted
-                  </Typography>
-                </Box>
-                <FixedSizeList
-                  itemCount={allItems.length}
-                  itemSize={50}
-                  height={300}
-                  width={"100%"}
+                    {RenderRows}
+                  </FixedSizeList>
+                </React.Fragment>
+              </Box>
+
+              <Box sx={buttonContainer}>
+                <Button
+                  variant="contained"
+                  disableRipple
+                  sx={cancelButtonStyle}
+                  onClick={() => setOpenBulkTrashDelete(false)}
                 >
-                  {RenderRows}
-                </FixedSizeList>
-              </React.Fragment>
-            )}
-          </Box>
-          <Box sx={buttonContainer}>
-            <Button
-              variant="contained"
-              disableRipple
-              sx={cancelButtonStyle}
-              onClick={() => setOpenBulkTrashDelete(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              disableRipple
-              variant="contained"
-              sx={restoreAllButtonStyle}
-              onClick={handleRestore}
-            >
-              Permanently Delete all (or selected) Items
-            </Button>
-          </Box>
+                  Cancel
+                </Button>
+                <Button
+                  disableRipple
+                  variant="contained"
+                  sx={restoreAllButtonStyle}
+                  onClick={handleRestore}
+                >
+                  Permanently Delete all (or selected) Items
+                </Button>
+              </Box>
+            </>
+          )}
+          {isError && <>Something Went Wrong</>}
         </Box>
       </Fade>
     </Modal>
