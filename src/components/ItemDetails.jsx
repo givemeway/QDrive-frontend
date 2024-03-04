@@ -44,10 +44,12 @@ function CustomizedBadges({ version }) {
   );
 }
 
-const generateDownloadURL = (filename, uuid, version) => {
+const generateDownloadURL = (file, version) => {
   let url = `${server}${downloadURL}?file=${encodeURIComponent(
-    filename
-  )}&uuid=${encodeURIComponent(uuid)}&db=${version}`;
+    file.filename
+  )}&uuid=${encodeURIComponent(file.uuid)}&db=${version}&dir=${
+    file.directory
+  }&device=${file.device}`;
   const search = new URL(url);
   search.searchParams.set("db", version);
   return search.toString();
@@ -80,7 +82,7 @@ const ItemDetails = () => {
             timeOpts
           ),
           size: formatBytes(file.size),
-          url: generateDownloadURL(file.filename, file.uuid, "versions"),
+          url: generateDownloadURL(file, "versions"),
         })),
         { ...fileDetails.file, modified: fileDetails.file.last_modified },
       ];
@@ -132,7 +134,7 @@ const ItemDetails = () => {
         </div>
       )}
       {isSuccess && (
-        <div className="flex flex-row justify-center items-center overflow-auto ">
+        <div className="flex flex-col justify-center items-center overflow-auto ">
           {allVersions.map((file) => {
             return (
               <Box sx={styleVersions} key={file.id}>

@@ -48,6 +48,32 @@ const opts = {
   ],
 };
 
+const get_url = (file) => {
+  return `${server}${downloadURL}?file=${encodeURIComponent(
+    file.filename
+  )}&uuid=${encodeURIComponent(file.uuid)}&db=files&dir=${
+    file.directory
+  }&device=${file.device}`;
+};
+
+const get_path = (file) => {
+  return `${downloadURL}?device=${encodeURIComponent(
+    file.device
+  )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
+    file.filename
+  )}&uuid=${encodeURIComponent(file.uuid)}`;
+};
+
+const get_id = (file) => {
+  return `file;${file.uuid};device=${encodeURIComponent(
+    file.device
+  )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
+    file.filename
+  )};${file.filename};${file.origin};${file.directory};${file.device};${
+    file.versions
+  }`;
+};
+
 const buildCellValueForFolder = (fo) => {
   return {
     id: `${folder};${fo.uuid};${fo.path};${fo.folder};${fo.uuid};${fo.device}`,
@@ -63,25 +89,14 @@ const buildCellValueForFolder = (fo) => {
 
 const buildCellValueForFile = (file) => {
   return {
-    id: `file;${file.uuid};device=${encodeURIComponent(
-      file.device
-    )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
-      file.filename
-    )};${file.filename};${file.origin};${file.directory};${file.device};${
-      file.versions
-    }`,
+    id: get_id(file),
     name: file.filename,
     icon: FILE,
     size: formatBytes(file.size),
     dir: `${file.device}/${file.directory}`,
-    path: `${downloadURL}?device=${encodeURIComponent(
-      file.device
-    )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
-      file.filename
-    )}&uuid=${encodeURIComponent(file.uuid)}`,
-    url: `${server}${downloadURL}?file=${encodeURIComponent(
-      file.filename
-    )}&uuid=${encodeURIComponent(file.uuid)}&db=files`,
+    path: get_path(file),
+    url: get_url(file),
+    thumbURL: file?.signedURL,
     origin: file.origin,
     versions: file.versions,
     last_modified: new Date(file.last_modified).toLocaleString(

@@ -49,7 +49,8 @@ export default function Edit({ row, table }) {
     let body = {};
     if (fileIds.length === 1) {
       body.type = "fi";
-      body.uuid = fileIds[0].origin;
+      body.origin = fileIds[0].origin;
+      body.uuid = fileIds[0].id;
       body.to = value;
       body.device = fileIds[0].device;
       body.dir = fileIds[0].dir;
@@ -60,6 +61,7 @@ export default function Edit({ row, table }) {
       body.device = directories[0].device;
       body.folder = directories[0].folder;
       body.oldPath = directories[0].path;
+      body.value = value;
       let path_array = directories[0].path.split("/").slice(0, -1);
       path_array.push(value);
       body.to = path_array.join("/");

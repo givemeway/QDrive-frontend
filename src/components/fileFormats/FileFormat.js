@@ -9,6 +9,7 @@ import FileIcon from "../icons/FileIcon";
 import PictureIcon from "../icons/PictureIcon";
 import { ImageListItem } from "@mui/material";
 import Image from "mui-image";
+import { useEffect, useState } from "react";
 
 const svgIconStyle = {
   backgroundColor: "#F7F5F2",
@@ -45,8 +46,8 @@ const file_format = {
   gif: <PictureIcon style={svgIconStyle} />,
 };
 
-function get_file_icon(filename, url) {
-  const ext = filename?.split(".").slice(-1)[0];
+function Get_file_icon(filename, url, thumbURL) {
+  const ext = filename?.split(".").slice(-1)[0].toLowerCase();
   if (file_format.hasOwnProperty(ext))
     if (
       ext === "jpg" ||
@@ -57,10 +58,9 @@ function get_file_icon(filename, url) {
     ) {
       return (
         <Image
-          src={`${url}?w=28&h=28&fit=crop&auto=format`}
-          srcSet={`${url}?w=28&h=28&fit=crop&auto=format&dpr=2 2x`}
-          // src={`${url}`}
-          // srcSet={`${url}`}
+          // src={`${url}?w=28&h=28&fit=crop&auto=format`}
+          // srcSet={`${url}?w=28&h=28&fit=crop&auto=format&dpr=2 2x`}
+          src={thumbURL}
           showLoading={file_format[ext]}
           errorIcon={file_format[ext]}
         />
@@ -71,4 +71,4 @@ function get_file_icon(filename, url) {
   else return <FileIcon style={svgIconStyle} />;
 }
 
-export { get_file_icon, svgIconStyle };
+export { Get_file_icon as get_file_icon, svgIconStyle };

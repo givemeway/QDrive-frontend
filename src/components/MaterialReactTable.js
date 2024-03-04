@@ -239,7 +239,9 @@ const DataTable = ({ layout, path, nav, loading }) => {
   }, [edit, rowSelection]);
 
   useEffect(() => {
-    if (isSuccess && (data.files.length > 0 || data.folders.length)) {
+    console.log(data);
+    if (isSuccess && (data.files?.length > 0 || data.folders?.length)) {
+      console.log(data);
       const fileRows = data.files.map((file) => buildCellValueForFile(file));
       const folderRows = data.folders.map((fo) => buildCellValueForFolder(fo));
 
@@ -259,7 +261,7 @@ const DataTable = ({ layout, path, nav, loading }) => {
       setIsFetching(false);
       // setNewRows([]);
     }
-  }, [data.files.length, data.folders.length, isSuccess]);
+  }, [data.files?.length, data.folders?.length, isSuccess]);
 
   const contextMenu = (event, row) => {
     event.preventDefault();

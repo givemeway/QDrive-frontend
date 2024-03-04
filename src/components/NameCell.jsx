@@ -30,7 +30,9 @@ const RenderCell = ({ row, params }) => {
         </div>
       ) : (
         <div className="grid grid-cols-12 items-center">
-          <div className="col-span-1 ">{get_file_icon(row.name, row.url)}</div>
+          <div className="col-span-1 ">
+            {get_file_icon(row.name, row.url, row?.thumbURL)}
+          </div>
           <div className="col-span-11">
             <a href={row.url} rel="noreferrer" target="_blank">
               <h3 className="text-left capitalize text-[#808080] tracking-wider font-medium ">

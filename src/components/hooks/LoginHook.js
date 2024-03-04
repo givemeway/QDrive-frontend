@@ -22,6 +22,7 @@ function useValidateLogin(loginForm) {
         const headers = {
           Authorization: `Basic ${encodedData}`,
           "X-CSRF-Token": CSRFToken,
+          usernametype: "username",
         };
 
         const options = {
