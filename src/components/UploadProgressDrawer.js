@@ -6,7 +6,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMoreOutlined.js";
 import ExpandLessIcon from "@mui/icons-material/ExpandLessOutlined.js";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { FixedSizeList as List } from "react-window";
 import { styled } from "@mui/material/styles";
 import React from "react";
@@ -29,6 +29,7 @@ export default React.memo(function UploadProgressDrawer({
 }) {
   const [expandProgress, setExpandProgress] = useState(true);
   const [progressBlock, setProgressBlock] = useState("block");
+  const ref = useRef(null);
   const setUpload = useSetRecoilState(uploadAtom);
   const close = () => {
     setExpandProgress((prev) => !prev);
@@ -41,6 +42,10 @@ export default React.memo(function UploadProgressDrawer({
     }
   }, [expandProgress]);
   console.log("drawer rendered");
+
+  useEffect(() => {
+    ref.current?.scrollToItem(filesStatus.processed, "center");
+  }, [filesStatus.processed]);
 
   const Row = useCallback(({ index, style }) => {
     const [key, val] = Array.from(trackFilesProgress)[index];
@@ -66,6 +71,8 @@ export default React.memo(function UploadProgressDrawer({
           >
             {val.status === "queued" && <ScheduleIcon />}
             {val.status === "uploading" && <CachedIcon />}
+            {val.status === "preparing" && <CachedIcon />}
+            {val.status === "finalizing" && <CachedIcon />}
             {val.status === "uploaded" && (
               <CheckCircleOutlineIcon sx={{ color: "#7CAC61" }} />
             )}
@@ -247,6 +254,8 @@ export default React.memo(function UploadProgressDrawer({
               height={500}
               itemCount={Array.from(trackFilesProgress).length}
               itemSize={65}
+              // useIsScrolling={true}
+              ref={ref}
             >
               {Row}
             </List>

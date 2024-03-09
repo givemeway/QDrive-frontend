@@ -292,6 +292,10 @@ function FolderUpload() {
             prev.set(id, file);
             return prev;
           });
+          setFilesStatus((prev) => ({
+            ...prev,
+            processed: prev.processed + 1,
+          }));
         } else if (mode === "fileUploadInitiated") {
           const { startTime, id } = data;
           let file = trackFilesProgress.get(id);

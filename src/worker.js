@@ -136,7 +136,7 @@ const uploadFiles = async (
       total: files.length,
       processed: 0,
     });
-    let idx = 0;
+    // let idx = 0;
     await async.eachLimit(newFiles, concurrency, async (file) => {
       try {
         await uploadFile(
@@ -148,12 +148,13 @@ const uploadFiles = async (
           CSRFToken
         );
 
-        if (idx === 0) {
-          uploadStarted = true;
-          postMessage({ mode: "uploadInitiated", uploadStarted });
-        }
-        idx++;
+        // if (idx === 0) {
+        //   uploadStarted = true;
+        //   postMessage({ mode: "uploadInitiated", uploadStarted });
+        // }
+        // idx++;
       } catch (err) {
+        // idx++;
         console.log(err);
       }
     });

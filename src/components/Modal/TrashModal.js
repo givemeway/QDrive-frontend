@@ -192,7 +192,7 @@ export default function TrashModal() {
   const fetchTrashBatchItems = (path, name, begin, end) => {
     let params = "";
     if (item === singleFile) {
-      params = `id=${id}&item=${singleFile}`;
+      params = `id=${id}&item=${singleFile}&path=${path}`;
     } else {
       params = `path=${path}&folder=${name}&begin=${begin}&end=${end}&item=${bulk}`;
     }
