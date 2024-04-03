@@ -1,5 +1,4 @@
 import { configureStore } from "@reduxjs/toolkit";
-import deleteTrashItems from "../features/deleteTrashItems.js";
 import { apiSlice } from "../features/api/apiSlice.js";
 import csrfTokenReduer from "../features/csrftoken/csrfTokenSlice.jsx";
 import setOperationReducer from "../features/operation/operationSlice.jsx";
@@ -9,6 +8,10 @@ import breadcrumbs from "../features/breadcrumbs/breadCrumbSlice.jsx";
 import fileDetails from "../features/itemdetails/fileDetails.Slice.jsx";
 import uploadState from "../features/filesupload/uploadingFiles.slice.jsx";
 import rowHover from "../features/rowhover/rowHover.Slice.jsx";
+import setBrowseReducer from "../features/browseItems/browseItemsSlice.js";
+import timeline from "../features/timeline/timeLineSlice.js";
+import updateTable from "../features/table/updateTableSlice.js";
+import photoNav from "../features/photopreview/previewSlice.js";
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -20,6 +23,10 @@ export const store = configureStore({
     fileDetails: fileDetails,
     overAllProgress: uploadState,
     rowHover: rowHover,
+    browseItems: setBrowseReducer,
+    timeline: timeline,
+    updateTable: updateTable,
+    photoNav: photoNav,
   },
   middleware: (getDefaultMiddleWare) =>
     getDefaultMiddleWare().concat(apiSlice.middleware),

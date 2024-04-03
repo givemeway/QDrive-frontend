@@ -46,7 +46,7 @@ const FolderTreeView = ({ CSRFToken, setToPath, toPath, setNodeSelected }) => {
   const clickedNode = useRef("1");
   const [getFoldersMutation, getFolders] = useGetFoldersMutation();
   let { status, isLoading, isError, isSuccess, data } = getFolders;
-  console.log(status);
+  console.log({ status, isLoading, isError, isSuccess, data });
   if (!data) {
     data = {};
     data.folders = [];

@@ -1,20 +1,4 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { CSRFTokenAtom } from "../../Recoil/Store/atoms";
-
-const tags = [
-  "FileUpload",
-  "FolderUpload",
-  "Move",
-  "Copy",
-  "Rename",
-  "Delete",
-  "Share",
-  "Transfer",
-  "CreateFolder",
-  "EmptyTrash",
-  "DeleteTrash",
-  "RestoreTrash",
-];
 
 export const apiSlice = createApi({
   reducerPath: "api",
@@ -151,6 +135,64 @@ export const apiSlice = createApi({
         },
       }),
     }),
+    searchItems: builder.mutation({
+      query: (data) => ({
+        url: "/search?param=" + data.param,
+        method: "GET",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+    getShares: builder.mutation({
+      query: (data) => ({
+        url: "/getSharedLinks",
+        method: "GET",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+    getPhotos: builder.mutation({
+      query: () => ({
+        url: "/getPhotos",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+    getPhotoPreviewURL: builder.mutation({
+      query: (data) => ({
+        url: `/photopreview?path=${data.path}&filename=${data.filename}`,
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+    validateShareLink: builder.mutation({
+      query: (data) => ({
+        url: `/sh/validate?id=${data.id}&k=${data.k}&t=${data.t}&dl=${data.dl}&nav=${data.nav}`,
+        method: "GET",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+    browseSharedItems: builder.mutation({
+      query: (data) => ({
+        url: `/sh?id=${data.id}&k=${data.k}&t=${data.t}&dl=${data.dl}&nav=${data.nav}&skip=${data.start}&take=${data.page}`,
+        method: "GET",
+        headeres: {
+          "X-CSRF-Token": data.CSRFToken,
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
   }),
 });
 
@@ -168,4 +210,10 @@ export const {
   useCreateShareMutation,
   useDownloadItemsMutation,
   useGetFileVersionMutation,
+  useSearchItemsMutation,
+  useGetSharesMutation,
+  useGetPhotosMutation,
+  useGetPhotoPreviewURLMutation,
+  useValidateShareLinkMutation,
+  useBrowseSharedItemsMutation,
 } = apiSlice;

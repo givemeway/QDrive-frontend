@@ -9,6 +9,7 @@ import {
   folder,
   file as FILE,
 } from "./config.js";
+import rowHoverSlice from "./features/rowhover/rowHover.Slice.jsx";
 
 const opts = {
   suggestedName: "",
@@ -48,7 +49,7 @@ const opts = {
   ],
 };
 
-const get_url = (file) => {
+export const get_url = (file) => {
   return `${server}${downloadURL}?file=${encodeURIComponent(
     file.filename
   )}&uuid=${encodeURIComponent(file.uuid)}&db=files&dir=${
@@ -62,6 +63,13 @@ const get_path = (file) => {
   )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
     file.filename
   )}&uuid=${encodeURIComponent(file.uuid)}`;
+};
+
+const get_file_path = (file) => {
+  if (file.directory === "/" && file.device === "/") return "/";
+  if (file.device !== "/" && file.directory === "/") return "/" + file.device;
+  if (file.device !== "/" && file.directory !== "/")
+    return "/" + file.device + "/" + file.directory;
 };
 
 const get_id = (file) => {
@@ -94,7 +102,7 @@ const buildCellValueForFile = (file) => {
     icon: FILE,
     size: formatBytes(file.size),
     dir: `${file.device}/${file.directory}`,
-    path: get_path(file),
+    path: get_file_path(file),
     url: get_url(file),
     thumbURL: file?.signedURL,
     origin: file.origin,
@@ -111,20 +119,33 @@ function ensureStartsWithSlash(input) {
   return input.startsWith("/") ? input : "/" + input;
 }
 
-function generateLink(url, folderPath, layout, nav, id) {
-  if (layout === "dashboard") return url + folderPath;
-  if (layout === "share") {
-    const dir = folderPath.split(nav)[1];
-    return dir === "" ? url + "/h" : url + "/h" + dir;
-  }
-  if (layout === "transfer") {
-    let dir = folderPath.split(nav)[1];
-    if (nav === "/") {
-      dir = folderPath.split(nav).slice(1).join("/");
-    }
+function generateLink(navPath, params, row, preview = 0) {
+  const { path, layout, nav } = params;
+  const id = row.id.split(";")[4];
+  let dir = row.path.split(nav)[1];
+  if (layout === "dashboard" && preview === 1)
+    return "/dashboard/" + navPath + "?preview=" + row.name;
+
+  if (layout === "dashboard" && preview === 0) return path + row.path;
+
+  if (layout === "share" && preview === 0)
+    return dir === "" ? path + `/h?k=${id}` : path + `/h${dir}?k=${id}`;
+
+  if (layout === "share" && preview === 1)
     return dir === ""
-      ? url + `/h?k=${id}`
-      : url + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
+      ? path + `/h?preview=${row.name}&k=${id}`
+      : path + `/h${dir}?preview=${row.name}&k=${id}`;
+
+  if (layout === "transfer" && nav === "/") {
+    dir = row.path.split(nav).slice(1).join("/");
+    return dir === ""
+      ? path + `/h?k=${id}`
+      : path + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
+  }
+  if (layout === "transfer" && nav !== "/") {
+    return dir === ""
+      ? path + `/h?k=${id}`
+      : path + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
   }
 }
 

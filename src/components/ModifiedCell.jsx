@@ -3,11 +3,11 @@ import { GreyButton } from "./Buttons/GreyButton";
 import { setOperation } from "../features/operation/operationSlice";
 import { SHARE, file, folder } from "../config";
 
-const getShareItemDetails = (row) => {
+export const getShareItemDetails = (id, itemType) => {
   let type;
   let body = {};
-  const item = row.id.split(";");
-  if (row.item === folder) {
+  const item = id.split(";");
+  if (itemType === folder) {
     type = "fo";
 
     const fo_el = {
@@ -19,7 +19,7 @@ const getShareItemDetails = (row) => {
     };
     body.directories = [fo_el];
     body.files = [];
-  } else if (row.item === file) {
+  } else if (itemType === file) {
     type = "fi";
     const fi_el = {
       id: item[1],
@@ -40,7 +40,7 @@ const RenderCell = ({ row }) => {
   const rowHover = useSelector((state) => state.rowHover);
   const dispatch = useDispatch();
   const handleShare = () => {
-    const { type, body } = getShareItemDetails(row);
+    const { type, body } = getShareItemDetails(row.id, row.item);
     dispatch(
       setOperation({
         type: SHARE,

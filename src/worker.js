@@ -43,24 +43,43 @@ const findFilesToUpload = async (cwd, filesList, device) => {
     console.log("files to upload: ", files.length);
     let totalSize = 0;
     files.forEach((file) => (totalSize += file.size));
-    const trackFilesProgress = new Map(
-      files.map((file) => [
-        file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
-        {
-          name: file.name,
-          startTime: 0,
-          progress: 0,
-          status: "queued",
-          size: formatBytes(file.size),
-          bytes: file.size,
-          folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
-          eta: Infinity,
-          speed: "",
-          transferred: 0,
-          transferred_b: 0,
-        },
-      ])
-    );
+    // const trackFilesProgress = new Map(
+    //   files.map((file) => [
+    //     file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
+    //     {
+    //       name: file.name,
+    //       startTime: 0,
+    //       progress: 0,
+    //       status: "queued",
+    //       size: formatBytes(file.size),
+    //       bytes: file.size,
+    //       folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
+    //       eta: Infinity,
+    //       speed: "",
+    //       transferred: 0,
+    //       transferred_b: 0,
+    //     },
+    //   ])
+    // );
+    let trackFilesProgress = {};
+    files.forEach((file) => {
+      trackFilesProgress[
+        file.webkitRelativePath === "" ? file.name : file.webkitRelativePath
+      ] = {
+        name: file.name,
+        startTime: 0,
+        progress: 0,
+        status: "queued",
+        size: formatBytes(file.size),
+        bytes: file.size,
+        folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
+        eta: Infinity,
+        speed: "",
+        transferred: 0,
+        transferred_b: 0,
+      };
+    });
+
     let trackFilesProgress_obj = {};
     for (const file of files) {
       const id =

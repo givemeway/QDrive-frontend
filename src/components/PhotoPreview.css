@@ -1,0 +1,15 @@
+select {
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  font-family: serif;
+  color: #938e88;
+  text-align: center;
+}
+select:hover {
+  background: #f5efe5;
+}
+
+option {
+  border: 1px solid #d1d1d1;
+}

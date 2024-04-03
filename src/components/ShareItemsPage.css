@@ -1,0 +1,11 @@
+/* @media (max-width: 600px) {
+  .share-body {
+    width: 100vw;
+  }
+}
+
+@media (min-width: 601px) {
+  .share-body {
+    width: 50vw;
+  }
+} */

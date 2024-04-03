@@ -2,7 +2,7 @@ import { Box, Button, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-export default function Search({ searchValue, sx }) {
+export default function Search({ searchValue }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState(searchValue);
   const handleChange = (e) => {

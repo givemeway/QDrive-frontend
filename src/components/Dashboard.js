@@ -1,5 +1,5 @@
-import { Grid, Box, Typography } from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Grid } from "@mui/material";
+
 import Search from "./SearchFilesFolders";
 import SnackBar from "./Snackbar/SnackBar.js";
 
@@ -7,101 +7,56 @@ import NavigatePanel from "./Panel";
 import Header from "./Header";
 import MainPanel from "./MainPanel";
 import Menu from "./UploadMenu";
-import {
-  PathContext,
-  ItemSelectionContext,
-  UploadFolderContenxt,
-  SnackBarContext,
-  EditContext,
-  FolderExplorerContext,
-  NotificationContext,
-} from "./UseContext";
-
-import { csrftokenURL, trashTotalURL } from "../config";
 
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
-import useFetchCSRFToken from "./hooks/FetchCSRFToken";
-import useFetchItems from "./hooks/FetchCurrentDirectoryItems";
-import useFetchSearchItems from "./hooks/FetchSearchItems";
-import useFetchTotal from "./hooks/FetchTotalHook";
-import { PanelContext } from "./UseContext";
-import SpinnerGIF from "./icons/SpinnerGIF";
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import {
-  breadCrumbAtom,
-  dataAtom,
-  snackBarAtom,
-  subpathAtom,
-} from "../Recoil/Store/atoms.js";
+import { useParams } from "react-router-dom";
+
+import { useRecoilState } from "recoil";
+import { snackBarAtom } from "../Recoil/Store/atoms.js";
 import { StatusNotification } from "./StatusNotification.js";
-import AvatarMenu from "./AvatarMenu.js";
+import SpinnerGIF from "./icons/SpinnerGIF.js";
+import { useGetCSRFTokenQuery } from "../features/api/apiSlice.js";
+import { useDispatch } from "react-redux";
+import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
 
 const Dashboard = () => {
-  const setData = useSetRecoilState(dataAtom);
-  const setSubPath = useSetRecoilState(subpathAtom);
-  const [rowCount, setRowCount] = useState(0);
   const [tabSelected, setTabSelected] = useState(1);
-  const setBreadCrumb = useSetRecoilState(breadCrumbAtom);
-  const [dataLoaded, setDataLoaded] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
-  const csrftoken = useFetchCSRFToken(csrftokenURL);
-  const [total, fetchTotal] = useFetchTotal();
-
   const [notify, setNotify] = useRecoilState(snackBarAtom);
-
   const params = useParams();
   const subpath = params["*"];
-  setSubPath(subpath);
+  const [mode, setMode] = useState("");
+  const dispatch = useDispatch();
+  const CSRFTokenStatus = useGetCSRFTokenQuery();
 
-  console.log("dashboard rendered ", subpath);
-  // const [items, breadCrumbQueue, getItems, itemsLoaded] = useFetchItems(
-  //   subpath,
-  //   csrftoken
-  // );
-
-  const [searchResult, initSearch, searchLoaded, searchParam] =
-    useFetchSearchItems(subpath, csrftoken);
-
-  // useEffect(() => {
-  //   if (itemsLoaded) {
-  //     setData(items);
-  //     setBreadCrumb(breadCrumbQueue);
-  //     setDataLoaded(true);
-  //   }
-  // }, [breadCrumbQueue, items, itemsLoaded]);
+  const { isLoading, isSuccess, isError, data } = CSRFTokenStatus;
 
   useEffect(() => {
-    if (searchLoaded) {
-      setData(searchResult);
-      setDataLoaded(true);
-    }
-  }, [searchLoaded, searchParam, searchResult]);
-
-  useEffect(() => {
-    setDataLoaded(false);
+    console.log(subpath);
     setIsSearch(false);
     setSearchValue("");
-
     const path = subpath.split("/");
     if (path[0] === "home") {
-      // getItems();
-      setTabSelected(1);
+      setMode("BROWSE");
     } else if (path[0] === "search") {
-      setSearchValue(searchParam);
       setIsSearch(true);
-      initSearch();
+      setMode("SEARCH");
     } else if (path[0] === "deleted") {
-      setTabSelected(4);
-      setDataLoaded(true);
+      setMode("DELETED");
+    } else if (path[0] === "share") {
+      setMode("SHARE");
+    } else if (path[0] === "photos") {
+      setMode("PHOTOS");
     }
   }, [subpath]);
 
   useEffect(() => {
-    console.log("total: ", total);
-    setRowCount(total);
-  }, [total]);
+    if (isSuccess) {
+      console.log("set csrf");
+      dispatch(setCSRFToken(data.CSRFToken));
+    }
+  }, [isSuccess, data]);
 
   return (
     <>
@@ -120,12 +75,12 @@ const Dashboard = () => {
                 padding: 0,
               }}
             >
-              {/* <AvatarMenu /> */}
               <Search searchValue={searchValue} />
-
-              {tabSelected !== 4 && <Header search={isSearch} />}
+              {(mode === "BROWSE" || mode === "SEARCH") && (
+                <Header search={isSearch} />
+              )}
             </Grid>
-            {tabSelected !== 4 && (
+            {mode === "BROWSE" && (
               <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
                 <Menu />
               </Grid>
@@ -137,24 +92,15 @@ const Dashboard = () => {
                 height: tabSelected === 4 ? "85%" : "75%",
                 margin: 0,
                 padding: 0,
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              {/* {!dataLoaded ? (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CircularProgress />
-                  <Typography align="center">Loading...</Typography>
-                </Box>
-              ) : (
-                <MainPanel />
-              )} */}
-              <MainPanel />
+              {isLoading && <SpinnerGIF style={{ width: 50, height: 50 }} />}
+              {isSuccess && mode !== "" && <MainPanel mode={mode} />}
+              {isError && <>Something Went Wrong</>}
             </Grid>
           </Grid>
         </Grid>

@@ -7,6 +7,7 @@ import PdfIcon from "../icons/PdfIcon";
 import ExcelIcon from "../icons/ExcelIcon";
 import FileIcon from "../icons/FileIcon";
 import PictureIcon from "../icons/PictureIcon";
+import { Link, useParams } from "react-router-dom";
 import { ImageListItem } from "@mui/material";
 import Image from "mui-image";
 import { useEffect, useState } from "react";
@@ -18,7 +19,7 @@ const svgIconStyle = {
   width: 25,
   height: 25,
 };
-const file_format = {
+export const file_format = {
   pdf: <PdfIcon style={svgIconStyle} />,
   doc: <WordIcon style={svgIconStyle} />,
   docx: <WordIcon style={svgIconStyle} />,
@@ -47,6 +48,8 @@ const file_format = {
 };
 
 function Get_file_icon(filename, url, thumbURL) {
+  const params = useParams();
+  const path = params["*"];
   const ext = filename?.split(".").slice(-1)[0].toLowerCase();
   if (file_format.hasOwnProperty(ext))
     if (
@@ -57,18 +60,36 @@ function Get_file_icon(filename, url, thumbURL) {
       ext === "gif"
     ) {
       return (
-        <Image
-          // src={`${url}?w=28&h=28&fit=crop&auto=format`}
-          // srcSet={`${url}?w=28&h=28&fit=crop&auto=format&dpr=2 2x`}
-          src={thumbURL}
-          showLoading={file_format[ext]}
-          errorIcon={file_format[ext]}
-        />
+        <>
+          <Link to={"/dashboard/" + path + "?preview=" + filename}>
+            <img src={thumbURL} />
+          </Link>
+        </>
       );
     } else {
       return file_format[ext];
     }
-  else return <FileIcon style={svgIconStyle} />;
+  else return <FileIcon style={{ ...svgIconStyle }} />;
 }
 
-export { Get_file_icon as get_file_icon, svgIconStyle };
+export function getFileExtension(filename) {
+  return filename?.split(".").slice(-1)[0].toLowerCase();
+}
+export function nameWithoutExt(filename) {
+  return filename.split(".")[0];
+}
+
+export default function isPicture(filename) {
+  const ext = getFileExtension(filename);
+  if (
+    ext === "jpg" ||
+    ext === "jpeg" ||
+    ext === "tiff" ||
+    ext === "png" ||
+    ext === "gif"
+  ) {
+    return true;
+  } else return false;
+}
+
+export { Get_file_icon as get_file_icon, svgIconStyle, isPicture };

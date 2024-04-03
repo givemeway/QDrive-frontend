@@ -1,30 +1,19 @@
 import { Box, Divider, Stack } from "@mui/material";
-import React, { useState, useContext } from "react";
-
-// import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
+import React from "react";
 import CreateNewFolderIcon from "./CreateFolder.js";
 import FolderUpload from "./FolderUpload.js";
 import FilesUpload from "./FileUpload.js";
 import DeleteItems from "./DeleteItems.js";
 import DownloadItems from "./DownloadItems.js";
-import {
-  UploadContext,
-  ItemSelectionContext,
-  PanelContext,
-} from "./UseContext.js";
+
 import Share from "./Share.js";
 import MoveItems from "./MoveItems.js";
 import RenameItem from "./RenameItem.js";
 import CopyItems from "./CopyItems.js";
-import { useRecoilState, useRecoilValue } from "recoil";
-import {
-  itemsSelectedAtom,
-  tabSelectedAtom,
-  uploadAtom,
-} from "../Recoil/Store/atoms.js";
+import { useRecoilValue } from "recoil";
+import { itemsSelectedAtom, tabSelectedAtom } from "../Recoil/Store/atoms.js";
 
 export default React.memo(function UploadMenu() {
-  const [upload, setUpload] = useRecoilState(uploadAtom);
   console.log("upload menu rendered");
   const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
   const tabSelected = useRecoilValue(tabSelectedAtom);

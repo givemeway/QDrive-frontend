@@ -17,7 +17,6 @@ import { setOperation } from "../features/operation/operationSlice";
 import { CheckCircle } from "./icons/Check-Circle.jsx";
 import { Exclaimation } from "./icons/Exclaimation-triangle.jsx";
 import { CustomBlueButton } from "./Buttons/BlueButton.jsx";
-import { borderRadius } from "@mui/system";
 import {
   DOWNLOAD,
   MOVE,
@@ -31,13 +30,26 @@ import {
   downloadItemsURL,
   server,
 } from "../config.js";
+import { setRefresh } from "../features/table/updateTableSlice.js";
 
 const CopyToClipBoard = ({ url }) => {
   const [copied, setCopied] = useState(false);
+  const timer = useRef(null);
   const copy = async (text) => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
   };
+
+  useEffect(() => {
+    if (copied) {
+      timer.current = setInterval(() => setCopied(false), 5000);
+    } else {
+      clearInterval(timer.current);
+    }
+  }, [copied]);
+  useEffect(() => {
+    return () => clearInterval(timer.current);
+  }, []);
 
   return (
     <div className="w-full flex flex-row h-[80%]">
@@ -60,7 +72,7 @@ const CopyToClipBoard = ({ url }) => {
         <CustomBlueButton
           onClick={() => copy(url)}
           style={{ width: "100px", height: "40px", marginLeft: 0 }}
-          text={"Copied"}
+          text={"Copied!"}
         ></CustomBlueButton>
       )}
     </div>
@@ -177,8 +189,9 @@ const DisplayText = ({
   );
 };
 
-export function StatusNotification({ timeout }) {
+export function StatusNotification() {
   const operation = useSelector((state) => state.operation);
+  const refresh = useSelector((state) => state.updateTable);
   const { CSRFToken } = useSelector((state) => state.csrfToken);
   const dispath = useDispatch();
   let init_operation;
@@ -193,6 +206,8 @@ export function StatusNotification({ timeout }) {
 
   const [open, setOpen] = useState(false);
   const timer = useRef();
+  const refreshTimer = useRef();
+  const count = useRef(1);
 
   switch (operation.type) {
     case DELETETRASH:
@@ -233,7 +248,7 @@ export function StatusNotification({ timeout }) {
       ];
       break;
   }
-  const { isLoading, isSuccess, isError, data } = init_operation[1];
+  const { isLoading, isSuccess, isError, status, data } = init_operation[1];
   const handleClose = () => {
     setOpen(false);
     dispath(
@@ -250,13 +265,15 @@ export function StatusNotification({ timeout }) {
 
   useEffect(() => {
     if (operation.status === "initialized" && CSRFToken.length > 0) {
-      console.log(operation);
       setOpen(true);
       switch (operation.type) {
         case DELETETRASH:
+          console.log("trash initialilzed");
           init_operation[0]({ items: operation.data, CSRFToken });
           break;
         case RESTORETRASH:
+          console.log("restore trash initialilzed");
+
           init_operation[0]({ items: operation.data, CSRFToken });
           break;
         case MOVE:
@@ -311,6 +328,34 @@ export function StatusNotification({ timeout }) {
   // useEffect(() => {
   //   return () => clearInterval(timer.current);
   // }, []);
+  useEffect(() => {}, []);
+
+  useEffect(() => {
+    console.log(operation);
+    console.log({ isLoading, isSuccess, isError, status, data });
+    if (isLoading) {
+      refreshTimer.current = setInterval(() => {
+        dispath(setRefresh({ toggle: !refresh.toggle, refresh: true }));
+      }, 2000);
+    }
+    if ((isSuccess || isError) && status !== "uninitialized") {
+      if (refreshTimer.current) {
+        clearInterval(refreshTimer.current);
+      }
+
+      dispath(setRefresh({ toggle: !refresh.toggle, refresh: true }));
+      dispath(
+        setOperation({
+          type: operation.type,
+          status: "idle",
+          isSuccess: false,
+          isError: false,
+          isLoading: false,
+          data: [],
+        })
+      );
+    }
+  }, [isLoading, isError, isSuccess, status]);
 
   return (
     <>

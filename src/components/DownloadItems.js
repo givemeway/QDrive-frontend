@@ -3,9 +3,6 @@ import { Button } from "@mui/material";
 import { DOWNLOAD } from "../config";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 
-import { ItemSelectionContext } from "./UseContext";
-
-import useDownload from "./hooks/DownloadItemsHook";
 import { useRecoilValue } from "recoil";
 import { itemsSelectedAtom } from "../Recoil/Store/atoms";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,15 +15,15 @@ const Download = () => {
 
   console.log("download items rendered");
 
-  useEffect(() => {
-    dispatch(
-      setOperation({
-        ...operation,
-        type: DOWNLOAD,
-        status: "uninitialized",
-      })
-    );
-  }, []);
+  // useEffect(() => {
+  //   dispatch(
+  //     setOperation({
+  //       ...operation,
+  //       type: DOWNLOAD,
+  //       status: "uninitialized",
+  //     })
+  //   );
+  // }, []);
 
   const handleClick = (e) => {
     e.preventDefault();

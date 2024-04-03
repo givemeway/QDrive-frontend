@@ -12,12 +12,6 @@ import { socket } from "./Socket.js";
 import { formatBytes, formatSeconds } from "../util.js";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { subpathAtom, uploadAtom } from "../Recoil/Store/atoms.js";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  setFilesMetaData,
-  setFilesProgress,
-  setOverAllProgress,
-} from "../features/filesupload/uploadingFiles.slice.jsx";
 
 function CustomButton({ children }) {
   return (
@@ -79,7 +73,6 @@ function FolderUpload() {
 
   useEffect(() => {
     if (files.length > 0) {
-      console.log("inside the findFilesToUpload");
       const worker = new Worker(new URL("../worker.js", import.meta.url), {
         type: "module",
       });
@@ -135,8 +128,8 @@ function FolderUpload() {
 
     if (
       filesToUpload.length > 0 &&
-      socketID &&
-      trackFilesProgress instanceof Map
+      socketID
+      // && trackFilesProgress instanceof Map
     ) {
       setUpload("folder");
       setShowProgress(true);
@@ -160,7 +153,9 @@ function FolderUpload() {
         file.folder = id.split("/").slice(0, -1).join("/");
         file.bytes = parseInt(total);
         file.id = id;
-        const data = trackFilesProgress.get(id);
+        // const data = trackFilesProgress.get(id);
+        const data = trackFilesProgress[id];
+
         if (data) {
           const { transferred, startTime, bytes } = data;
           file.startTime = startTime;
@@ -176,10 +171,14 @@ function FolderUpload() {
           //     uploaded: overAllProgress.uploaded + uploaded - transferred,
           //   })
           // );
-          setTrackFilesProgress((prev) => {
-            prev.set(id, file);
-            return prev;
-          });
+          // setTrackFilesProgress((prev) => {
+          //   prev.set(id, file);
+          //   return prev;
+          // });
+          setTrackFilesProgress((prev) => ({
+            ...prev,
+            [id]: file,
+          }));
           // dispatch(setFilesProgress({ [id]: file }));
         }
       };
@@ -192,10 +191,14 @@ function FolderUpload() {
         file.id = id;
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "finalizing";
-        setTrackFilesProgress((prev) => {
-          prev.set(id, file);
-          return prev;
-        });
+        // setTrackFilesProgress((prev) => {
+        //   prev.set(id, file);
+        //   return prev;
+        // });
+        setTrackFilesProgress((prev) => ({
+          ...prev,
+          [id]: file,
+        }));
         // dispatch(setFilesProgress({ [id]: file }));
       };
 
@@ -207,10 +210,14 @@ function FolderUpload() {
         file.id = id;
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "uploaded";
-        setTrackFilesProgress((prev) => {
-          prev.set(id, file);
-          return prev;
-        });
+        // setTrackFilesProgress((prev) => {
+        //   prev.set(id, file);
+        //   return prev;
+        // });
+        setTrackFilesProgress((prev) => ({
+          ...prev,
+          [id]: file,
+        }));
         // dispatch(setFilesProgress({ [id]: file }));
         // dispatch(
         //   setOverAllProgress({
@@ -231,10 +238,14 @@ function FolderUpload() {
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "failed";
         file.error = data;
-        setTrackFilesProgress((prev) => {
-          prev.set(id, file);
-          return prev;
-        });
+        // setTrackFilesProgress((prev) => {
+        //   prev.set(id, file);
+        //   return prev;
+        // });
+        setTrackFilesProgress((prev) => ({
+          ...prev,
+          [id]: file,
+        }));
       };
 
       socket.on("uploadProgress", onFileProgress);
@@ -272,10 +283,14 @@ function FolderUpload() {
           setUploadInitiated(uploadStarted);
         } else if (mode === "uploadProgress") {
           const { fileName, fileBody } = data;
-          setTrackFilesProgress((prev) => {
-            prev.set(fileName, fileBody);
-            return prev;
-          });
+          // setTrackFilesProgress((prev) => {
+          //   prev.set(fileName, fileBody);
+          //   return prev;
+          // });
+          setTrackFilesProgress((prev) => ({
+            ...prev,
+            [fileName]: fileBody,
+          }));
         } else if (mode === "finish") {
           setFilesToUpload([]);
           setUploadCompleted(true);
@@ -288,24 +303,34 @@ function FolderUpload() {
           file.error = error;
           file.status = "failed";
           file.id = id;
-          setTrackFilesProgress((prev) => {
-            prev.set(id, file);
-            return prev;
-          });
+          // setTrackFilesProgress((prev) => {
+          //   prev.set(id, file);
+          //   return prev;
+          // });
+          setTrackFilesProgress((prev) => ({
+            ...prev,
+            [id]: file,
+          }));
           setFilesStatus((prev) => ({
             ...prev,
             processed: prev.processed + 1,
           }));
         } else if (mode === "fileUploadInitiated") {
           const { startTime, id } = data;
-          let file = trackFilesProgress.get(id);
+          // let file = trackFilesProgress.get(id);
+          let file = trackFilesProgress[id];
+
           file.startTime = startTime;
           file.status = "preparing";
           file.id = id;
-          setTrackFilesProgress((prev) => {
-            prev.set(id, file);
-            return prev;
-          });
+          // setTrackFilesProgress((prev) => {
+          //   prev.set(id, file);
+          //   return prev;
+          // });
+          setTrackFilesProgress((prev) => ({
+            ...prev,
+            [id]: file,
+          }));
         }
       };
       worker.onerror = (e) => {
@@ -334,7 +359,8 @@ function FolderUpload() {
       })
     );
 
-    const subpart = path.split("/").slice(1);
+    const subpart = subpath.split("/").slice(1);
+
     if (subpart.length === 0) {
       setDevice("/");
       setPWD("/");

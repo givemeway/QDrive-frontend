@@ -1,17 +1,20 @@
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
 
-import { useNavigate, useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { itemsSelectedAtom } from "../Recoil/Store/atoms";
 import { useDispatch, useSelector } from "react-redux";
-import { buildCellValueForFile, buildCellValueForFolder } from "../util.js";
 import { COPY, MOVE, pageSize, SHARE, DELETE } from "../config.js";
-import { useBrowseFolderMutation } from "../features/api/apiSlice.js";
-import { setBreadCrumb } from "../features/breadcrumbs/breadCrumbSlice.jsx";
+
 import TableContext from "./context/TableContext.js";
 import Modal from "./Modal";
 import { closeOperation } from "../features/operation/operationSlice.jsx";
@@ -24,6 +27,11 @@ import { setOperation } from "../features/operation/operationSlice.jsx";
 import ItemDetails from "./ItemDetails.jsx";
 import { setFileDetails } from "../features/itemdetails/fileDetails.Slice.jsx";
 import { setRowHover } from "../features/rowhover/rowHover.Slice.jsx";
+import {
+  setBrowseItems,
+  setSelectedToEdit,
+  setRowSelected,
+} from "../features/browseItems/browseItemsSlice.js";
 
 const colFn = (layout, path, nav) => [
   {
@@ -74,113 +82,40 @@ const colFn = (layout, path, nav) => [
   },
 ];
 
-const DataTable = ({ layout, path, nav, loading }) => {
-  const [newRows, setNewRows] = useState([]);
-
+const DataTable = ({
+  layout,
+  path,
+  nav,
+  isLoading,
+  isError,
+  status,
+  startedTimeStamp,
+  rows,
+  isFetching,
+}) => {
   const [coords, setCoords] = useState({ x: 0, y: 0 });
 
   const [selected, setItemsSelection] = useRecoilState(itemsSelectedAtom);
-  const navigate = useNavigate();
-  const params = useParams();
-  const subpath = params["*"];
-
-  const pathRef = useRef();
-
-  const page = useRef(1);
-  const reachedEnd = useRef(false);
 
   const edit = useSelector((state) => state.rename);
   const operation = useSelector((state) => state.operation);
   const fileDetails = useSelector((state) => state.fileDetails);
-
+  const browse = useSelector((state) => state.browseItems);
   const dispatch = useDispatch();
-
-  const selectedToEdit = useRef();
   const tableContainerRef = useRef(null);
   const rowVirtualizerInstanceRef = useRef(null);
 
-  const [isFetching, setIsFetching] = useState(false);
-  console.log("material react table rendered");
-  //should be memoized or stable
   const [rowSelection, setRowSelection] = useState({});
-  const device = useRef(null);
-  const currentDir = useRef(null);
-  const navigatedToNewDir = useRef(false);
+
   const [showContextMenu, setShowContextMenu] = useState(false);
 
-  const [reLoad, setReload] = useState(false);
-
-  const [browseFolderQuery, browseFolderStatus] = useBrowseFolderMutation();
-  let { isLoading, isError, isSuccess, status, data, startedTimeStamp, error } =
-    browseFolderStatus;
-  data = data ? data : { files: [], folders: [] };
-  error = error
-    ? { msg: error.data.msg, status: error.status }
-    : { msg: "", status: undefined };
-
   const columns = useMemo(() => colFn(layout, path, nav), [layout, path, nav]);
-
-  const fetchRows = useCallback(
-    (isRefresh) => {
-      console.log(pathRef.current, isRefresh);
-      const path = pathRef.current.split("/");
-      if (!isRefresh) {
-        page.current = 1;
-        navigatedToNewDir.current = true;
-        reachedEnd.current = false;
-        setNewRows([]);
-        setRowSelection({});
-        setReload(false);
-      } else {
-        setReload(true);
-      }
-      if (path[0] === "home") {
-        let breadCrumbQueue;
-
-        if (path.length === 1) {
-          device.current = "/";
-          currentDir.current = "/";
-          dispatch(setBreadCrumb(["/"]));
-        } else {
-          currentDir.current = path.slice(2).join("/");
-          breadCrumbQueue = [...path.slice(1)];
-          dispatch(setBreadCrumb(["/", ...breadCrumbQueue]));
-
-          if (currentDir.current.length === 0) {
-            currentDir.current = "/";
-          }
-          device.current = path[1];
-        }
-
-        browseFolderQuery({
-          device: device.current,
-          curDir: currentDir.current,
-          sort: "ASC",
-          start: (page.current - 1) * pageSize,
-          end: pageSize,
-        });
-      }
-    },
-    [pathRef.current]
-  );
-
-  useEffect(() => {
-    pathRef.current = subpath;
-    // const start = setInterval(fetchRows, 10000, true);
-    // return () => clearInterval(start);
-  }, []);
-
-  useEffect(() => {
-    if (isError && (error.status === 403 || error.status === 401)) {
-      navigate("/login");
-    }
-  }, [isError, error.status, navigate]);
 
   useEffect(() => {
     const files = [];
     const folders = [];
 
-    for (const [id, val] of Object.entries(rowSelection)) {
+    for (const [id, val] of Object.entries(browse.rowSelection)) {
       if (val) {
         const item = id.split(";");
         if (item[0] === "file") {
@@ -209,89 +144,66 @@ const DataTable = ({ layout, path, nav, loading }) => {
       fileIds: [...files],
       directories: [...folders],
     }));
-    if (Object.keys(rowSelection).length === 1) {
-      selectedToEdit.current = Object.keys(rowSelection)[0];
+    if (Object.keys(browse.rowSelection).length === 1) {
+      dispatch(setSelectedToEdit(Object.keys(browse.rowSelection)[0]));
       if (files.length === 1 && fileDetails.open) {
-        const selectedRow = newRows.find(
-          (row) => row.id === selectedToEdit.current
+        const selectedRow = rows.find(
+          (row) => row.id === browse.selectedToEdit
         );
         dispatch(setFileDetails({ open: true, file: selectedRow }));
       }
     } else {
-      selectedToEdit.current = undefined;
+      dispatch(setSelectedToEdit(undefined));
       dispatch(setFileDetails({ open: false, file: {} }));
     }
-  }, [rowSelection, setItemsSelection, fileDetails.open]);
+  }, [browse.rowSelection, setItemsSelection, fileDetails.open]);
 
   useEffect(() => {
-    pathRef.current = subpath;
-    fetchRows(false);
-  }, [subpath]);
-
-  useEffect(() => {
-    if (edit.editStart && selectedToEdit.current) {
-      const row = table.getRow(selectedToEdit.current);
+    if (edit.editStart && browse.selectedToEdit) {
+      const row = table.getRow(browse.selectedToEdit);
       if (row) {
         const cell = row.getAllCells()[1];
         table.setEditingCell(cell);
       }
     }
-  }, [edit, rowSelection]);
+  }, [edit, browse.rowSelection]);
 
-  useEffect(() => {
-    console.log(data);
-    if (isSuccess && (data.files?.length > 0 || data.folders?.length)) {
-      console.log(data);
-      const fileRows = data.files.map((file) => buildCellValueForFile(file));
-      const folderRows = data.folders.map((fo) => buildCellValueForFolder(fo));
+  const updateSelectedRow = (prev, row) => {
+    if (Object.keys(prev).length === 0 || Object.keys(prev).length === 1) {
+      dispatch(setSelectedToEdit({ [row.id]: true }));
+      return { [row.id]: true };
+    } else {
+      if (browse.rowSelection.hasOwnProperty(row.id)) {
+        dispatch(setSelectedToEdit(undefined));
 
-      if (navigatedToNewDir.current) {
-        setNewRows([...fileRows, ...folderRows]);
+        return { ...prev };
       } else {
-        console.log("new items fetched appending");
-        setNewRows((prev) => [...prev, ...fileRows, ...folderRows]);
+        // dispatch(setSelectedToEdit(row));
+        dispatch(setSelectedToEdit({ [row.id]: true }));
+
+        return { [row.id]: true };
       }
-      setIsFetching(false);
-    } else if (
-      isSuccess &&
-      data.files.length === 0 &&
-      data.folders.length === 0
-    ) {
-      reachedEnd.current = true;
-      setIsFetching(false);
-      // setNewRows([]);
     }
-  }, [data.files?.length, data.folders?.length, isSuccess]);
+  };
 
   const contextMenu = (event, row) => {
     event.preventDefault();
-    setRowSelection((prev) => {
-      if (Object.keys(prev).length === 0 || Object.keys(prev).length === 1) {
-        selectedToEdit.current = row;
-        return { [row.id]: true };
-      } else {
-        if (rowSelection.hasOwnProperty(row.id)) {
-          selectedToEdit.current = undefined;
-          return { ...prev };
-        } else {
-          selectedToEdit.current = row;
-          console.log(selectedToEdit.current);
 
-          return { [row.id]: true };
-        }
-      }
-    });
+    dispatch(setRowSelected(updateSelectedRow(browse.rowSelection, row)));
 
     setShowContextMenu(true);
     setCoords({ x: event.clientX + 2, y: event.clientY - 6 });
   };
+
+  useEffect(() => {
+    dispatch(setRowSelected(rowSelection));
+  }, [rowSelection]);
 
   const handleContextClose = () => {
     setShowContextMenu(false);
   };
 
   const onDeleteSubmit = () => {
-    console.log("triggered delete submit");
     const body = {
       fileIds: selected.fileIds,
       directories: selected.directories,
@@ -307,8 +219,12 @@ const DataTable = ({ layout, path, nav, loading }) => {
     );
   };
 
-  const handleRowClick = (id) => {
-    setRowSelection(() => ({ [id]: true }));
+  const handleRowClick = (row, e) => {
+    if (e.target.id !== row.id.split(";")[1]) {
+      dispatch(setRowSelected({ [row.id]: true }));
+    }
+    if (row.original.item === "file") {
+    }
   };
 
   const fetchMoreOnBottomReached = useCallback(
@@ -322,35 +238,34 @@ const DataTable = ({ layout, path, nav, loading }) => {
           status !== "pending" &&
           Date.now() - startedTimeStamp >= 1000
         ) {
-          if (!reachedEnd.current) {
-            setIsFetching(true);
-            navigatedToNewDir.current = false;
-            page.current = page.current + 1;
-            browseFolderQuery({
-              device: device.current,
-              curDir: currentDir.current,
-              sort: "ASC",
-              start: (page.current - 1) * pageSize,
-              end: pageSize,
-            });
+          if (browse.page * pageSize <= browse.total) {
+            dispatch(
+              setBrowseItems({
+                ...browse,
+                page: browse.page + 1,
+                query: true,
+                reLoad: false,
+              })
+            );
+          } else {
+            dispatch(
+              setBrowseItems({
+                ...browse,
+                query: false,
+                isFetching: false,
+                reLoad: false,
+              })
+            );
           }
         }
       }
     },
-    [
-      isLoading,
-      browseFolderQuery,
-      // reachedEnd.current,
-      // page.current,
-      startedTimeStamp,
-      status,
-      // navigatedToNewDir.current,
-    ]
+    [isLoading, startedTimeStamp, status, browse]
   );
 
   const table = useMaterialReactTable({
     columns,
-    data: newRows, //data must be memoized or stable (useState, useMemo, defined outside of this component, etc.)
+    data: rows,
     enableRowSelection: true,
     enablePagination: false,
     enableRowVirtualization: true,
@@ -371,8 +286,8 @@ const DataTable = ({ layout, path, nav, loading }) => {
         }
       : undefined,
     muiTableBodyRowProps: ({ row }) => ({
-      onClick: () => handleRowClick(row.id),
-      onContextMenu: (e) => contextMenu(e, row),
+      onClick: (e) => handleRowClick(row, e),
+      onContextMenu: (e) => contextMenu(e, row, e),
       onMouseEnter: () =>
         dispatch(setRowHover({ rowId: row.id, isHover: true })),
       onMouseLeave: () =>
@@ -394,9 +309,9 @@ const DataTable = ({ layout, path, nav, loading }) => {
     }),
 
     state: {
-      rowSelection,
+      rowSelection: browse.rowSelection,
       showProgressBars: isFetching,
-      showSkeletons: reLoad ? false : isFetching ? false : isLoading,
+      showSkeletons: browse.reLoad ? false : isFetching ? false : isLoading,
       // showLoadingOverlay: isLoading,
       showAlertBanner: isError,
     },
@@ -451,4 +366,4 @@ const DataTable = ({ layout, path, nav, loading }) => {
   );
 };
 
-export default DataTable;
+export default React.memo(DataTable);

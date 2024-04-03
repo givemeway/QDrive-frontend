@@ -1,4 +1,11 @@
-import { Box, Button, Stack, Typography, LinearProgress } from "@mui/material";
+import {
+  Box,
+  Button,
+  Stack,
+  Typography,
+  LinearProgress,
+  ListItem,
+} from "@mui/material";
 import CachedIcon from "@mui/icons-material/Cached";
 import ErrorIcon from "@mui/icons-material/Error";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -13,6 +20,7 @@ import React from "react";
 import Draggable from "react-draggable";
 import { useSetRecoilState } from "recoil";
 import { uploadAtom } from "../Recoil/Store/atoms";
+import { useMemo } from "react";
 
 const SlowLinearProgress = styled(LinearProgress)({
   "& .MuiLinearProgress-bar": {
@@ -34,6 +42,12 @@ export default React.memo(function UploadProgressDrawer({
   const close = () => {
     setExpandProgress((prev) => !prev);
   };
+
+  const dataArray = useMemo(
+    () => Object.entries(trackFilesProgress),
+    [trackFilesProgress]
+  );
+
   useEffect(() => {
     if (expandProgress) {
       setProgressBlock("block");
@@ -47,8 +61,10 @@ export default React.memo(function UploadProgressDrawer({
     ref.current?.scrollToItem(filesStatus.processed, "center");
   }, [filesStatus.processed]);
 
-  const Row = useCallback(({ index, style }) => {
-    const [key, val] = Array.from(trackFilesProgress)[index];
+  const Row = React.memo(({ index, style }) => {
+    // const [key, val] = Array.from(trackFilesProgress)[index];
+    const [key, val] = dataArray[index];
+
     return (
       <div style={style} key={key}>
         <Box
@@ -121,41 +137,6 @@ export default React.memo(function UploadProgressDrawer({
               </Typography>
             )}
           </Stack>
-
-          {val.status === "uploaded" && (
-            <Button
-              variant="contained"
-              size="small"
-              disableRipple
-              sx={{
-                boxShadow: 0,
-                fontSize: 10,
-                marginRight: 1,
-                background: "#F5EFE5",
-                color: "#1A1918",
-                "&:hover": { backgroundColor: "transparent" },
-              }}
-            >
-              Copy Link
-            </Button>
-          )}
-          {(val.status === "uploading" || val.status === "queued") && (
-            <Button
-              variant="contained"
-              size="small"
-              disableRipple
-              sx={{
-                boxShadow: 0,
-                fontSize: 10,
-                marginRight: 1,
-                background: "#F5EFE5",
-                color: "#1A1918",
-                "&:hover": { backgroundColor: "transparent" },
-              }}
-            >
-              Cancel
-            </Button>
-          )}
         </Box>
         {val.status === "uploading" && (
           <LinearProgress variant="determinate" value={val.progress} />
@@ -252,7 +233,7 @@ export default React.memo(function UploadProgressDrawer({
           {showProgress && (
             <List
               height={500}
-              itemCount={Array.from(trackFilesProgress).length}
+              itemCount={dataArray.length}
               itemSize={65}
               // useIsScrolling={true}
               ref={ref}

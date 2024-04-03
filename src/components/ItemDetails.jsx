@@ -67,7 +67,7 @@ const ItemDetails = () => {
     if (fileDetails.file?.origin?.length > 0) {
       getVersion({ CSRFToken, origin: fileDetails.file.origin });
     }
-  }, [fileDetails.file.origin]);
+  }, [fileDetails.file?.origin]);
 
   useEffect(() => {
     if (data) {
@@ -115,7 +115,11 @@ const ItemDetails = () => {
       </div>
 
       <div className="w-[100%] h-[200px] flex flex-row justify-center items-center pl-2">
-        {get_file_icon(fileDetails.file.name, fileDetails.file.url)}
+        {get_file_icon(
+          fileDetails.file?.name,
+          fileDetails.file?.url,
+          fileDetails.file?.thumbURL
+        )}
       </div>
       <div className="flex flex-row justify-center items-center h-[50px] w-full">
         <h3 className="text-left font-medium text-[#808080] text-md w-full px-3  items-center">

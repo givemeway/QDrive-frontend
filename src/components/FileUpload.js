@@ -9,6 +9,7 @@ import { formatBytes, formatSeconds } from "../util.js";
 import { Button, Snackbar, Box, Typography } from "@mui/material";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { subpathAtom, uploadAtom } from "../Recoil/Store/atoms.js";
+import { useParams } from "react-router-dom";
 
 const ETA = (starttime, total, uploaded) => {
   const timeElapsed = new Date() - starttime;
@@ -42,6 +43,8 @@ function FilesUpload() {
   const [files, setFiles] = useState([]);
   const filesMetaData = useRef({});
   const [socketID, setSocketID] = useState(undefined);
+  const params = useParams();
+  const subpath = params["*"];
 
   const [pwd, setPWD] = useState("/");
   const [device, setDevice] = useState("/");
@@ -59,7 +62,7 @@ function FilesUpload() {
     uploaded: 0,
   });
   const [preparingFiles, setPreparingFiles] = useState(false);
-  const path = useRecoilValue(subpathAtom);
+  // const path = useRecoilValue(subpathAtom);
   const [fileProgress, setUpload] = useRecoilState(uploadAtom);
 
   useEffect(() => {
@@ -106,8 +109,8 @@ function FilesUpload() {
     setPreparingFiles(false);
     if (
       filesToUpload.length > 0 &&
-      socketID &&
-      trackFilesProgress instanceof Map
+      socketID
+      // trackFilesProgress instanceof Map
     ) {
       setUpload("file");
       setShowProgress(true);
@@ -290,7 +293,7 @@ function FilesUpload() {
     );
 
     console.log("inside folder upload component");
-    const subpart = path.split("/").slice(1);
+    const subpart = subpath.split("/").slice(1);
     if (subpart.length === 0) {
       setDevice("/");
       setPWD("/");

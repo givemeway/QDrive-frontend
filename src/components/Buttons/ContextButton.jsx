@@ -1,4 +1,4 @@
-export const ContextButton = ({ children, onClick }) => {
+export const ContextButton = ({ children, style, onClick }) => {
   return (
     <button
       className="w-full flex flex-row justify-start gap-2 pl-3 my-1 
@@ -7,6 +7,7 @@ export const ContextButton = ({ children, onClick }) => {
       hover:overflow-hidden
       "
       onClick={onClick}
+      style={{ ...style }}
     >
       {children}
     </button>

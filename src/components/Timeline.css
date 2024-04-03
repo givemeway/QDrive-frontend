@@ -1,0 +1,26 @@
+.gallery-image {
+  /* width: 82px;
+  height: 82px; */
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+
+.active {
+  background: #ebe0cc;
+}
+
+.active:hover {
+  background: #e3d3b7;
+}
+
+.round-button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid black;
+  border-radius: 50%;
+}
+
+.round-button:hover {
+  background: #fbf4ea;
+}

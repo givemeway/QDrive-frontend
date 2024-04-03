@@ -10,12 +10,22 @@ import { ContextButton } from "../Buttons/ContextButton";
 import ContextModal from "../Modal/ContextMenuModal";
 import { useDispatch, useSelector } from "react-redux";
 import { setOperation } from "../../features/operation/operationSlice";
-import { MOVE, COPY, SHARE, DELETE, DOWNLOAD } from "../../config";
+import {
+  MOVE,
+  COPY,
+  SHARE,
+  DELETE,
+  DOWNLOAD,
+  file,
+  downloadItemsURL,
+  server,
+} from "../../config";
 import { setEdit } from "../../features/rename/renameSlice";
 import { useRecoilValue } from "recoil";
 import { itemsSelectedAtom } from "../../Recoil/Store/atoms";
 import { useEffect, useState } from "react";
 import { setFileDetails } from "../../features/itemdetails/fileDetails.Slice";
+import { get_url } from "../../util";
 
 const TableContextMenu = ({ style, open, onClose }) => {
   console.log("file context rendered");
@@ -72,19 +82,25 @@ const TableContextMenu = ({ style, open, onClose }) => {
     onClose();
   };
   const handleDownload = () => {
-    dispatch(
-      setOperation({
-        ...operation,
-        type: DOWNLOAD,
-        status: "initialized",
-        origin: fileIds[0].origin,
-      })
-    );
+    if (selectionType.file) {
+      const { file, device, dir, id } = fileIds[0];
+      const fileData = { filename: file, directory: dir, device, uuid: id };
+      const url = get_url(fileData);
+      window.open(url, "_parent");
+    } else if (selectionType.folder || selectionType.multiple) {
+      dispatch(
+        setOperation({
+          ...operation,
+          type: DOWNLOAD,
+          status: "initialized",
+          data: { files: fileIds, directories: directories },
+        })
+      );
+    }
     onClose();
   };
 
   const handleFileInfo = () => {
-    console.log(fileIds);
     dispatch(setFileDetails({ open: true, file: fileIds[0] }));
     onClose();
   };

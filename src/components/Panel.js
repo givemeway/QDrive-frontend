@@ -1,10 +1,8 @@
 import { Button, Box, Typography } from "@mui/material";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState } from "react";
 import FolderExplorer from "./FolderExplorer";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import useFetchDeletedItems from "./hooks/FetchDeletedItems";
-import { PanelContext, UploadFolderContenxt } from "./UseContext";
 import { useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
 import { tabSelectedAtom } from "../Recoil/Store/atoms";
@@ -64,6 +62,16 @@ const Panel = () => {
     setTabSelected(4);
   };
 
+  const handleShare = () => {
+    navigate("/dashboard/share");
+    setTabSelected(3);
+  };
+
+  const handlePhotos = () => {
+    navigate("/dashboard/photos");
+    setTabSelected(2);
+  };
+
   return (
     <Box
       display="flex"
@@ -121,8 +129,16 @@ const Panel = () => {
           <FolderExplorer />
         </Box>
       )}
-      <Tab>Photos</Tab>
-      <Tab>Shared</Tab>
+      <Tab>
+        <Typography sx={{ fontSize: 20 }} onClick={handlePhotos}>
+          Photos
+        </Typography>
+      </Tab>
+      <Tab>
+        <Typography sx={{ fontSize: 20 }} onClick={handleShare}>
+          Shared
+        </Typography>
+      </Tab>
       <Tab>
         <Typography sx={{ fontSize: 20 }} onClick={handleDeleted}>
           Deleted Files

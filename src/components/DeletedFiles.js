@@ -247,6 +247,7 @@ export default React.memo(function DataGridTable() {
         console.log("trigger modal action");
         setOpenTrashItem(true);
         // setSelectedTrashItem(params.row);
+        console.log(params.row);
         dispatch(setSelectedTrashBatch({ ...params.row }));
         // bring the modal window
         // make a api call to fetch details
@@ -285,7 +286,6 @@ export default React.memo(function DataGridTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     if (!Array.isArray(items)) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
-
       rows.current = items.files.map((file) => ({
         id: file.id,
         item: "file",
@@ -316,6 +316,7 @@ export default React.memo(function DataGridTable() {
           id: file.uuid,
           item: "singleFile",
           name: file.filename,
+          origin: file.origin,
           path: buildIndividualFilePath(file.device, file.directory),
           begin: 0,
           end: 0,
@@ -325,6 +326,7 @@ export default React.memo(function DataGridTable() {
           ),
         })),
       ];
+      console.log(rows.current);
       setNewRows(rows.current);
       setLoading(false);
     }
