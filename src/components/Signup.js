@@ -1,19 +1,16 @@
 import { Container, Box } from "@mui/material";
 import SignupForm from "./SignupForm";
+import { Header } from "./Header.jsx";
 
 export default function Signup() {
   return (
-    <Box
-      sx={{
-        width: "100vw",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <SignupForm />
-    </Box>
+    <div className="w-screen h-screen flex flex-col">
+      <div className="w-full">
+        <Header />
+      </div>
+      <div className="w-full h-full flex flex-row justify-center items-center grow">
+        <SignupForm />
+      </div>
+    </div>
   );
 }

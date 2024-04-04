@@ -1,9 +1,13 @@
+import { useDispatch, useSelector } from "react-redux";
 import { CustomBlueButton } from "./Buttons/BlueButton";
 import { GreyButton } from "./Buttons/GreyButton";
 import { CopyLinkIcon } from "./icons/CopyLinkIcon";
 import { DownloadIcon } from "./icons/DownloadIcon";
+import { setOperation } from "../features/operation/operationSlice";
+import { DOWNLOAD } from "../config.js";
+import { extract_items_from_ids } from "../util.js";
 
-const DownloadBox = () => {
+const DownloadBox = ({ onClick }) => {
   return (
     <>
       <CustomBlueButton
@@ -14,6 +18,7 @@ const DownloadBox = () => {
             <span className="text-left">Download</span>
           </div>
         }
+        onClick={onClick}
       ></CustomBlueButton>
     </>
   );
@@ -36,9 +41,26 @@ const ShareBox = () => {
 };
 
 export const DownloadHeader = () => {
+  const selected = useSelector((state) => state.selected);
+  const operation = useSelector((state) => state.operation);
+  const dispatch = useDispatch();
+  const handleDownload = () => {
+    const { files, folders } = extract_items_from_ids([
+      ...selected.fileIds,
+      ...selected.directories,
+    ]);
+    dispatch(
+      setOperation({
+        ...operation,
+        type: DOWNLOAD,
+        status: "initialized",
+        data: { files: files, directories: folders },
+      })
+    );
+  };
   return (
     <div className="w-full h-[100px] flex flex-row justify-start items-center  gap-2 mt-5">
-      <DownloadBox />
+      <DownloadBox onClick={handleDownload} />
       <ShareBox />
       <div className="grow"></div>
     </div>

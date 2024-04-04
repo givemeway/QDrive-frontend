@@ -12,6 +12,7 @@ import setBrowseReducer from "../features/browseItems/browseItemsSlice.js";
 import timeline from "../features/timeline/timeLineSlice.js";
 import updateTable from "../features/table/updateTableSlice.js";
 import photoNav from "../features/photopreview/previewSlice.js";
+import selected from "../features/selectedRows/selectedRowsSlice.js";
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -27,6 +28,7 @@ export const store = configureStore({
     timeline: timeline,
     updateTable: updateTable,
     photoNav: photoNav,
+    selected: selected,
   },
   middleware: (getDefaultMiddleWare) =>
     getDefaultMiddleWare().concat(apiSlice.middleware),

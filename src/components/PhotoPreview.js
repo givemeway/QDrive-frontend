@@ -15,9 +15,10 @@ import { Image } from "./Image.js";
 import { DownloadIcon } from "./icons/DownloadIcon.js";
 import { CopyLinkIcon } from "./icons/CopyLinkIcon.js";
 import "./PhotoPreview.css";
-import { SHARE, file, folder } from "../config.js";
+import { SHARE, file } from "../config.js";
 import { getShareItemDetails } from "./ModifiedCell.jsx";
 import { setOperation } from "../features/operation/operationSlice.jsx";
+import { ErrorIcon } from "./icons/ErrorIcon.js";
 
 const generateLink = (arr, idx) => {
   const path = arr.slice(0, idx + 1).join("/");
@@ -44,12 +45,16 @@ const DropDown = ({ path }) => {
     const navLink = generateLink(path.split("/"), idx);
     navigate(navLink);
   };
+
   return (
     <>
       <ContextButton
         onClick={(e) => {
           setOpen(true);
-          setCord({ x: e.clientX, y: e.clientY + 6 });
+          setCord({
+            x: e.target.offsetLeft,
+            y: e.target.offsetTop + e.target.offsetHeight,
+          });
         }}
         style={{
           width: "auto",
@@ -59,6 +64,7 @@ const DropDown = ({ path }) => {
       >
         {path.split("/").slice(-1)[0]}
       </ContextButton>
+
       <DropDownContainer
         open={open}
         onClose={() => setOpen(false)}
@@ -128,7 +134,7 @@ export default function PhotoPreview({ onClose, pth, photos, initialName }) {
 
   const [photoPreviewQuery, photoPreviewStatus] =
     useGetPhotoPreviewURLMutation();
-  const { isLoading, isError, error, data, isSuccess } = photoPreviewStatus;
+  const { isLoading, isError, data, isSuccess } = photoPreviewStatus;
   useEffect(() => {
     photoPreviewQuery({ path: pth, filename: initialName });
     const idx = photos.findIndex((photo) => photo.name === initialName) + 1;
@@ -138,7 +144,6 @@ export default function PhotoPreview({ onClose, pth, photos, initialName }) {
         total: photos.length,
         name: nameWithoutExt(initialName),
         ext: getFileExtension(initialName),
-        // path: pth === "/" ? "/" : "/" + pth,
         path: photos[idx - 1].path,
       })
     );
@@ -175,7 +180,6 @@ export default function PhotoPreview({ onClose, pth, photos, initialName }) {
   };
 
   const handleShareLink = () => {
-    console.log("share link triggered");
     const { type, body } = getShareItemDetails(photos[photo.pos - 1].id, file);
     dispatch(
       setOperation({
@@ -232,7 +236,7 @@ export default function PhotoPreview({ onClose, pth, photos, initialName }) {
               ShowLoading={() => (
                 <Skeleton width={600} height={480} animation="wave" />
               )}
-              ErrorIcon={() => <div>Something Went wrong</div>}
+              ErrorIcon={() => <ErrorIcon style={{ width: 25, height: 25 }} />}
             />
           )}
           {isLoading && <Skeleton width={600} height={480} animation="wave" />}

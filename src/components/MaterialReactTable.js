@@ -21,7 +21,7 @@ import { closeOperation } from "../features/operation/operationSlice.jsx";
 import { DeleteModal } from "./Modal/DeleteModal.js";
 import CellEdit from "./TableCellEdit.jsx";
 import RenderNameCell from "./NameCell.jsx";
-import RenderModifiedCell from "./ModifiedCell.jsx";
+import RenderModifiedCell, { DownloadCell } from "./ModifiedCell.jsx";
 import ShareModal from "./Modal/ShareModal.jsx";
 import { setOperation } from "../features/operation/operationSlice.jsx";
 import ItemDetails from "./ItemDetails.jsx";
@@ -32,12 +32,13 @@ import {
   setSelectedToEdit,
   setRowSelected,
 } from "../features/browseItems/browseItemsSlice.js";
+import { extract_items_from_ids } from "../util.js";
 
 const colFn = (layout, path, nav) => [
   {
     accessorKey: "name",
     header: "Name",
-    size: 350,
+    size: 300,
     enableColumnActions: false,
     muiTableHeadCellProps: {
       align: "left",
@@ -52,7 +53,7 @@ const colFn = (layout, path, nav) => [
   {
     accessorKey: "size", //normal accessorKey
     header: "Size",
-    size: 100,
+    size: 75,
     enableEditing: false,
     enableColumnActions: false,
     muiTableHeadCellProps: {
@@ -62,7 +63,7 @@ const colFn = (layout, path, nav) => [
   {
     accessorKey: "versions",
     header: "Versions",
-    size: 100,
+    size: 75,
     enableEditing: false,
     enableColumnActions: false,
     muiTableHeadCellProps: {
@@ -77,8 +78,8 @@ const colFn = (layout, path, nav) => [
     header: "Modified",
     enableEditing: false,
     enableColumnActions: false,
-    size: 150,
-    Cell: ({ row }) => <RenderModifiedCell row={row.original} />,
+    size: 200,
+    Cell: ({ row }) => <DownloadCell row={row.original} />,
   },
 ];
 
@@ -112,34 +113,8 @@ const DataTable = ({
   const columns = useMemo(() => colFn(layout, path, nav), [layout, path, nav]);
 
   useEffect(() => {
-    const files = [];
-    const folders = [];
+    const { files, folders } = extract_items_from_ids(browse.rowSelection);
 
-    for (const [id, val] of Object.entries(browse.rowSelection)) {
-      if (val) {
-        const item = id.split(";");
-        if (item[0] === "file") {
-          files.push({
-            id: item[1],
-            path: item[2],
-            file: item[3],
-            origin: item[4],
-            dir: item[5],
-            device: item[6],
-            versions: parseInt(item[7]),
-          });
-        }
-        if (item[0] === "folder") {
-          folders.push({
-            id: item[1],
-            path: item[2],
-            folder: item[3],
-            uuid: item[4],
-            device: item[5],
-          });
-        }
-      }
-    }
     setItemsSelection(() => ({
       fileIds: [...files],
       directories: [...folders],
@@ -285,6 +260,13 @@ const DataTable = ({
           children: "Error loading data",
         }
       : undefined,
+    muiTopToolbarProps: () => ({ sx: { display: "block" } }),
+    muiBottomToolbarProps: () => ({
+      sx: { display: "block" },
+    }),
+    muiTableBodyProps: () => ({
+      sx: { minHeight: "60vh" },
+    }),
     muiTableBodyRowProps: ({ row }) => ({
       onClick: (e) => handleRowClick(row, e),
       onContextMenu: (e) => contextMenu(e, row, e),
@@ -293,7 +275,7 @@ const DataTable = ({
       onMouseLeave: () =>
         dispatch(setRowHover({ rowId: null, isHover: false })),
       sx: {
-        height: "50px",
+        height: "60px",
       },
     }),
     muiTableBodyCellProps: () => ({
@@ -303,7 +285,7 @@ const DataTable = ({
       ref: tableContainerRef,
       sx: {
         height: `calc(100% - ${table.refs.topToolbarRef.current?.offsetHeight}px - ${table.refs.bottomToolbarRef.current?.offsetHeight}px)`,
-        width: "100vw",
+        width: "100%",
       },
       onScroll: (event) => fetchMoreOnBottomReached(event.target),
     }),

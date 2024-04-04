@@ -24,7 +24,7 @@ export default function CustomizedBreadcrumbs({ queue, layout, link, k }) {
         justifyContent: "flex-start",
         alignItems: "center",
         gap: 0,
-        height: "33%",
+        height: "100%",
         margin: 0,
         padding: 0,
         ".MuiBreadcrumbs-separator": {

@@ -6,6 +6,11 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
 import { tabSelectedAtom } from "../Recoil/Store/atoms";
+import { AllFilesIcon } from "./icons/AllFilesIcon";
+import PictureIcon from "./icons/PictureIcon";
+import { SharedIcon } from "./icons/SharedIcon";
+import { DeletedIcon } from "./icons/DeletedIcon";
+import { ChevronDown } from "./icons/ChevronDown";
 
 const style = {
   display: "flex",
@@ -18,28 +23,20 @@ const style = {
   boxSizing: "border-box",
 };
 
-const tabStyle = {
-  color: "#886C64",
-  width: "100%",
-  fontSize: 20,
-  paddingLeft: 3,
-  backgroundColor: "#F7F5F2",
-  textTransform: "none",
-  "&:hover": {
-    backgroundColor: "transparent",
-    opacity: [0.9, 0.8, 0.7],
-  },
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "flex-start",
-  textAlign: "left",
-};
-
-const Tab = ({ children }) => {
+const TabButton = ({ active, children, onClick }) => {
   return (
-    <Button sx={tabStyle} fullWidth disableRipple>
+    <button
+      className={`flex justify-start items-center w-full h-[50px] 
+          font-normal font-sans text-lg pl-2 gap-2
+          ${
+            active
+              ? "bg-[#EBE9E6] hover:bg-[#DFDCD8] text-[#1A1918]"
+              : "bg-[#F7F5F2] hover:bg-[#EBE9E6] text-[#736C64] hover:text-[#1A1918]"
+          } `}
+      onClick={onClick}
+    >
       {children}
-    </Button>
+    </button>
   );
 };
 
@@ -47,6 +44,12 @@ const Panel = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const setTabSelected = useSetRecoilState(tabSelectedAtom);
+  const [active, setActive] = useState({
+    allFiles: true,
+    photos: false,
+    shared: false,
+    deleted: false,
+  });
 
   console.log("side panel rendered");
   const handleClick = () => {
@@ -54,97 +57,88 @@ const Panel = () => {
   };
   const handleAllFiles = () => {
     navigate("/dashboard/home");
+    setActive({ allFiles: true, photos: false, shared: false, deleted: false });
     setTabSelected(1);
   };
 
   const handleDeleted = () => {
     navigate("/dashboard/deleted");
+    setActive({ allFiles: false, photos: false, shared: false, deleted: true });
+
     setTabSelected(4);
   };
 
   const handleShare = () => {
     navigate("/dashboard/share");
+    setActive({ allFiles: false, photos: false, shared: true, deleted: false });
+
     setTabSelected(3);
   };
 
   const handlePhotos = () => {
     navigate("/dashboard/photos");
+    setActive({ allFiles: false, photos: true, shared: false, deleted: false });
+
     setTabSelected(2);
   };
 
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      justifyContent="flex-start"
-      alignItems="flex-start"
-      rowGap={0}
-      sx={{
-        width: 240,
-        height: "100vh",
-        backgroundColor: "#F7F5F2",
-        borderRight: "1px solid #D4D2D0",
-        boxSizing: "border-box",
-      }}
+    <div
+      className="flex flex-col items-start gap-0 w-[240px] 
+          h-screen bg-[#F7F5F2] border-r border-[#D4D2D0] 
+          box-border "
     >
-      <Typography component="h3" variant="h3" mt={5} mb={8} ml={2}>
+      <h3
+        className="cursor-pointer mt-5 mb-8 ml-2 text-5xl font-semibold"
+        onClick={() => navigate("/")}
+      >
         QDrive
-      </Typography>
+      </h3>
+      <TabButton active={active.allFiles} onClick={handleAllFiles}>
+        <AllFilesIcon style={{ width: 20, height: 20, fill: "none" }} />
+        All Files
+      </TabButton>
 
-      <Tab>
+      <TabButton active={active.photos} onClick={handlePhotos}>
+        <PictureIcon style={{ width: 20, height: 20 }} />
+        Photos
+      </TabButton>
+
+      <TabButton active={active.shared} onClick={handleShare}>
+        <SharedIcon style={{ width: 20, height: 20 }} />
+        Shared
+      </TabButton>
+
+      <TabButton active={active.deleted} onClick={handleDeleted}>
+        <DeletedIcon style={{ width: 20, height: 20 }} />
+        Deleted Files
+      </TabButton>
+      <div className="border-b border-[#D4D2D0] w-full"></div>
+      <TabButton>
         {!open && (
           <ChevronRightIcon
-            fontSize="medium"
-            sx={{
-              position: "absolute",
-              left: 0,
-              "&:hover": {
-                backgroundColor: "#ECE1CE",
-                opacity: [0.9, 0.8, 0.7],
-              },
-            }}
+            style={{ width: 20, height: 20 }}
             onClick={handleClick}
           />
         )}
         {open && (
-          <ExpandMoreIcon
-            fontSize="medium"
-            sx={{
-              position: "absolute",
-              left: 0,
-              "&:hover": {
-                backgroundColor: "#ECE1CE",
-                opacity: [0.9, 0.8, 0.7],
-              },
-            }}
+          <ChevronDown
+            style={{ width: 20, height: 20 }}
             onClick={handleClick}
           />
         )}
-        <Typography sx={{ fontSize: 20 }} onClick={handleAllFiles}>
-          All Files
-        </Typography>
-      </Tab>
+        Folders
+      </TabButton>
+
       {open && (
-        <Box sx={style}>
+        <div
+          sx={style}
+          className="flex flex-col justify-between w-full h-[250px] border-0 box-border"
+        >
           <FolderExplorer />
-        </Box>
+        </div>
       )}
-      <Tab>
-        <Typography sx={{ fontSize: 20 }} onClick={handlePhotos}>
-          Photos
-        </Typography>
-      </Tab>
-      <Tab>
-        <Typography sx={{ fontSize: 20 }} onClick={handleShare}>
-          Shared
-        </Typography>
-      </Tab>
-      <Tab>
-        <Typography sx={{ fontSize: 20 }} onClick={handleDeleted}>
-          Deleted Files
-        </Typography>
-      </Tab>
-    </Box>
+    </div>
   );
 };
 

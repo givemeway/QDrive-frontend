@@ -6,6 +6,7 @@ import * as React from "react";
 import useValidateLogin from "./hooks/LoginHook";
 import { useNavigate } from "react-router-dom";
 import MessageSnackBar from "./Snackbar/SnackBar";
+import { CustomBlueButton } from "./Buttons/BlueButton";
 
 const Login = () => {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
@@ -34,61 +35,67 @@ const Login = () => {
     }
   }, [logging, status]);
   return (
-    <>
-      <Header />
-      <Box sx={{ width: 300, padding: 3 }}>
-        <Stack spacing={2}>
-          <TextField
-            label="Username / Email"
-            name="username"
-            type="email"
-            variant="outlined"
-            value={loginForm.username}
-            onChange={handleChange}
-            required={true}
-          />
-          <TextField
-            label="Password"
-            variant="outlined"
-            name="password"
-            type="password"
-            value={loginForm.password}
-            onChange={handleChange}
-            required={true}
-          />
-          {logging ? (
-            <Button variant="outlined">
-              <CircularProgress sx={{ fontSize: 10 }} />
-            </Button>
-          ) : (
-            <Button variant="contained" onClick={handleClick}>
-              Login
-            </Button>
-          )}
-          {warning && (
-            <MessageSnackBar
-              severity={"warning"}
-              msg={"Username or password incorrect!"}
-              setMessage={setWarning}
+    <div className="w-screen h-screen flex flex-col">
+      <div className="w-full">
+        <Header />
+      </div>
+      <div className="w-full grow flex flex-row justify-center items-center">
+        <Box sx={{ width: 300, padding: 3 }}>
+          <Stack spacing={2}>
+            <TextField
+              label="Username / Email"
+              name="username"
+              type="email"
+              variant="outlined"
+              value={loginForm.username}
+              onChange={handleChange}
+              required={true}
             />
-          )}
-          {success && (
-            <MessageSnackBar
-              severity={"success"}
-              msg={"Login Successful!"}
-              setMessage={setSuccess}
+            <TextField
+              label="Password"
+              variant="outlined"
+              name="password"
+              type="password"
+              value={loginForm.password}
+              onChange={handleChange}
+              required={true}
             />
-          )}
-          {error && (
-            <MessageSnackBar
-              severity={"error"}
-              msg={"Something Went wrong. Try again!"}
-              setMessage={setError}
-            />
-          )}
-        </Stack>
-      </Box>
-    </>
+            {logging ? (
+              <Button variant="outlined">
+                <CircularProgress sx={{ fontSize: 10 }} />
+              </Button>
+            ) : (
+              <CustomBlueButton
+                text={"Login"}
+                onClick={handleClick}
+                style={{ width: "100%", height: 50 }}
+              />
+            )}
+            {warning && (
+              <MessageSnackBar
+                severity={"warning"}
+                msg={"Username or password incorrect!"}
+                setMessage={setWarning}
+              />
+            )}
+            {success && (
+              <MessageSnackBar
+                severity={"success"}
+                msg={"Login Successful!"}
+                setMessage={setSuccess}
+              />
+            )}
+            {error && (
+              <MessageSnackBar
+                severity={"error"}
+                msg={"Something Went wrong. Try again!"}
+                setMessage={setError}
+              />
+            )}
+          </Stack>
+        </Box>
+      </div>
+    </div>
   );
 };
 export default Login;

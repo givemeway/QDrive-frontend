@@ -4,6 +4,7 @@ import BreadCrumb from "./breadCrumbs/CollapsibleBreadUnderLinedCrumbs.js";
 
 import {
   useBrowseSharedItemsMutation,
+  useGetCSRFTokenQuery,
   useValidateShareLinkMutation,
 } from "../features/api/apiSlice.js";
 import { buildCellValueForFile, buildCellValueForFolder } from "../util.js";
@@ -11,12 +12,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { setBrowseItems } from "../features/browseItems/browseItemsSlice.js";
 import Table from "./SharedItemsMaterialReactTable.js";
 import SpinnerGIF from "./icons/SpinnerGIF.js";
-import { pageSize } from "../config.js";
+import { file, folder, pageSize } from "../config.js";
 import { Header } from "./Header.jsx";
 import { DownloadHeader } from "./ShareDownloadHeader.jsx";
 import { ShareBanner } from "./ShareBanner.jsx";
 import PhotoPreview from "./PhotoPreview.js";
 import { Modal } from "./Modal/Modal.jsx";
+import {
+  setFilesSelected,
+  setFoldersSelected,
+} from "../features/selectedRows/selectedRowsSlice.js";
+import { StatusNotification } from "./StatusNotification.js";
+import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
 
 export default function Shared() {
   const location = useLocation();
@@ -41,6 +48,7 @@ export default function Shared() {
   const [validateShareQuery, validateShareStatus] =
     useValidateShareLinkMutation();
   const [browseShareQuery, browseShareStatus] = useBrowseSharedItemsMutation();
+  const { isLoading, isError, isSuccess, data } = useGetCSRFTokenQuery();
 
   const validate = {
     isLoading: validateShareStatus.isLoading,
@@ -59,6 +67,12 @@ export default function Shared() {
     error: browseShareStatus.error,
     startedTimeStamp: browseShareStatus.startedTimeStamp,
   };
+
+  useEffect(() => {
+    if (isSuccess && data) {
+      dispath(setCSRFToken(data.CSRFToken));
+    }
+  }, [isSuccess, data]);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -147,9 +161,30 @@ export default function Shared() {
       const folderRows = directories.map((fo) => buildCellValueForFolder(fo));
 
       if (navigatedToNewDir.current) {
+        dispath(setFilesSelected(fileRows.map((file) => file.id)));
+        dispath(setFoldersSelected(folderRows.map((folder) => folder.id)));
+
         setNewRows([...fileRows, ...folderRows]);
       } else {
         setNewRows((prev) => {
+          const files = prev
+            .filter((item) => item.item === file)
+            .map((file) => file.id);
+
+          const folders = prev
+            .filter((item) => item.item === folder)
+            .map((folder) => folder.id);
+
+          dispath(
+            setFilesSelected([...files, ...fileRows.map((file) => file.id)])
+          );
+          dispath(
+            setFoldersSelected([
+              ...folders,
+              ...folderRows.map((folder) => folder.id),
+            ])
+          );
+
           return [...prev, ...fileRows, ...folderRows];
         });
       }
@@ -199,52 +234,60 @@ export default function Shared() {
   };
 
   return (
-    <div className="w-screen h-screen flex flex-col justify-start items-center">
-      <Header />
-      {validate.isLoading && <SpinnerGIF style={{ width: 50, height: 50 }} />}
-      {validate.isError && <div>Share Link Expired or Deleted</div>}
-      {isShareURLInvalid && <div>Share Link is incorrect. Please check it</div>}
-      {isShareValid && (
-        <div className="w-full md:w-2/3 h-5/6 flex flex-col justify-between items-center grow">
-          <div className="w-full flex flex-col justify-around items-center grow">
-            <ShareBanner />
-            <DownloadHeader />
-          </div>
-          {type === "fo" && (
-            <div className="w-full pt-5 flex flex-row justify-start items-center">
-              <BreadCrumb
-                queue={breadCrumb}
-                link={`/sh/fo/${shareId}/h`}
+    <>
+      <div className="w-screen h-screen flex flex-col justify-start items-center">
+        <Header />
+        {(validate.isLoading || isLoading) && (
+          <SpinnerGIF style={{ width: 50, height: 50 }} />
+        )}
+        {validate.isError && <div>Share Link Expired or Deleted</div>}
+        {isShareURLInvalid && (
+          <div>Share Link is incorrect. Please check it</div>
+        )}
+        {isError && <div>Something Went wrong try again.</div>}
+        {isShareValid && (
+          <div className="w-full md:w-2/3 h-5/6 flex flex-col justify-between items-center grow">
+            <div className="w-full flex flex-col justify-around items-center">
+              <ShareBanner />
+              <DownloadHeader />
+            </div>
+            {type === "fo" && (
+              <div className="w-full flex flex-row justify-start items-center">
+                <BreadCrumb
+                  queue={breadCrumb}
+                  link={`/sh/fo/${shareId}/h`}
+                  layout={"share"}
+                  k={share.current.itemID}
+                />
+              </div>
+            )}
+            <div className="h-4/6 w-full grow">
+              <Table
                 layout={"share"}
-                k={share.current.itemID}
+                path={`/sh/${type}/${shareId}`}
+                isLoading={browseShare.isLoading}
+                isError={browseShare.isError}
+                status={browseShare.status}
+                startedTimeStamp={browseShare.startedTimeStamp}
+                rows={newRows}
+                isFetching={isFetching}
+                nav={dirNav}
               />
             </div>
-          )}
-          <div className="h-4/6 w-full grow">
-            <Table
-              layout={"share"}
-              path={`/sh/${type}/${shareId}`}
-              isLoading={browseShare.isLoading}
-              isError={browseShare.isError}
-              status={browseShare.status}
-              startedTimeStamp={browseShare.startedTimeStamp}
-              rows={newRows}
-              isFetching={isFetching}
-              nav={dirNav}
-            />
           </div>
-        </div>
-      )}
-      {isShareValid && isPreview && (
-        <Modal style={{ background: "white", opacity: 1 }}>
-          <PhotoPreview
-            onClose={handleClosePreview}
-            pth={nav}
-            photos={newRows}
-            initialName={photoName}
-          />
-        </Modal>
-      )}
-    </div>
+        )}
+        {isShareValid && isPreview && (
+          <Modal style={{ background: "white", opacity: 1 }}>
+            <PhotoPreview
+              onClose={handleClosePreview}
+              pth={nav}
+              photos={newRows}
+              initialName={photoName}
+            />
+          </Modal>
+        )}
+        <StatusNotification />
+      </div>
+    </>
   );
 }

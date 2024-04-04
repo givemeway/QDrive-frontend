@@ -21,7 +21,10 @@ export const Image = ({
           srcSet={srcSet}
           style={loading || error ? { display: "none" } : {}}
           onLoad={() => setLoading(false)}
-          onError={() => setError(true)}
+          onError={() => {
+            setError(true);
+            setLoading(false);
+          }}
           sizes={sizes}
           {...style}
         />

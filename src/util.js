@@ -95,6 +95,55 @@ const buildCellValueForFolder = (fo) => {
   };
 };
 
+const extract_info_from_id = (id) => {
+  let file;
+  let folder;
+  const item = id.split(";");
+  if (item[0] === "file") {
+    file = {
+      id: item[1],
+      path: item[2],
+      file: item[3],
+      origin: item[4],
+      dir: item[5],
+      device: item[6],
+      versions: parseInt(item[7]),
+    };
+  }
+  if (item[0] === "folder") {
+    folder = {
+      id: item[1],
+      path: item[2],
+      folder: item[3],
+      uuid: item[4],
+      device: item[5],
+    };
+  }
+  return { file, folder };
+};
+
+export const extract_items_from_ids = (rowSelection) => {
+  const files = [];
+  const folders = [];
+  if (Array.isArray(rowSelection)) {
+    for (const id of rowSelection) {
+      const { file, folder } = extract_info_from_id(id);
+      if (file) files.push(file);
+      if (folder) folders.push(folder);
+    }
+  } else {
+    for (const [id, val] of Object.entries(rowSelection)) {
+      if (val) {
+        const { file, folder } = extract_info_from_id(id);
+        if (file) files.push(file);
+        if (folder) folders.push(folder);
+      }
+    }
+  }
+
+  return { files, folders };
+};
+
 const buildCellValueForFile = (file) => {
   return {
     id: get_id(file),

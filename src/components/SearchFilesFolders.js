@@ -1,6 +1,8 @@
-import { Box, Button, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { CustomBlueButton } from "./Buttons/BlueButton";
+import { HamburgerIcon } from "./icons/HamburgerIcon";
+import AvatarMenu from "./AvatarMenu";
 
 export default function Search({ searchValue }) {
   const navigate = useNavigate();
@@ -12,33 +14,27 @@ export default function Search({ searchValue }) {
     setQuery(searchValue);
   }, [searchValue]);
   return (
-    <Box
-      display="Flex"
-      flexDirection="row"
-      alignItems="center"
-      justifyContent="flex-start"
-      columnGap={2}
-      sx={{ marginTop: 2, padding: 0 }}
-    >
-      <TextField
-        placeholder="search file/folder"
-        variant="outlined"
-        size="small"
-        sx={{
-          marginLeft: 2,
-          width: "40%",
-        }}
-        value={query}
-        onChange={handleChange}
-      ></TextField>
-      <Button
-        variant="contained"
-        onClick={() => {
-          navigate(`/dashboard/search/${query}`);
-        }}
-      >
-        Search
-      </Button>
-    </Box>
+    <div className="flex flex-row justify-start items-center w-full h-full">
+      <div className="block md:hidden">
+        <HamburgerIcon style={{ width: 25, height: "100%" }} />
+      </div>
+      <div className="flex justify-start items-center h-full  md:grow ">
+        <input
+          placeholder=" Search"
+          value={query}
+          onChange={handleChange}
+          className="outline-none border border-[#DBDBDB] focus:border-0 focus:shadow-md  grow h-full"
+        />
+
+        <CustomBlueButton
+          text={"Search"}
+          style={{ width: "100px", height: "100%" }}
+          onClick={() => navigate(`/dashboard/search/${query}`)}
+        />
+      </div>
+      <div className="flex  items-center h-full justify-start md:justify-end">
+        <AvatarMenu />
+      </div>
+    </div>
   );
 }

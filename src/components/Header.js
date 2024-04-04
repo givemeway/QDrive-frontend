@@ -22,22 +22,18 @@ const Header = ({ search }) => {
     }
   }, [search]);
   return (
-    <Stack sx={{ height: "100%" }}>
+    <div className="h-full w-full flex flex-row">
       {/* <AvatarMenu /> */}
       {showBreadCrumb ? (
-        <BreadCrumb
-          queue={queue}
-          layout={"dashboard"}
-          link={"/dashboard/home"}
-        />
+        <div className="grow h-full">
+          <BreadCrumb
+            queue={queue}
+            layout={"dashboard"}
+            link={"/dashboard/home"}
+          />
+        </div>
       ) : (
-        <Box
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="flex-start"
-          sx={{ margin: 0, padding: 0, height: "33%" }}
-        >
+        <div className="flex flex-row justify-start items-center">
           <IconButton
             aria-label="delete"
             sx={{
@@ -52,9 +48,9 @@ const Header = ({ search }) => {
           >
             <KeyboardBackspaceIcon color="light" fontSize="large" />
           </IconButton>
-        </Box>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 };
 

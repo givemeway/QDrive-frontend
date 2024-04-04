@@ -15,7 +15,7 @@ import { pageSize } from "../config.js";
 
 import CellEdit from "./TableCellEdit.jsx";
 import RenderNameCell from "./NameCell.jsx";
-import RenderModifiedCell from "./ModifiedCell.jsx";
+import RenderModifiedCell, { DownloadCell } from "./ModifiedCell.jsx";
 
 import { setRowHover } from "../features/rowhover/rowHover.Slice.jsx";
 import { setBrowseItems } from "../features/browseItems/browseItemsSlice.js";
@@ -52,7 +52,7 @@ const colFn = (layout, path, nav) => [
     enableEditing: false,
     enableColumnActions: false,
     size: 150,
-    Cell: ({ row }) => <RenderModifiedCell row={row.original} />,
+    Cell: ({ row }) => <DownloadCell row={row.original} />,
   },
 ];
 
@@ -143,8 +143,7 @@ const DataTable = ({
     muiTableContainerProps: ({ table }) => ({
       ref: tableContainerRef,
       sx: {
-        // height: `calc(100% - ${table.refs.topToolbarRef.current?.offsetHeight}px - ${table.refs.bottomToolbarRef.current?.offsetHeight}px)`,
-        height: "500px",
+        height: `calc(100% - ${table.refs.topToolbarRef.current?.offsetHeight}px - ${table.refs.bottomToolbarRef.current?.offsetHeight}px)`,
         width: "100%",
       },
       onScroll: (event) => fetchMoreOnBottomReached(event.target),

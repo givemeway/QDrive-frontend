@@ -188,12 +188,7 @@ export default React.memo(function MainPanel({ mode }) {
   }, [isError, error.status, navigate]);
 
   return (
-    <Stack
-      display="flex"
-      flexDirection="row"
-      justifyContent={"flex-start"}
-      sx={{ height: "100%", width: "100%" }}
-    >
+    <>
       {!isPreview && (mode === "SEARCH" || mode === "BROWSE") && (
         <MaterialReactTable
           layout={"dashboard"}
@@ -224,6 +219,6 @@ export default React.memo(function MainPanel({ mode }) {
       {mode === "DELETED" && <DeletedItemsTable />}
       {mode === "SHARE" && <ShareList />}
       {mode === "PHOTOS" && <TimeLine rowHeight={168} renderSize={168} />}
-    </Stack>
+    </>
   );
 });

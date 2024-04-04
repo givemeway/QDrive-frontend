@@ -331,8 +331,6 @@ export function StatusNotification() {
   useEffect(() => {}, []);
 
   useEffect(() => {
-    console.log(operation);
-    console.log({ isLoading, isSuccess, isError, status, data });
     if (isLoading) {
       refreshTimer.current = setInterval(() => {
         dispath(setRefresh({ toggle: !refresh.toggle, refresh: true }));

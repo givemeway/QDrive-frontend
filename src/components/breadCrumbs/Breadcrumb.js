@@ -1,6 +1,5 @@
 import * as React from "react";
 import { emphasize, styled } from "@mui/material/styles";
-import { useState } from "react";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Chip from "@mui/material/Chip";
 import { Link } from "react-router-dom";
@@ -43,7 +42,7 @@ export default function CustomizedBreadcrumbs({ queue, layout, link, k }) {
         justifyContent: "flex-start",
         alignItems: "center",
         gap: 2,
-        height: "33%",
+        height: "100%",
         margin: 0,
         padding: 0,
       }}

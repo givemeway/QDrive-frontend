@@ -60,7 +60,35 @@ const Dashboard = () => {
 
   return (
     <>
-      <Grid container columns={2} wrap="nowrap">
+      <div className="w-screen h-screen flex flex-row gap-0">
+        <div className="w-[240px] hidden h-screen md:block">
+          <NavigatePanel />
+        </div>
+        <div className="h-screen grow flex flex-col pl-4 pr-4">
+          <div className="w-full h-[85px] pt-4">
+            <Search searchValue={searchValue} />
+          </div>
+          {(mode === "BROWSE" || mode === "SEARCH") && (
+            <div className="w-full h-[85px]">
+              <Header search={isSearch} />
+            </div>
+          )}
+          {mode === "BROWSE" && (
+            <div className="w-full h-[85px]">
+              <Menu />
+            </div>
+          )}
+          {isLoading && (
+            <div className="w-full flex flex-row justify-center items-center grow">
+              <SpinnerGIF style={{ width: 50, height: 50 }} />
+            </div>
+          )}
+          {isSuccess && mode !== "" && <MainPanel mode={mode} />}
+          {isError && <div className="w-full">Something Went Wrong</div>}
+        </div>
+      </div>
+
+      {/* <Grid container columns={2} wrap="nowrap">
         <Grid item sx={{ width: 240, height: "100vh" }}>
           <NavigatePanel />
         </Grid>
@@ -104,7 +132,7 @@ const Dashboard = () => {
             </Grid>
           </Grid>
         </Grid>
-      </Grid>
+      </Grid> */}
       {notify.show && (
         <SnackBar
           msg={notify.msg}
