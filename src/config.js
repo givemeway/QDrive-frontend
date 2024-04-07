@@ -112,6 +112,7 @@ const username = "sandeep.kumar@idriveinc.com";
 const RENAME = "RENAME";
 const COPY = "COPY";
 const DOWNLOAD = "DOWNLOAD";
+const LOGOUT = "LOGOUT";
 const MOVE = "MOVE";
 const SHARE = "SHARE";
 const DELETE = "DELETE";
@@ -180,4 +181,5 @@ export {
   RESTORETRASH,
   EMPTYTRASH,
   getFileVersionURL,
+  LOGOUT,
 };

@@ -1,20 +1,41 @@
-import { Stack, TextField, Button, Box } from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
 import { useState, useEffect } from "react";
 import Header from "./HomePageHeader";
-import * as React from "react";
-import useValidateLogin from "./hooks/LoginHook";
 import { useNavigate } from "react-router-dom";
 import MessageSnackBar from "./Snackbar/SnackBar";
 import { CustomBlueButton } from "./Buttons/BlueButton";
+import { GreyButton } from "./Buttons/GreyButton";
+import SpinnerGIF from "./icons/SpinnerGIF";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  useGetCSRFTokenQuery,
+  useLoginMutation,
+  useVerifySessionMutation,
+} from "../features/api/apiSlice";
+import { setSession } from "../features/session/sessionSlice";
+
+const validateLoginForm = (loginform) => {
+  if (loginform.username.length > 0 && loginform.password.length > 0) {
+    const encodedData = btoa(`${loginform.username}:${loginform.password}`);
+    return { valid: true, encodedData };
+  } else {
+    return { valid: false, encodedData: null };
+  }
+};
 
 const Login = () => {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
-  const [logging, status, initLogin] = useValidateLogin(loginForm);
   const [warning, setWarning] = useState(false);
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const CSRF = useGetCSRFTokenQuery();
+  const [verifySessionQuery, verifySessionStatus] = useVerifySessionMutation();
+  const session = useSelector((state) => state.session);
+
+  const [loginQuery, loginStatus] = useLoginMutation();
+
+  const { isLoading, isError, isSuccess, data } = loginStatus;
 
   const handleChange = (event) => {
     setLoginForm((prev) => {
@@ -22,49 +43,109 @@ const Login = () => {
     });
   };
   const handleClick = (e) => {
-    initLogin();
+    setWarning(false);
+    setError(false);
+    setSuccess(false);
+    const { valid, encodedData } = validateLoginForm(loginForm);
+    if (valid && CSRF.data?.CSRFToken) {
+      loginQuery({ CSRFToken: CSRF.data?.CSRFToken, encodedData });
+    }
   };
 
   useEffect(() => {
-    if (status === 200) {
+    if (
+      CSRF.data?.CSRFToken &&
+      CSRF.isSuccess &&
+      (session.isLoggedIn === false && session.isLoggedOut === false
+        ? true
+        : session.isLoggedOut)
+    ) {
+      verifySessionQuery({ CSRFToken: CSRF.data?.CSRFToken });
+    }
+  }, [CSRF?.data, CSRF.isSuccess]);
+
+  useEffect(() => {
+    if (data?.success) {
+      dispatch(setSession({ isLoggedIn: true, isLoggedOut: false }));
       navigate("/dashboard/home");
-    } else if (status === 401 || status === 403) {
+    } else if (
+      loginStatus?.error?.status === 401 ||
+      loginStatus?.error?.status === 403
+    ) {
       setWarning(true);
-    } else if (status === 500) {
+    } else if (loginStatus?.error?.originalStatus === 500) {
       setError(true);
     }
-  }, [logging, status]);
+  }, [isLoading, isError, isSuccess, data]);
+
+  useEffect(() => {
+    if (verifySessionStatus.isSuccess && verifySessionStatus.data?.success) {
+      dispatch(setSession({ isLoggedIn: true, isLoggedOut: false }));
+      navigate("/dashboard/home");
+    }
+  }, [
+    verifySessionStatus.isError,
+    verifySessionStatus.isSuccess,
+    verifySessionStatus.data,
+  ]);
+
   return (
     <div className="w-screen h-screen flex flex-col">
       <div className="w-full">
         <Header />
       </div>
-      <div className="w-full grow flex flex-row justify-center items-center">
-        <Box sx={{ width: 300, padding: 3 }}>
-          <Stack spacing={2}>
-            <TextField
-              label="Username / Email"
-              name="username"
-              type="email"
-              variant="outlined"
-              value={loginForm.username}
-              onChange={handleChange}
-              required={true}
-            />
-            <TextField
-              label="Password"
-              variant="outlined"
-              name="password"
-              type="password"
-              value={loginForm.password}
-              onChange={handleChange}
-              required={true}
-            />
-            {logging ? (
-              <Button variant="outlined">
-                <CircularProgress sx={{ fontSize: 10 }} />
-              </Button>
-            ) : (
+      {(CSRF.isLoading || verifySessionStatus.isLoading) && (
+        <div className="w-full grow flex justify-center items-center">
+          <SpinnerGIF style={{ width: 50, height: 50 }} />
+        </div>
+      )}
+      {CSRF.isError && (
+        <div className="w-full grow flex justify-center items-center">
+          <span>Something Went wrong try again</span>
+        </div>
+      )}
+      {CSRF.isSuccess && verifySessionStatus.isError && CSRF.data && (
+        <div className="w-full grow flex flex-row justify-center items-center">
+          <div className="w-[300px] flex flex-col gap-2 p-2 shadow-md">
+            <div className="flex flex-col justify-start items-center">
+              <label className="text-[#716B61] text-xs w-full text-left pb-1">
+                Email
+              </label>
+              <input
+                placeholder=" email / username"
+                value={loginForm.username}
+                onChange={handleChange}
+                type="email"
+                name="username"
+                className="w-full h-[50px] rounded-none border border-[#C9C5BD] focus:border-black
+                 hover:border-black outline-[#428BFF] outline-offset-2 "
+              />
+            </div>
+            <div className="flex flex-col justify-center items-center ">
+              <label className="text-[#716B61] text-xs w-full text-left  pb-1">
+                Password
+              </label>
+              <input
+                placeholder=" password"
+                value={loginForm.password}
+                onChange={handleChange}
+                type="password"
+                name="password"
+                className="w-full h-[50px]  border border-[#C9C5BD] focus:border-black
+                 hover:border-black outline-[#428BFF] outline-4 outline-offset-2"
+              />
+            </div>
+            {isLoading && (
+              <GreyButton
+                text={
+                  <div className="flex justify-center items-center">
+                    <SpinnerGIF style={{ width: 40, height: 40 }} />
+                  </div>
+                }
+                style={{ width: "100%", height: 50 }}
+              ></GreyButton>
+            )}
+            {!isLoading && (
               <CustomBlueButton
                 text={"Login"}
                 onClick={handleClick}
@@ -92,9 +173,9 @@ const Login = () => {
                 setMessage={setError}
               />
             )}
-          </Stack>
-        </Box>
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

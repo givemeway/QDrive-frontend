@@ -2,29 +2,24 @@
 
 import * as React from "react";
 
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import InputLabel from "@mui/material/InputLabel";
-import TextField from "@mui/material/TextField";
-import { Button, Checkbox, Typography } from "@mui/material";
 import { useState } from "react";
 import { useEffect } from "react";
-import { styled } from "@mui/material/styles";
-import { csrftokenURL, validateUsernameURL } from "../config";
-import useFetchCSRFToken from "./hooks/FetchCSRFToken";
-import useSignup from "./hooks/SignupHook";
+
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { LoadingButton } from "@mui/lab";
 import SaveIcon from "@mui/icons-material/Save";
-const formLabelStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "flex-start",
-};
+import {
+  useCheckUsernameMutation,
+  useGetCSRFTokenQuery,
+  useSignupMutation,
+} from "../features/api/apiSlice";
+import { Header } from "./Header.jsx";
+import SpinnerGIF from "./icons/SpinnerGIF";
+import { useNavigate } from "react-router-dom";
 
 const label =
-  "I agree to the terms of the IDrive service and acknowledge that I can receive emails on product updates from QDrive.";
+  "I agree to the terms of the QDrive service and acknowledge that I can receive emails on product updates from QDrive.";
 
 const PASSWORD = "password";
 const PHONE = "phone";
@@ -33,16 +28,6 @@ const EMAIL = "email";
 const LASTNAME = "lastname";
 const FIRSTNAME = "firstname";
 const TERMS = "terms";
-
-const inputBoxStyle = {
-  "& .MuiInputBase-root": {
-    borderRadius: "0px",
-  },
-  "& .MuiFormHelperText-root": {
-    marginLeft: 0,
-    fontSize: 11,
-  },
-};
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -69,20 +54,41 @@ const MessageSnackBar = ({ msg, severity, setMessage }) => {
   );
 };
 
-const CustomTextField = styled(TextField)`
-  .MuiInputBase-root {
-    border-radius: 0px;
-  }
-
-  .MuiInputBase-input:focus {
-    outline: 3px solid #0061fe !important; /* blue outline on focus */
-    border: none !important; /* no border on focus */
-  }
-
-  .MuiInputBase-input:hover {
-    border: 1px solid black !important; /* black border on hover */
-  }
-`;
+const TextField = ({
+  label,
+  value,
+  onChange,
+  onBlur,
+  name,
+  type,
+  style,
+  error,
+  errorText,
+}) => {
+  return (
+    <div className="flex flex-col w-full h-[80px]">
+      <label className="text-[#716B61] text-sm w-full text-left font-thin h-[20px]">
+        {label}
+      </label>
+      <input
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        type={type}
+        name={name}
+        className={`w-full h-[40px] rounded-none border 
+                    ${error ? "border-[red]" : "border-[#C9C5BD]"}
+                    focus:border-black hover:border-black 
+                    outline-[#428BFF] outline-offset-2`}
+      />
+      {error && (
+        <span className="text-left text-[red] font-thin font-sans text-xs w-full h-[20px]">
+          {errorText}
+        </span>
+      )}
+    </div>
+  );
+};
 
 const validateForm = (formInput, setValidForm) => {
   for (const [key, value] of Object.entries(formInput)) {
@@ -223,7 +229,7 @@ const validatePhone = (phone, setFormInput) => {
     console.error(err);
   }
 };
-const validateUsername = async (username, setFormInput, CSRFToken) => {
+const validateUsername = async (username, setFormInput) => {
   console.log("inside username");
   if (username.length === 0) {
     setFormInput((prev) => ({
@@ -324,15 +330,18 @@ export default function Signup() {
     terms: { value: false, error: undefined, helperText: "" },
   });
 
-  const [signupProgress, setSignupProgress] = useState(false);
+  const navigate = useNavigate();
+
   const [snackBarStatus, setSnackBarStatus] = useState({
     show: false,
     msg: "",
     severity: null,
   });
-  const CSRFToken = useFetchCSRFToken(csrftokenURL);
   const [checkUsername, setCheckUsername] = useState(false);
-  const [signup, res] = useSignup();
+
+  const CSRFToken = useGetCSRFTokenQuery();
+  const [signupQuery, signupStatus] = useSignupMutation();
+  const [checkUsernameQuery, checkUsernameStatus] = useCheckUsernameMutation();
 
   const handleBlur = (e) => {
     const name = e.target.name;
@@ -370,6 +379,7 @@ export default function Signup() {
     if (name === TERMS) {
       value = e.target.checked;
     }
+    setCheckUsername(false);
     setFormInput((prev) => {
       return {
         ...prev,
@@ -388,7 +398,6 @@ export default function Signup() {
     e.preventDefault();
     e.stopPropagation();
     setSnackBarStatus(() => ({ show: false, msg: "", severity: null }));
-    setSignupProgress(true);
     const { firstname, lastname, password, email, username, phone } = e.target;
     const body = {
       firstname: firstname.value,
@@ -398,12 +407,12 @@ export default function Signup() {
       username: username.value,
       phone: phone.value,
     };
-    signup(body);
+
+    signupQuery({ body, CSRFToken: CSRFToken.data.CSRFToken });
   };
 
   useEffect(() => {
     validateForm(formInput, setValidForm);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     formInput.email.error,
     formInput.password.error,
@@ -415,54 +424,44 @@ export default function Signup() {
   ]);
 
   useEffect(() => {
-    setSignupProgress(false);
-    if (res) {
-      if (res?.status === 200) {
+    if (signupStatus.error) {
+      if (signupStatus.error?.status === 409) {
         setSnackBarStatus(() => ({
           show: true,
-          msg: res.msg,
-          severity: "success",
-        }));
-      } else if (res?.status === 409) {
-        setSnackBarStatus(() => ({
-          show: true,
-          msg: res.msg,
+          msg: signupStatus.error.data.msg,
           severity: "warning",
         }));
-      } else if (res?.status === 500) {
+      } else if (signupStatus.error.originalStatus === 500) {
         setSnackBarStatus(() => ({
           show: true,
-          msg: res.msg,
+          msg: "Something Went Wrong. Please try again",
           severity: "error",
         }));
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signupProgress, res?.msg, res?.success]);
+    if (signupStatus.isSuccess) {
+      navigate("/login");
+    }
+  }, [
+    signupStatus.data,
+    signupStatus.isError,
+    signupStatus.isLoading,
+    signupStatus.isError,
+    signupStatus.error,
+  ]);
 
   useEffect(() => {
-    (async () => {
-      let res;
-      if (
-        CSRFToken.length > 0 &&
-        checkUsername &&
-        formInput.username.value.length >= 6
-      ) {
-        try {
-          const headers = {
-            "X-CSRF-Token": CSRFToken,
-          };
-          res = await axios.get(
-            validateUsernameURL + "?username=" + formInput.username.value,
-            {
-              headers: headers,
-            }
-          );
-        } catch (err) {
-          console.log(err);
-        }
-      }
-      if (res?.data && res?.data.exist) {
+    if (checkUsername && CSRFToken?.data) {
+      checkUsernameQuery({
+        CSRFToken: CSRFToken.data.CSRFToken,
+        value: formInput.username.value,
+      });
+    }
+  }, [CSRFToken.data, checkUsername, formInput.username.value]);
+
+  useEffect(() => {
+    if (checkUsernameStatus.isSuccess && checkUsernameStatus.data) {
+      if (checkUsernameStatus.data && checkUsernameStatus.data.exist) {
         setFormInput((prev) => ({
           ...prev,
           username: {
@@ -472,7 +471,7 @@ export default function Signup() {
             helperText: `${formInput.username.value} exists!`,
           },
         }));
-      } else if (res?.data && !res?.data.exist) {
+      } else if (checkUsernameStatus.data && !checkUsernameStatus.data.exist) {
         setFormInput((prev) => ({
           ...prev,
           username: {
@@ -483,175 +482,137 @@ export default function Signup() {
           },
         }));
       }
-    })();
-    setCheckUsername(false);
-  }, [CSRFToken, checkUsername, formInput.username.value]);
+    }
+  }, [checkUsernameStatus.data, checkUsernameStatus.isSuccess]);
 
   useEffect(() => {
     validateForm(formInput, setValidForm);
   }, []);
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      noValidate
-      sx={{
-        display: "grid",
-        // border: "1px solid black",
-        width: 400,
-        // height: 400,
-        padding: 2,
-        gridTemplateColumns: { sm: "1fr 1fr" },
-        gap: 2,
-        boxSizing: "content-box",
-      }}
-    >
-      <Stack sx={formLabelStyle}>
-        <InputLabel>First name</InputLabel>
-        <TextField
-          name="firstname"
-          variant="outlined"
-          fullWidth
-          value={formInput.firstname.value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={formInput.firstname.error}
-          helperText={
-            formInput.firstname.error ? formInput.firstname.helperText : ""
-          }
-          sx={inputBoxStyle}
-        ></TextField>
-      </Stack>
-      <Stack sx={formLabelStyle}>
-        <InputLabel>Last name</InputLabel>
-        <TextField
-          name="lastname"
-          variant="outlined"
-          fullWidth
-          value={formInput.lastname.value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={formInput.lastname.error}
-          helperText={
-            formInput.lastname.error ? formInput.lastname.helperText : ""
-          }
-          sx={inputBoxStyle}
-        ></TextField>
-      </Stack>
-      <Stack sx={formLabelStyle}>
-        <InputLabel>Email </InputLabel>
-        <TextField
-          name="email"
-          variant="outlined"
-          fullWidth
-          value={formInput.email.value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={formInput.email.error}
-          helperText={formInput.email.error ? formInput.email.helperText : ""}
-          sx={inputBoxStyle}
-          type={"email"}
-        ></TextField>
-      </Stack>
-      <Stack sx={formLabelStyle}>
-        <InputLabel>Username</InputLabel>
-        <TextField
-          name="username"
-          variant="outlined"
-          fullWidth
-          value={formInput.username.value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={
-            formInput.username.error
-              ? formInput.username.error
-              : formInput.username.exist
-          }
-          helperText={
-            formInput.username.error
-              ? formInput.username.helperText
-              : formInput.username.exist
-              ? formInput.username.helperText
-              : ""
-          }
-          sx={inputBoxStyle}
-        ></TextField>
-      </Stack>
-      <Stack sx={formLabelStyle}>
-        <InputLabel>Phone</InputLabel>
-        <TextField
-          name="phone"
-          variant="outlined"
-          fullWidth
-          value={formInput.phone.value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={formInput.phone.error}
-          helperText={formInput.phone.error ? formInput.phone.helperText : ""}
-          sx={inputBoxStyle}
-          type={"tel"}
-        ></TextField>
-      </Stack>
-      <Stack sx={formLabelStyle}>
-        <InputLabel>Password</InputLabel>
-        <TextField
-          name="password"
-          variant="outlined"
-          fullWidth
-          value={formInput.password.value}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={formInput.password.error}
-          helperText={
-            formInput.password.error ? formInput.password.helperText : ""
-          }
-          sx={inputBoxStyle}
-          type="password"
-        ></TextField>
-      </Stack>
-      <Box
-        sx={{
-          gridColumn: "span 2",
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "flex-start",
-          alignItems: "center",
-          gap: 0,
-        }}
-      >
-        <Checkbox
-          name="terms"
-          disableRipple
-          onChange={handleChange}
-          onBlur={handleBlur}
-          checked={formInput.terms.value}
-          value={"value"}
-        />
-        <Typography sx={{ textAlign: "left", fontSize: 12 }}>
-          {label}
-        </Typography>
-      </Box>
-      <Box sx={{ gridColumn: "span 2" }}>
-        <LoadingButton
-          disabled={!validForm}
-          variant="contained"
-          fullWidth
-          disableRipple
-          type="submit"
-          loading={signupProgress}
-          loadingPosition="start"
-          startIcon={<SaveIcon />}
-          sx={{
-            textTransform: "none",
-            borderRadius: 0,
-            fontWeight: 300,
-            fontSize: 20,
-          }}
-        >
-          Agree and sign up
-        </LoadingButton>
-      </Box>
+    <div className="w-screen h-screen flex flex-col justify-start items-center">
+      <Header />
+      {CSRFToken.isLoading && (
+        <div className="flex justify-center items-center">
+          <SpinnerGIF style={{ width: 50, height: 50 }} />
+        </div>
+      )}
+      {(CSRFToken.isError || CSRFToken.error) && (
+        <div className="flex justify-center items-center">
+          <h3 className="font-semibold text-center text-[red] text-lg">
+            Something Went Wrong
+          </h3>
+        </div>
+      )}
+      {CSRFToken.isSuccess && CSRFToken.data && (
+        <div className="flex justify-center items-center grow">
+          <form onSubmit={handleSubmit}>
+            <div className="w-[400px] h-[356px] flex flex-col p-2 shadow-md">
+              <div className="flex  justify-start items-center gap-2">
+                <TextField
+                  label={"First Name"}
+                  value={formInput.firstname.value}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  type={"text"}
+                  name={"firstname"}
+                  error={formInput.firstname.error}
+                  errorText={formInput.firstname.helperText}
+                />
+                <TextField
+                  label={"Last Name"}
+                  value={formInput.lastname.value}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  type={"text"}
+                  name={"lastname"}
+                  error={formInput.lastname.error}
+                  errorText={formInput.lastname.helperText}
+                />
+              </div>
+
+              <div className="flex  justify-start items-center gap-2">
+                <TextField
+                  label={"Email"}
+                  value={formInput.email.value}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  type={"email"}
+                  name={"email"}
+                  error={formInput.email.error}
+                  errorText={formInput.email.helperText}
+                />
+                <TextField
+                  label={"Username"}
+                  value={formInput.username.value}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  type={"text"}
+                  name={"username"}
+                  error={formInput.username.error}
+                  errorText={formInput.username.helperText}
+                />
+              </div>
+              <div className="flex  justify-start items-center gap-2">
+                <TextField
+                  label={"Phone"}
+                  value={formInput.phone.value}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  type={"tel"}
+                  name={"phone"}
+                  error={formInput.phone.error}
+                  errorText={formInput.phone.helperText}
+                />
+                <TextField
+                  label={"Password"}
+                  value={formInput.password.value}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  type={"password"}
+                  name={"password"}
+                  error={formInput.password.error}
+                  errorText={formInput.password.helperText}
+                />
+              </div>
+              <div className="col-span-2 flex justify-start items-start h-[50px]">
+                <input
+                  type="checkbox"
+                  className="w-[20px] h-[20px] mt-[2px]"
+                  name="terms"
+                  checked={formInput.terms.value}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+
+                <p className="text-justify pl-1 font-sans grow text-wrap text-sm">
+                  {label}
+                </p>
+              </div>
+              <div className="col-span-2 flex justify-center items-center  h-[50px] mt-0">
+                <LoadingButton
+                  disabled={!validForm}
+                  variant="contained"
+                  fullWidth
+                  disableRipple
+                  type="submit"
+                  loading={signupStatus.isLoading}
+                  loadingPosition="start"
+                  startIcon={<SaveIcon />}
+                  sx={{
+                    textTransform: "none",
+                    borderRadius: 0,
+                    fontWeight: 300,
+                    fontSize: 20,
+                  }}
+                >
+                  Agree and sign up
+                </LoadingButton>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
       {snackBarStatus.show && (
         <MessageSnackBar
           msg={snackBarStatus.msg}
@@ -659,6 +620,6 @@ export default function Signup() {
           setMessage={setSnackBarStatus}
         />
       )}
-    </Box>
+    </div>
   );
 }

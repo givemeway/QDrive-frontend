@@ -16,9 +16,9 @@ export default function Search({ searchValue }) {
   return (
     <div className="flex flex-row justify-start items-center w-full h-full">
       <div className="block md:hidden">
-        <HamburgerIcon style={{ width: 25, height: "100%" }} />
+        <HamburgerIcon style={{ width: 50, height: "100%" }} />
       </div>
-      <div className="flex justify-start items-center h-full  md:grow ">
+      <div className="flex justify-start items-center h-full w-1/2">
         <input
           placeholder=" Search"
           value={query}
@@ -32,7 +32,7 @@ export default function Search({ searchValue }) {
           onClick={() => navigate(`/dashboard/search/${query}`)}
         />
       </div>
-      <div className="flex  items-center h-full justify-start md:justify-end">
+      <div className="flex grow items-center h-full justify-end">
         <AvatarMenu />
       </div>
     </div>

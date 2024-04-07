@@ -15,12 +15,17 @@ import { useRecoilState } from "recoil";
 import { snackBarAtom } from "../Recoil/Store/atoms.js";
 import { StatusNotification } from "./StatusNotification.js";
 import SpinnerGIF from "./icons/SpinnerGIF.js";
-import { useGetCSRFTokenQuery } from "../features/api/apiSlice.js";
-import { useDispatch } from "react-redux";
+import {
+  useGetCSRFTokenQuery,
+  useVerifySessionMutation,
+} from "../features/api/apiSlice.js";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
+import { setLogin, setSession } from "../features/session/sessionSlice.js";
+import { LOGOUT } from "../config.js";
 
 const Dashboard = () => {
-  const [tabSelected, setTabSelected] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
   const [notify, setNotify] = useRecoilState(snackBarAtom);
@@ -29,8 +34,35 @@ const Dashboard = () => {
   const [mode, setMode] = useState("");
   const dispatch = useDispatch();
   const CSRFTokenStatus = useGetCSRFTokenQuery();
+  const [userSession, userSessionStatus] = useVerifySessionMutation();
+  const session = useSelector((state) => state.session);
+  const navigate = useNavigate();
 
   const { isLoading, isSuccess, isError, data } = CSRFTokenStatus;
+
+  useEffect(() => {
+    if (
+      isSuccess &&
+      data &&
+      (session.isLoggedIn === false && session.isLoggedOut === false
+        ? true
+        : session.isLoggedOut)
+    ) {
+      userSession({ CSRFToken: data?.CSRFToken });
+    }
+  }, [isSuccess, data]);
+
+  useEffect(() => {
+    if (userSessionStatus.isSuccess && userSessionStatus.data?.success) {
+      dispatch(setSession({ isLoggedIn: true, isLoggedOut: true }));
+    } else if (userSessionStatus.isError) {
+      navigate("/login");
+    }
+  }, [
+    userSessionStatus.isSuccess,
+    userSessionStatus.data,
+    userSessionStatus.isError,
+  ]);
 
   useEffect(() => {
     console.log(subpath);
@@ -53,86 +85,41 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      console.log("set csrf");
       dispatch(setCSRFToken(data.CSRFToken));
     }
   }, [isSuccess, data]);
 
   return (
     <>
-      <div className="w-screen h-screen flex flex-row gap-0">
-        <div className="w-[240px] hidden h-screen md:block">
-          <NavigatePanel />
-        </div>
-        <div className="h-screen grow flex flex-col pl-4 pr-4">
-          <div className="w-full h-[85px] pt-4">
-            <Search searchValue={searchValue} />
+      {session.isLoggedIn && (
+        <div className="w-screen h-screen flex flex-row gap-0">
+          <div className="w-[240px] hidden h-screen md:block">
+            <NavigatePanel />
           </div>
-          {(mode === "BROWSE" || mode === "SEARCH") && (
-            <div className="w-full h-[85px]">
-              <Header search={isSearch} />
-            </div>
-          )}
-          {mode === "BROWSE" && (
-            <div className="w-full h-[85px]">
-              <Menu />
-            </div>
-          )}
-          {isLoading && (
-            <div className="w-full flex flex-row justify-center items-center grow">
-              <SpinnerGIF style={{ width: 50, height: 50 }} />
-            </div>
-          )}
-          {isSuccess && mode !== "" && <MainPanel mode={mode} />}
-          {isError && <div className="w-full">Something Went Wrong</div>}
-        </div>
-      </div>
-
-      {/* <Grid container columns={2} wrap="nowrap">
-        <Grid item sx={{ width: 240, height: "100vh" }}>
-          <NavigatePanel />
-        </Grid>
-        <Grid item sx={{ width: "100%", height: "100vh", overflowY: "hidden" }}>
-          <Grid container sx={{ height: "100%" }}>
-            <Grid
-              item
-              xs={12}
-              sx={{
-                height: tabSelected === 4 ? "15%" : "20%",
-                margin: 0,
-                padding: 0,
-              }}
-            >
+          <div className="h-screen grow flex flex-col pl-4 pr-4">
+            <div className="w-full h-[80px] pt-4">
               <Search searchValue={searchValue} />
-              {(mode === "BROWSE" || mode === "SEARCH") && (
+            </div>
+            {(mode === "BROWSE" || mode === "SEARCH") && (
+              <div className="w-full h-[85px]">
                 <Header search={isSearch} />
-              )}
-            </Grid>
-            {mode === "BROWSE" && (
-              <Grid item xs={12} sx={{ height: "5%", margin: 0, padding: 0 }}>
-                <Menu />
-              </Grid>
+              </div>
             )}
-            <Grid
-              item
-              xs={12}
-              sx={{
-                height: tabSelected === 4 ? "85%" : "75%",
-                margin: 0,
-                padding: 0,
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {isLoading && <SpinnerGIF style={{ width: 50, height: 50 }} />}
-              {isSuccess && mode !== "" && <MainPanel mode={mode} />}
-              {isError && <>Something Went Wrong</>}
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid> */}
+            {mode === "BROWSE" && (
+              <div className="w-full h-[85px]">
+                <Menu />
+              </div>
+            )}
+            {isLoading && (
+              <div className="w-full flex flex-row justify-center items-center grow">
+                <SpinnerGIF style={{ width: 50, height: 50 }} />
+              </div>
+            )}
+            {isSuccess && mode !== "" && <MainPanel mode={mode} />}
+            {isError && <div className="w-full">Something Went Wrong</div>}
+          </div>
+        </div>
+      )}
       {notify.show && (
         <SnackBar
           msg={notify.msg}

@@ -12,7 +12,6 @@ const MessageSnackBar = ({ msg, severity, setMessage }) => {
     setOpen(false);
     setMessage(() => ({ show: false, msg: "", severity: null }));
   };
-  console.log({ msg, severity });
   return (
     <Snackbar
       open={open}

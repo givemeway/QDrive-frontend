@@ -1,13 +1,22 @@
 import "./BlueButton.css";
 
-export function CustomBlueButton({ text, onClick, style }) {
+export function CustomBlueButton({ text, onClick, style, disabled }) {
   return (
-    <button
-      className={`deleteButton fill-blue`}
-      style={{ ...style }}
-      onClick={onClick}
-    >
-      {text}
-    </button>
+    <>
+      {disabled && (
+        <button {...style} disabled={disabled}>
+          {text}
+        </button>
+      )}
+      {!disabled && (
+        <button
+          className={`deleteButton fill-blue`}
+          style={{ ...style }}
+          onClick={onClick}
+        >
+          {text}
+        </button>
+      )}
+    </>
   );
 }

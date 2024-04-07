@@ -193,6 +193,52 @@ export const apiSlice = createApi({
         },
       }),
     }),
+    login: builder.mutation({
+      query: (data) => ({
+        url: "/login",
+        method: "POST",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+          Authorization: `Basic ${data.encodedData}`,
+          usernametype: "username",
+        },
+      }),
+    }),
+    verifySession: builder.mutation({
+      query: (data) => ({
+        url: "/verifySession",
+        method: "GET",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+        },
+      }),
+    }),
+    logout: builder.mutation({
+      query: () => ({
+        url: "/logout",
+        method: "GET",
+      }),
+    }),
+    signup: builder.mutation({
+      query: (data) => ({
+        url: "/signup",
+        method: "POST",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+          "Content-Type": "application/json",
+        },
+        body: { ...data.body },
+      }),
+    }),
+    checkUsername: builder.mutation({
+      query: (data) => ({
+        url: "/validateusername?username=" + data.value,
+        method: "GET",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+        },
+      }),
+    }),
   }),
 });
 
@@ -216,4 +262,9 @@ export const {
   useGetPhotoPreviewURLMutation,
   useValidateShareLinkMutation,
   useBrowseSharedItemsMutation,
+  useLoginMutation,
+  useVerifySessionMutation,
+  useLogoutMutation,
+  useSignupMutation,
+  useCheckUsernameMutation,
 } = apiSlice;

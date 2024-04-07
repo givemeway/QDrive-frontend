@@ -12,6 +12,8 @@ import { socket } from "./Socket.js";
 import { formatBytes, formatSeconds } from "../util.js";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { subpathAtom, uploadAtom } from "../Recoil/Store/atoms.js";
+import { useDispatch, useSelector } from "react-redux";
+import { setRefresh } from "../features/table/updateTableSlice.js";
 
 function CustomButton({ children }) {
   return (
@@ -57,7 +59,10 @@ function FolderUpload() {
   const [folderProgress, setUpload] = useRecoilState(uploadAtom);
   const params = useParams();
   const subpath = params["*"];
-  console.log("upload folder rendered");
+  const timer = useRef(null);
+  const atLeastOneUploaded = useRef(false);
+  const dispatch = useDispatch();
+  const refresh = useSelector((state) => state.updateTable);
   // const { overAllProgress } = useSelector((state) => state.overAllProgress);
   // console.log(overAllProgress);
   // const dispatch = useDispatch();
@@ -228,6 +233,12 @@ function FolderUpload() {
           ...prev,
           processed: prev.processed + 1,
         }));
+        if (!atLeastOneUploaded.current) {
+          console.log("fetch triggered");
+          dispatch(setRefresh({ toggle: !refresh.toggle, refresh: true }));
+
+          atLeastOneUploaded.current = true;
+        }
       };
 
       const onFileError = ({ payload }) => {
@@ -294,6 +305,8 @@ function FolderUpload() {
         } else if (mode === "finish") {
           setFilesToUpload([]);
           setUploadCompleted(true);
+          atLeastOneUploaded.current = false;
+          dispatch(setRefresh({ toggle: false, refresh: false }));
           console.log("file upload complete");
           worker.terminate();
         } else if (mode === "failed") {

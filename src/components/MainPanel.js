@@ -216,7 +216,7 @@ export default React.memo(function MainPanel({ mode }) {
             />
           </Modal>
         )}
-      {mode === "DELETED" && <DeletedItemsTable />}
+      {mode === "DELETED" && <div>Deleted table</div>}
       {mode === "SHARE" && <ShareList />}
       {mode === "PHOTOS" && <TimeLine rowHeight={168} renderSize={168} />}
     </>

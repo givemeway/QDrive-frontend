@@ -9,7 +9,8 @@ import PhotoPreview from "./components/PhotoPreview.js";
 
 import Shared from "./components/SharesItemsPage.js";
 import Transfer from "./components/Transfer";
-import Signup from "./components/Signup";
+import Signup from "./components/SignupForm.js";
+
 enableMapSet();
 function App() {
   return (

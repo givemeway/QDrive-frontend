@@ -55,7 +55,6 @@ export default React.memo(function UploadProgressDrawer({
       setProgressBlock("none");
     }
   }, [expandProgress]);
-  console.log("drawer rendered");
 
   useEffect(() => {
     ref.current?.scrollToItem(filesStatus.processed, "center");

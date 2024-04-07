@@ -5,6 +5,7 @@ import {
   useDeleteItemsMutation,
   useDeleteTrashItemsMutation,
   useDownloadItemsMutation,
+  useLogoutMutation,
   useMoveItemsMutation,
   useRenameItemMutation,
   useRestoreTrashItemsMutation,
@@ -17,6 +18,7 @@ import { setOperation } from "../features/operation/operationSlice";
 import { CheckCircle } from "./icons/Check-Circle.jsx";
 import { Exclaimation } from "./icons/Exclaimation-triangle.jsx";
 import { CustomBlueButton } from "./Buttons/BlueButton.jsx";
+import { useNavigate } from "react-router-dom";
 import {
   DOWNLOAD,
   MOVE,
@@ -29,8 +31,10 @@ import {
   EMPTYTRASH,
   downloadItemsURL,
   server,
+  LOGOUT,
 } from "../config.js";
 import { setRefresh } from "../features/table/updateTableSlice.js";
+import { setSession } from "../features/session/sessionSlice.js";
 
 const CopyToClipBoard = ({ url }) => {
   const [copied, setCopied] = useState(false);
@@ -194,6 +198,7 @@ export function StatusNotification() {
   const refresh = useSelector((state) => state.updateTable);
   const { CSRFToken } = useSelector((state) => state.csrfToken);
   const dispath = useDispatch();
+  const navigate = useNavigate();
   let init_operation;
   const moveItemsMutation = useMoveItemsMutation();
   const copyItemsMutation = useCopyItemsMutation();
@@ -203,6 +208,7 @@ export function StatusNotification() {
   const renameItemMutation = useRenameItemMutation();
   const createShareMutation = useCreateShareMutation();
   const downloadItemsMutation = useDownloadItemsMutation();
+  const logoutMutation = useLogoutMutation();
 
   const [open, setOpen] = useState(false);
   const timer = useRef();
@@ -233,6 +239,9 @@ export function StatusNotification() {
       break;
     case DOWNLOAD:
       init_operation = downloadItemsMutation;
+      break;
+    case LOGOUT:
+      init_operation = logoutMutation;
       break;
     default:
       init_operation = [
@@ -313,6 +322,10 @@ export function StatusNotification() {
         case DOWNLOAD:
           init_operation[0]({ items: operation.data, CSRFToken });
           break;
+        case LOGOUT:
+          console.log("logout initialized");
+          init_operation[0]({ CSRFToken });
+          break;
       }
     }
   }, [operation.type, operation.status, CSRFToken]);
@@ -353,36 +366,50 @@ export function StatusNotification() {
         })
       );
     }
-  }, [isLoading, isError, isSuccess, status]);
+    if (operation.type === LOGOUT && isSuccess && data) {
+      dispath(setSession({ isLoggedIn: false, isLoggedOut: true }));
+      navigate("/login");
+    }
+  }, [isLoading, isError, isSuccess, status, operation.type]);
 
   return (
     <>
-      <Snackbar open={open}>
-        {isLoading && <SpinnerGIF style={{ width: "50px", height: "50px" }} />}
-        {isSuccess && (
-          <div className="col-span-1 flex items-center ml-2">
-            <CheckCircle />
-          </div>
-        )}
-        {isError && (
-          <div className="col-span-1 flex items-center ml-2">
-            <Exclaimation />
-          </div>
-        )}
-        <div className="col-span-6 flex items-center mx-1">
-          <DisplayText
-            type={operation.type}
-            isLoading={isLoading}
-            isError={isError}
-            isSuccess={isSuccess}
-            data={data}
-            className="text-left text-black"
-          />
+      {operation.type === LOGOUT && isLoading && (
+        <div className="h-screen w-screen flex justify-center items-center">
+          <SpinnerGIF style={{ width: 50, height: 50 }} />
+          <span> Logging out...</span>
         </div>
-        {(isSuccess || isError) && (
-          <CloseButton handleClose={handleClose} timeout={5000}></CloseButton>
-        )}
-      </Snackbar>
+      )}
+      {operation.type !== LOGOUT && (
+        <Snackbar open={open}>
+          {isLoading && (
+            <SpinnerGIF style={{ width: "50px", height: "50px" }} />
+          )}
+          {isSuccess && (
+            <div className="col-span-1 flex items-center ml-2">
+              <CheckCircle />
+            </div>
+          )}
+          {isError && (
+            <div className="col-span-1 flex items-center ml-2">
+              <Exclaimation />
+            </div>
+          )}
+          <div className="col-span-6 flex items-center mx-1">
+            <DisplayText
+              type={operation.type}
+              isLoading={isLoading}
+              isError={isError}
+              isSuccess={isSuccess}
+              data={data}
+              className="text-left text-black"
+            />
+          </div>
+          {(isSuccess || isError) && (
+            <CloseButton handleClose={handleClose} timeout={5000}></CloseButton>
+          )}
+        </Snackbar>
+      )}
     </>
   );
 }

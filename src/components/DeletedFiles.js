@@ -1,4 +1,3 @@
-import FileOpenIcon from "@mui/icons-material/FileOpenRounded";
 import FolderIcon from "@mui/icons-material/FolderRounded";
 import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 
@@ -10,7 +9,6 @@ import {
   Button,
   Snackbar,
   CircularProgress,
-  Divider,
 } from "@mui/material";
 import useFetchDeletedItems from "./hooks/FetchDeletedItems";
 import CollapsibleBreadCrumbs from "./breadCrumbs/CollapsibleBreadCrumbs";
