@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  Stack,
-  Typography,
-  LinearProgress,
-  ListItem,
-} from "@mui/material";
+import { Box, Stack, Typography, LinearProgress } from "@mui/material";
 import CachedIcon from "@mui/icons-material/Cached";
 import ErrorIcon from "@mui/icons-material/Error";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -18,8 +11,7 @@ import { FixedSizeList as List } from "react-window";
 import { styled } from "@mui/material/styles";
 import React from "react";
 import Draggable from "react-draggable";
-import { useSetRecoilState } from "recoil";
-import { uploadAtom } from "../Recoil/Store/atoms";
+
 import { useMemo } from "react";
 
 const SlowLinearProgress = styled(LinearProgress)({
@@ -33,12 +25,12 @@ export default React.memo(function UploadProgressDrawer({
   trackFilesProgress,
   uploadCompleted,
   filesStatus,
-  showProgress,
+  onClose,
 }) {
   const [expandProgress, setExpandProgress] = useState(true);
   const [progressBlock, setProgressBlock] = useState("block");
+
   const ref = useRef(null);
-  const setUpload = useSetRecoilState(uploadAtom);
   const close = () => {
     setExpandProgress((prev) => !prev);
   };
@@ -52,7 +44,7 @@ export default React.memo(function UploadProgressDrawer({
     if (expandProgress) {
       setProgressBlock("block");
     } else {
-      setProgressBlock("none");
+      setProgressBlock("hidden");
     }
   }, [expandProgress]);
 
@@ -61,7 +53,6 @@ export default React.memo(function UploadProgressDrawer({
   }, [filesStatus.processed]);
 
   const Row = React.memo(({ index, style }) => {
-    // const [key, val] = Array.from(trackFilesProgress)[index];
     const [key, val] = dataArray[index];
 
     return (
@@ -149,49 +140,26 @@ export default React.memo(function UploadProgressDrawer({
 
   return (
     <Draggable>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          background: "white",
-          boxShadow: 1,
-          width: "30%",
-          zIndex: 300,
-          position: "absolute",
-          bottom: 2,
-          // left: 200,
-        }}
-      >
-        <Box
+      <div className="flex flex-col z-[300] w-[30%] absolute shadow-md bg-white bottom-2">
+        <div
           onClick={close}
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            flexWrap: "nowrap",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
-            height: 48,
-            background: "#F5EFE5",
-            border: "1px solid #BBB5AE",
-            boxSizing: "border-box",
-            cursor: "pointer",
-          }}
+          className="flex flex-nowrap justify-between items-center w-full h-[48px]
+               bg-[#F5EFE5] border border-[#BBB5AE] box-border cursor-pointer"
         >
-          <Box sx={{ flexGrow: 1, marginLeft: 2 }}>
+          <div className="grow">
             {!uploadCompleted && (
-              <Typography align="left">
+              <span className="w-full text-left">
                 Uploading {filesStatus.processed} of {filesStatus.total} items,{" "}
                 {filesStatus.eta} left
-              </Typography>
+              </span>
             )}
             {uploadCompleted && (
-              <Typography align="left">
+              <span className="w-full text-left">
                 {filesStatus.processed} of {filesStatus.total} uploads complete
-              </Typography>
+              </span>
             )}
-          </Box>
-          <Box
+          </div>
+          <div
             sx={{
               flexGrow: 1,
               display: "flex",
@@ -200,48 +168,32 @@ export default React.memo(function UploadProgressDrawer({
               justifyContent: "flex-end",
               marginRight: 2,
             }}
+            className="grow flex flex-row justify-end items-center"
           >
             {progressBlock === "block" ? (
               <ExpandMoreIcon color="#363432" sx={{ fontSize: "2rem" }} />
             ) : (
               <ExpandLessIcon color="#363432" sx={{ fontSize: "2rem" }} />
             )}
-            {uploadCompleted && (
-              <CloseIcon color="#363432" onClick={() => setUpload(null)} />
-            )}
-          </Box>
-
-          {/* </Box> */}
-        </Box>
+            {uploadCompleted && <CloseIcon color="#363432" onClick={onClose} />}
+          </div>
+        </div>
         {!expandProgress && !uploadCompleted && (
-          <Box sx={{ width: "100%" }}>
-            {/* <LinearProgress
-            variant="determinate"
-            value={Math.ceil((filesStatus.processed / filesStatus.total) * 100)}
-          /> */}
+          <div className="w-full">
             <SlowLinearProgress />
-          </Box>
+          </div>
         )}
-        <Stack
-          sx={{
-            display: progressBlock,
-            maxHeight: 500,
-            overflow: "auto",
-          }}
-        >
-          {showProgress && (
-            <List
-              height={500}
-              itemCount={dataArray.length}
-              itemSize={65}
-              // useIsScrolling={true}
-              ref={ref}
-            >
-              {Row}
-            </List>
-          )}
-        </Stack>
-      </Box>
+        <div className={`max-h-[500px] overflow-auto ${progressBlock}`}>
+          <List
+            height={500}
+            itemCount={dataArray.length}
+            itemSize={65}
+            ref={ref}
+          >
+            {Row}
+          </List>
+        </div>
+      </div>
     </Draggable>
   );
 });

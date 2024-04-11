@@ -507,7 +507,12 @@ export default function Signup() {
       {CSRFToken.isSuccess && CSRFToken.data && (
         <div className="flex justify-center items-center grow">
           <form onSubmit={handleSubmit}>
-            <div className="w-[400px] h-[356px] flex flex-col p-2 shadow-md">
+            <div className="w-[400px] h-[406px] flex flex-col p-2 shadow-md">
+              <div className="w-full h-[50px] flex justify-center items-center">
+                <span className="text-center font-sans font-semibold text-md text-[#716B61]">
+                  Join QDrive Today!
+                </span>
+              </div>
               <div className="flex  justify-start items-center gap-2">
                 <TextField
                   label={"First Name"}

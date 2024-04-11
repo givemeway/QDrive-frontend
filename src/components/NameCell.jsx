@@ -4,6 +4,7 @@ import {
   getFileExtension,
   svgIconStyle,
   isPicture,
+  FileExtIcon,
 } from "./fileFormats/FileFormat";
 import { Link, useParams } from "react-router-dom";
 import FolderIcon from "./icons/FolderIcon";
@@ -11,11 +12,11 @@ import { folder } from "../config";
 import FileIcon from "./icons/FileIcon";
 import Image from "mui-image";
 
-const Icon = ({ ext }) => {
+export const Icon = ({ ext, style }) => {
   return file_format[ext] === undefined ? (
-    <FileIcon style={{ ...svgIconStyle }} />
+    <FileIcon style={{ ...svgIconStyle, ...style }} />
   ) : (
-    file_format[ext]
+    <FileExtIcon ext={ext} style={{ ...svgIconStyle, ...style }} />
   );
 };
 

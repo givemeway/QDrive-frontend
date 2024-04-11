@@ -47,6 +47,8 @@ import { csrftokenURL } from "../../config";
 import { useDispatch, useSelector } from "react-redux";
 import { setCSRFToken } from "../../features/csrftoken/csrfTokenSlice";
 import { setOperation } from "../../features/operation/operationSlice";
+import { GreyButton } from "../Buttons/GreyButton";
+import { CustomBlueButton } from "../Buttons/BlueButton";
 
 const options = {
   year: "numeric",
@@ -318,7 +320,12 @@ export default function BulkTrashDeleteModal() {
               </Box>
 
               <Box sx={buttonContainer}>
-                <Button
+                <GreyButton
+                  text={"Cancel"}
+                  style={{ width: "150px", height: "40px" }}
+                  onClick={() => setOpenBulkTrashDelete(false)}
+                />
+                {/* <Button
                   variant="contained"
                   disableRipple
                   sx={cancelButtonStyle}
@@ -333,7 +340,12 @@ export default function BulkTrashDeleteModal() {
                   onClick={handleRestore}
                 >
                   Permanently Delete all (or selected) Items
-                </Button>
+                </Button> */}
+                <CustomBlueButton
+                  text={"Permanently Delete all Items"}
+                  style={{ width: "300px", height: "40px" }}
+                  onClick={handleRestore}
+                />
               </Box>
             </>
           )}

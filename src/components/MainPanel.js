@@ -5,11 +5,18 @@ import DeletedItemsTable from "./DeletedFiles.js";
 import MaterialReactTable from "./MaterialReactTable.js";
 import { TimeLine } from "./TimeLine.js";
 
-import { buildCellValueForFile, buildCellValueForFolder } from "../util.js";
+import {
+  buildCellValueForFile,
+  buildCellValueForFile_trash,
+  buildCellValueForFolder,
+  buildCellValueForFolder_trash,
+  buildCellValueForSingleFile_trash,
+} from "../util.js";
 
 import {
   useSearchItemsMutation,
   useBrowseFolderMutation,
+  useGetTrashMutation,
 } from "../features/api/apiSlice.js";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,6 +28,8 @@ import { setRefresh } from "../features/table/updateTableSlice.js";
 import PhotoPreview from "./PhotoPreview.js";
 import { Modal } from "./Modal/Modal.jsx";
 import isPicture from "./fileFormats/FileFormat.js";
+import DeletedItemsMaterialReactTable from "./DeletedItemsMaterialReactTable.js";
+import { setSession } from "../features/session/sessionSlice.js";
 
 export default React.memo(function MainPanel({ mode }) {
   const navigate = useNavigate();
@@ -43,16 +52,22 @@ export default React.memo(function MainPanel({ mode }) {
   const reLoad = useRef(false);
   const [isPreview, setIsPreview] = useState(false);
   const { refresh, toggle } = useSelector((state) => state.updateTable);
+  const { CSRFToken } = useSelector((state) => state.csrfToken);
   const [browseFolderQuery, browseFolderStatus] = useBrowseFolderMutation();
   const [searchQuery, searchStatus] = useSearchItemsMutation();
-  let { isError, isLoading, isSuccess, error, data, status, startedTimeStamp } =
-    mode === "BROWSE" ? browseFolderStatus : searchStatus;
+  const [getTrashQuery, getTrashStatus] = useGetTrashMutation();
 
-  data = data ? data : { files: [], folders: [], total: 0 };
+  let { isError, isLoading, isSuccess, error, data, status, startedTimeStamp } =
+    mode === "BROWSE"
+      ? browseFolderStatus
+      : mode === "SEARCH"
+      ? searchStatus
+      : getTrashStatus;
+
+  data = data ? data : { file: [], files: [], folders: [], total: 0 };
   error = error
     ? { msg: error.data.msg, status: error.status }
     : { msg: "", status: undefined };
-
   useEffect(() => {
     if (search.length > 0) {
       const pathParts = subpath.split("/").slice(1).join("/");
@@ -109,13 +124,20 @@ export default React.memo(function MainPanel({ mode }) {
         searchQuery({
           param: path[1],
         });
+      } else if (path[0] === "deleted") {
+        console.log("inside the deleted trash");
+        getTrashQuery({ CSRFToken });
       }
     },
     [pathRef.current]
   );
 
   useEffect(() => {
-    if (isSuccess && (data.files?.length >= 0 || data.folders?.length >= 0)) {
+    if (
+      isSuccess &&
+      (mode === "BROWSE" || mode === "SEARCH") &&
+      (data.files?.length >= 0 || data.folders?.length >= 0)
+    ) {
       const fileRows = data.files.map((file) => buildCellValueForFile(file));
       const folderRows = data.folders.map((fo) => buildCellValueForFolder(fo));
       let rows = [];
@@ -146,7 +168,25 @@ export default React.memo(function MainPanel({ mode }) {
       reLoad.current = false;
       dispatch(setRefresh({ toggle: false, refresh: false }));
     }
-  }, [data.files?.length, data.folders?.length, isSuccess]);
+    if (
+      isSuccess &&
+      mode === "DELETED" &&
+      (data.files?.length >= 0 ||
+        data.folders?.length >= 0 ||
+        data.file?.length >= 0)
+    ) {
+      console.log("INSIDE THE DELETED");
+      const files = data.files.map((file) => buildCellValueForFile_trash(file));
+      const singleFile = data.file.map((file) =>
+        buildCellValueForSingleFile_trash(file)
+      );
+      const folders = data.folders.map((folder) =>
+        buildCellValueForFolder_trash(folder)
+      );
+
+      setNewRows([...files, ...singleFile, ...folders]);
+    }
+  }, [data.files?.length, data.folders?.length, isSuccess, data.file?.length]);
 
   useEffect(() => {
     pathRef.current = subpath;
@@ -183,6 +223,7 @@ export default React.memo(function MainPanel({ mode }) {
 
   useEffect(() => {
     if (isError && (error.status === 403 || error.status === 401)) {
+      dispatch(setSession({ isLoggedIn: false, isLoggedOut: true }));
       navigate("/login");
     }
   }, [isError, error.status, navigate]);
@@ -216,7 +257,15 @@ export default React.memo(function MainPanel({ mode }) {
             />
           </Modal>
         )}
-      {mode === "DELETED" && <div>Deleted table</div>}
+      {mode === "DELETED" && (
+        <DeletedItemsMaterialReactTable
+          rows={newRows}
+          isLoading={isLoading}
+          isError={isError}
+          status={status}
+          isFetching={isFetching}
+        />
+      )}
       {mode === "SHARE" && <ShareList />}
       {mode === "PHOTOS" && <TimeLine rowHeight={168} renderSize={168} />}
     </>

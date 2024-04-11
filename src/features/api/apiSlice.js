@@ -147,7 +147,7 @@ export const apiSlice = createApi({
     }),
     getShares: builder.mutation({
       query: (data) => ({
-        url: "/getSharedLinks",
+        url: "/sh/getSharedLinks",
         method: "GET",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
@@ -195,7 +195,7 @@ export const apiSlice = createApi({
     }),
     login: builder.mutation({
       query: (data) => ({
-        url: "/login",
+        url: "/user/login",
         method: "POST",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
@@ -206,7 +206,7 @@ export const apiSlice = createApi({
     }),
     verifySession: builder.mutation({
       query: (data) => ({
-        url: "/verifySession",
+        url: "/user/verifySession",
         method: "GET",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
@@ -215,13 +215,13 @@ export const apiSlice = createApi({
     }),
     logout: builder.mutation({
       query: () => ({
-        url: "/logout",
+        url: "/user/logout",
         method: "GET",
       }),
     }),
     signup: builder.mutation({
       query: (data) => ({
-        url: "/signup",
+        url: "/user/signup",
         method: "POST",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
@@ -232,8 +232,26 @@ export const apiSlice = createApi({
     }),
     checkUsername: builder.mutation({
       query: (data) => ({
-        url: "/validateusername?username=" + data.value,
+        url: "/user/validateusername?username=" + data.value,
         method: "GET",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+        },
+      }),
+    }),
+    getTrash: builder.mutation({
+      query: (data) => ({
+        url: "/trash",
+        method: "GET",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+        },
+      }),
+    }),
+    deleteShare: builder.mutation({
+      query: (data) => ({
+        url: `/sh/deleteShare?id=${data.id}`,
+        method: "DELETE",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
         },
@@ -267,4 +285,6 @@ export const {
   useLogoutMutation,
   useSignupMutation,
   useCheckUsernameMutation,
+  useGetTrashMutation,
+  useDeleteShareMutation,
 } = apiSlice;

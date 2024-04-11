@@ -95,6 +95,55 @@ const buildCellValueForFolder = (fo) => {
   };
 };
 
+export const buildCellValueForFile_trash = (file) => {
+  return {
+    id: file.id,
+    item: "file",
+    name: file.name,
+    path: file.path,
+    begin: file?.limit?.begin,
+    end: file?.limit?.end,
+    items: file?.items,
+    deleted: new Date(file.deleted).toLocaleString("en-in", timeOpts),
+  };
+};
+
+export const buildCellValueForFolder_trash = (folder) => {
+  return {
+    id: folder.id,
+    item: "folder",
+    name: folder.name,
+    path: folder.path,
+    begin: folder?.limit?.begin,
+    end: folder?.limit?.end,
+    items: folder?.items,
+    deleted: new Date(folder.deleted).toLocaleString("en-in", timeOpts),
+  };
+};
+
+const buildIndividualFilePath = (device, directory) => {
+  if (device === "/") {
+    return "/";
+  } else if (directory === "/") {
+    return "/" + device;
+  } else {
+    return `/${device}/${directory}`;
+  }
+};
+
+export const buildCellValueForSingleFile_trash = (file) => {
+  return {
+    id: file.uuid,
+    item: "singleFile",
+    name: file.filename,
+    origin: file.origin,
+    path: buildIndividualFilePath(file.device, file.directory),
+    begin: 0,
+    end: 0,
+    deleted: new Date(file.deletion_date).toLocaleString("en-in", timeOpts),
+  };
+};
+
 const extract_info_from_id = (id) => {
   let file;
   let folder;

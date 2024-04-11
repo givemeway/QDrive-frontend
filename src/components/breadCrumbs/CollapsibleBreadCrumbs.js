@@ -35,3 +35,30 @@ export default function CollapsibleBreadCrumbs({ path, id, style }) {
     </Breadcrumbs>
   );
 }
+
+export function BreadCrumb({ path, id, style }) {
+  const breadCrumbs = path.split("/").filter((subpath) => subpath.length > 0);
+  return (
+    <div className="flex flex-row justify-start items-center w-full">
+      {breadCrumbs.map((subpath) => {
+        return (
+          <>
+            <span
+              className="text-xs text-[#736C64]"
+              key={`${id};${path};${subpath}`}
+            >
+              {subpath}
+            </span>
+            {breadCrumbs.length !== 1 && (
+              <span>
+                <NavigateNextIcon
+                  sx={{ fontSize: 15, color: "#736C64", ...style }}
+                />
+              </span>
+            )}
+          </>
+        );
+      })}
+    </div>
+  );
+}

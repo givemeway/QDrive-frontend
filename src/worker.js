@@ -43,29 +43,12 @@ const findFilesToUpload = async (cwd, filesList, device) => {
     console.log("files to upload: ", files.length);
     let totalSize = 0;
     files.forEach((file) => (totalSize += file.size));
-    // const trackFilesProgress = new Map(
-    //   files.map((file) => [
-    //     file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
-    //     {
-    //       name: file.name,
-    //       startTime: 0,
-    //       progress: 0,
-    //       status: "queued",
-    //       size: formatBytes(file.size),
-    //       bytes: file.size,
-    //       folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
-    //       eta: Infinity,
-    //       speed: "",
-    //       transferred: 0,
-    //       transferred_b: 0,
-    //     },
-    //   ])
-    // );
+
     let trackFilesProgress = {};
     files.forEach((file) => {
-      trackFilesProgress[
-        file.webkitRelativePath === "" ? file.name : file.webkitRelativePath
-      ] = {
+      const id =
+        file.webkitRelativePath === "" ? file.name : file.webkitRelativePath;
+      trackFilesProgress[id] = {
         name: file.name,
         startTime: 0,
         progress: 0,
@@ -80,24 +63,6 @@ const findFilesToUpload = async (cwd, filesList, device) => {
       };
     });
 
-    let trackFilesProgress_obj = {};
-    for (const file of files) {
-      const id =
-        file.webkitRelativePath === "" ? file.name : file.webkitRelativePath;
-      trackFilesProgress_obj[id] = {
-        name: file.name,
-        startTime: 0,
-        progress: 0,
-        status: "queued",
-        size: formatBytes(file.size),
-        bytes: file.size,
-        folder: file.webkitRelativePath.split("/").slice(0, -1).join("/"),
-        eta: Infinity,
-        speed: "",
-        transferred: 0,
-        transferred_b: 0,
-      };
-    }
     let metadata = {};
     files.forEach((file) => {
       metadata[file.webkitRelativePath] = {};
@@ -113,7 +78,6 @@ const findFilesToUpload = async (cwd, filesList, device) => {
       mode: "filesToUpload",
       CSRFToken,
       trackFilesProgress,
-      trackFilesProgress_obj,
       totalSize,
       toBeUploaded: files,
       metadata,
@@ -155,7 +119,6 @@ const uploadFiles = async (
       total: files.length,
       processed: 0,
     });
-    // let idx = 0;
     await async.eachLimit(newFiles, concurrency, async (file) => {
       try {
         await uploadFile(
@@ -166,14 +129,7 @@ const uploadFiles = async (
           device,
           CSRFToken
         );
-
-        // if (idx === 0) {
-        //   uploadStarted = true;
-        //   postMessage({ mode: "uploadInitiated", uploadStarted });
-        // }
-        // idx++;
       } catch (err) {
-        // idx++;
         console.log(err);
       }
     });

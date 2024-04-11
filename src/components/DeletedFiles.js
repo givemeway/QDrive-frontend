@@ -236,6 +236,7 @@ export default React.memo(function DataGridTable() {
       if (prev.length > 0) {
         if (prev.includes(params.id)) {
           const filtered = prev.filter((id) => id !== params.id);
+          console.log(filtered);
           setSelectedItems(filtered);
           return filtered;
         }

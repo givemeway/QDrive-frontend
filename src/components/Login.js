@@ -12,6 +12,7 @@ import {
   useVerifySessionMutation,
 } from "../features/api/apiSlice";
 import { setSession } from "../features/session/sessionSlice";
+import { HorizontalLineDividedByText } from "./HorizontalLine";
 
 const validateLoginForm = (loginform) => {
   if (loginform.username.length > 0 && loginform.password.length > 0) {
@@ -107,6 +108,11 @@ const Login = () => {
       {CSRF.isSuccess && verifySessionStatus.isError && CSRF.data && (
         <div className="w-full grow flex flex-row justify-center items-center">
           <div className="w-[300px] flex flex-col gap-2 p-2 shadow-md">
+            <div className="w-full">
+              <h3 className="text-center font-semibold text-md text-[#716B61]">
+                Sign In to QDrive
+              </h3>
+            </div>
             <div className="flex flex-col justify-start items-center">
               <label className="text-[#716B61] text-xs w-full text-left pb-1">
                 Email
@@ -173,6 +179,17 @@ const Login = () => {
                 setMessage={setError}
               />
             )}
+
+            <HorizontalLineDividedByText text={"Or"} />
+
+            <div className="w-full flex justify-center items-center">
+              <button
+                className="text-[#1F74FE] text-sm"
+                onClick={() => navigate("/signup")}
+              >
+                Create New Account
+              </button>
+            </div>
           </div>
         </div>
       )}

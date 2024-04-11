@@ -263,7 +263,6 @@ export const TimeLine = () => {
   }, [elementRef.current]);
 
   useEffect(() => {
-    console.log(state);
     if (data && dim.height && dim.width) {
       const grouped = applyGroupFilter(data, state.timeline);
       console.log(grouped);

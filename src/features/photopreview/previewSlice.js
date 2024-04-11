@@ -13,6 +13,8 @@ export const previewSlice = createSlice({
     imgLoaded: false,
     loading: false,
     error: false,
+    photos: [],
+    subpath: "",
   },
   reducers: {
     setPosition: (state, action) => {

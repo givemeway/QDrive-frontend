@@ -47,6 +47,37 @@ export const file_format = {
   gif: <PictureIcon style={svgIconStyle} />,
 };
 
+export const FileExtIcon = ({ ext, style }) => {
+  const formats = {
+    pdf: <PdfIcon style={{ ...style }} />,
+    doc: <WordIcon style={{ ...style }} />,
+    docx: <WordIcon style={{ ...style }} />,
+    xls: <ExcelIcon style={{ ...style }} />,
+    xlsx: <ExcelIcon style={{ ...style }} />,
+    csv: <ExcelIcon style={{ ...style }} />,
+    txt: <TextIcon style={{ ...style }} />,
+    log: <TextIcon style={{ ...style }} />,
+    zip: <ArchiveIcon style={{ ...style }} />,
+    tar: <ArchiveIcon style={{ ...style }} />,
+    "7z": <ArchiveIcon style={{ ...style }} />,
+    rar: <ArchiveIcon style={{ ...style }} />,
+    js: <CodeIcon style={{ ...style }} />,
+    py: <CodeIcon style={{ ...style }} />,
+    cpp: <CodeIcon style={{ ...style }} />,
+    java: <CodeIcon style={{ ...style }} />,
+    html: <HtmlIcon style={{ ...style }} />,
+    c: <CodeIcon style={{ ...style }} />,
+    css: <CodeIcon style={{ ...style }} />,
+    json: <CodeIcon style={{ ...style }} />,
+    png: <PictureIcon style={{ ...style }} />,
+    jpg: <PictureIcon style={{ ...style }} />,
+    jpeg: <PictureIcon style={{ ...style }} />,
+    tiff: <PictureIcon style={{ ...style }} />,
+    gif: <PictureIcon style={{ ...style }} />,
+  };
+  return formats[ext];
+};
+
 function Get_file_icon(filename, url, thumbURL) {
   const params = useParams();
   const path = params["*"];
