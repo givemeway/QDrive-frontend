@@ -2,21 +2,10 @@ import { useEffect, useState } from "react";
 import ContextMenuContainer from "./Modal/ContextMenuModal";
 import { ContextButton } from "./Buttons/ContextButton";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  useLoginMutation,
-  useLogoutMutation,
-  useVerifySessionMutation,
-} from "../features/api/apiSlice";
-import { useNavigate } from "react-router-dom";
-import {
-  setLoggingOut,
-  setLogin,
-  setLogout,
-} from "../features/session/sessionSlice";
+import { useVerifySessionMutation } from "../features/api/apiSlice";
+
 import { setOperation } from "../features/operation/operationSlice";
 import { LOGOUT } from "../config";
-
-const menuOptions = ["Account", "Settings", "Profile", "Logout"];
 
 const Avatar = ({ initial }) => {
   return (
@@ -31,7 +20,8 @@ export default function AvatarMenu() {
   const [cord, setCord] = useState({ top: 0, left: 0 });
   const { CSRFToken } = useSelector((state) => state.csrfToken);
   const [session, sessionStatus] = useVerifySessionMutation();
-  const { isLoading, isSuccess, isError, data } = sessionStatus;
+  let { isLoading, isSuccess, isError, data } = sessionStatus;
+  data = data ? data : { first: "", last: "" };
   const [initial, setInitial] = useState("");
   const dispatch = useDispatch();
 
@@ -50,7 +40,8 @@ export default function AvatarMenu() {
   }, [CSRFToken]);
 
   useEffect(() => {
-    if (isSuccess && data) {
+    console.log(data);
+    if (isSuccess && data.first !== "" && data.last !== "") {
       const firstNameInitial = data?.first.split("")[0].toUpperCase();
       const lastNameInitial = data?.last.split("")[0].toUpperCase();
       const initial = firstNameInitial + lastNameInitial;

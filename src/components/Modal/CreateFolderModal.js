@@ -22,6 +22,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { snackBarAtom, subpathAtom } from "../../Recoil/Store/atoms";
 import { GreyButton } from "../Buttons/GreyButton";
 import { CustomBlueButton } from "../Buttons/BlueButton";
+import { useParams } from "react-router-dom";
 
 const mainContainerStyle = {
   position: "absolute",
@@ -76,11 +77,11 @@ const cancelButtonStyle = {
 
 export default function CreateFolderModal({ open, setOpen }) {
   const [text, setText] = useState("");
+  const params = useParams();
+  const subpath = params["*"];
   const navigate = useNavigate();
   const [create, setCreate] = useState(false);
 
-  // const subpath = useContext(PathContext);
-  const subpath = useRecoilValue(subpathAtom);
   // const NotifyStatus = useContext(NotificationContext);
   const NotifyStatus = useSetRecoilState(snackBarAtom);
 

@@ -79,8 +79,6 @@ export const DownloadCell = ({ row }) => {
   const dispatch = useDispatch();
   const handleDownload = () => {
     const { folders } = extract_items_from_ids({ [row.id]: true });
-    console.log(folders);
-    debugger;
     if (row.item === file) window.open(row.url, "_parent");
     if (row.item === folder) {
       dispatch(

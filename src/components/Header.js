@@ -1,17 +1,13 @@
-import { Stack, Box, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import BreadCrumb from "./breadCrumbs/Breadcrumb";
-import AvatarMenu from "./AvatarMenu";
-import Search from "./SearchFilesFolders";
 import { useEffect, useState } from "react";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspaceRounded";
 import { useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import { breadCrumbAtom } from "../Recoil/Store/atoms";
+
 import { useSelector } from "react-redux";
 
 const Header = ({ search }) => {
   const [showBreadCrumb, setShowBreadCrumb] = useState(true);
-  // const queue = useRecoilValue(breadCrumbAtom);
   const queue = useSelector((state) => state.breadCrumbs);
   const navigate = useNavigate();
   useEffect(() => {

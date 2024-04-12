@@ -1,5 +1,3 @@
-import { Grid } from "@mui/material";
-
 import Search from "./SearchFilesFolders";
 import SnackBar from "./Snackbar/SnackBar.js";
 
@@ -22,8 +20,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
-import { setLogin, setSession } from "../features/session/sessionSlice.js";
-import { LOGOUT } from "../config.js";
+import { setSession } from "../features/session/sessionSlice.js";
 
 const Dashboard = () => {
   const [searchValue, setSearchValue] = useState("");
@@ -39,6 +36,9 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const { isLoading, isSuccess, isError, data } = CSRFTokenStatus;
+  console.log(session, notify, data);
+
+  console.log("Dashboard rendered");
 
   useEffect(() => {
     if (
@@ -65,7 +65,6 @@ const Dashboard = () => {
   ]);
 
   useEffect(() => {
-    console.log(subpath);
     setIsSearch(false);
     setSearchValue("");
     const path = subpath.split("/");
@@ -76,8 +75,6 @@ const Dashboard = () => {
       setMode("SEARCH");
     } else if (path[0] === "deleted") {
       setMode("DELETED");
-    } else if (path[0] === "share") {
-      setMode("SHARE");
     } else if (path[0] === "photos") {
       setMode("PHOTOS");
     }
