@@ -103,23 +103,6 @@ const scrollContainerStyle = {
   marginTop: 2,
 };
 
-const cancelButtonStyle = {
-  background: "#F5EFE5E0",
-  color: "#1A1918",
-  textTransform: "none",
-  width: 75,
-  fontWeight: 900,
-  "&:hover": { background: "#F5EFE5" },
-};
-
-const restoreAllButtonStyle = {
-  background: "#0061FEE0",
-  fontWeight: 900,
-  color: "#F2F7FF",
-  "&:hover": { background: "#0061FE" },
-  textTransform: "none",
-};
-
 const buttonContainer = {
   display: "flex",
   flexDirection: "row",

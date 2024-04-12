@@ -96,23 +96,6 @@ const scrollContainerStyle = {
   marginTop: 2,
 };
 
-const cancelButtonStyle = {
-  background: "#F5EFE5E0",
-  color: "#1A1918",
-  textTransform: "none",
-  width: 75,
-  fontWeight: 900,
-  "&:hover": { background: "#F5EFE5" },
-};
-
-const restoreAllButtonStyle = {
-  background: "#0061FEE0",
-  fontWeight: 900,
-  color: "#F2F7FF",
-  "&:hover": { background: "#0061FE" },
-  textTransform: "none",
-};
-
 const buttonContainer = {
   display: "flex",
   flexDirection: "row",
@@ -130,19 +113,15 @@ function EllipsisTypoGraphy({ children }) {
 }
 
 export default function BulkTrashDeleteModal() {
-  const {
-    openBulkTrashDelete,
-    setOpenBulkTrashDelete,
-    selectedItems,
-    setRestoring,
-  } = React.useContext(TrashContext);
+  const { openBulkTrashDelete, setOpenBulkTrashDelete, selectedItems } =
+    React.useContext(TrashContext);
 
   const [allItems, setAllItems] = React.useState([]);
   const dispatch = useDispatch();
   const operation = useSelector((state) => state.operation);
 
   const items = useGetCSRFTokenQuery();
-  const { data, status, isLoading, isError, isSuccess } = items;
+  const { data, isLoading, isError, isSuccess } = items;
 
   const { CSRFToken } = data ? data : { CSRFToken: "" };
   console.log("bulk trash rendered");
@@ -290,22 +269,6 @@ export default function BulkTrashDeleteModal() {
                   style={{ width: "150px", height: "40px" }}
                   onClick={() => setOpenBulkTrashDelete(false)}
                 />
-                {/* <Button
-                  variant="contained"
-                  disableRipple
-                  sx={cancelButtonStyle}
-                  onClick={() => setOpenBulkTrashDelete(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disableRipple
-                  variant="contained"
-                  sx={restoreAllButtonStyle}
-                  onClick={handleRestore}
-                >
-                  Permanently Delete all (or selected) Items
-                </Button> */}
                 <CustomBlueButton
                   text={"Permanently Delete all Items"}
                   style={{ width: "300px", height: "40px" }}

@@ -55,23 +55,6 @@ const colFlex = {
   gap: 1,
 };
 
-const createButtonStyle = {
-  background: "#0061FEE0",
-  fontWeight: 900,
-  color: "#F2F7FF",
-  "&:hover": { background: "#0061FE" },
-  textTransform: "none",
-};
-
-const cancelButtonStyle = {
-  background: "#F5EFE5E0",
-  color: "#1A1918",
-  textTransform: "none",
-  width: 75,
-  fontWeight: 900,
-  "&:hover": { background: "#F5EFE5" },
-};
-
 export default function CreateFolderModal({ open, setOpen }) {
   const [text, setText] = useState("");
   const params = useParams();
