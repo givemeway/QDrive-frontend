@@ -10,6 +10,7 @@ import { formatBytes } from "../util";
 import CloseIcon from "./icons/CloseIcon";
 import { setFileDetails } from "../features/itemdetails/fileDetails.Slice";
 import SpinnerGIF from "./icons/SpinnerGIF";
+import { get_file_icon } from "./fileFormats/FileFormat";
 
 const styleVersions = {
   display: "flex",

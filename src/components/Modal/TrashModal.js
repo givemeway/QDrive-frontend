@@ -16,6 +16,8 @@ import { useGetBatchTrashItemsMutation } from "../../features/api/apiSlice";
 import SpinnerGIF from "../icons/SpinnerGIF";
 import { setSelectedTrashBatch } from "../../features/trash/selectedTrashBatch";
 import { CustomBlueButton } from "../Buttons/BlueButton";
+import { setOperation } from "../../features/operation/operationSlice";
+import { GreyButton } from "../Buttons/GreyButton";
 
 const options = {
   year: "numeric",
