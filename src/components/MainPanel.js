@@ -1,7 +1,4 @@
-import { Stack } from "@mui/material";
 import React, { useRef, useCallback, useEffect, useState } from "react";
-
-import DeletedItemsTable from "./DeletedFiles.js";
 import MaterialReactTable from "./MaterialReactTable.js";
 import { TimeLine } from "./TimeLine.js";
 

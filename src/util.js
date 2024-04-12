@@ -9,7 +9,6 @@ import {
   folder,
   file as FILE,
 } from "./config.js";
-import rowHoverSlice from "./features/rowhover/rowHover.Slice.jsx";
 
 const opts = {
   suggestedName: "",
@@ -55,14 +54,6 @@ export const get_url = (file) => {
   )}&uuid=${encodeURIComponent(file.uuid)}&db=files&dir=${
     file.directory
   }&device=${file.device}`;
-};
-
-const get_path = (file) => {
-  return `${downloadURL}?device=${encodeURIComponent(
-    file.device
-  )}&dir=${encodeURIComponent(file.directory)}&file=${encodeURIComponent(
-    file.filename
-  )}&uuid=${encodeURIComponent(file.uuid)}`;
 };
 
 const get_file_path = (file) => {

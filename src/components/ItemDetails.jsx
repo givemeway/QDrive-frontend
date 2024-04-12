@@ -9,8 +9,6 @@ import { downloadURL, server, timeOpts } from "../config";
 import { formatBytes } from "../util";
 import CloseIcon from "./icons/CloseIcon";
 import { setFileDetails } from "../features/itemdetails/fileDetails.Slice";
-import PictureIcon from "./icons/PictureIcon";
-import { get_file_icon } from "./fileFormats/FileFormat";
 import SpinnerGIF from "./icons/SpinnerGIF";
 
 const styleVersions = {

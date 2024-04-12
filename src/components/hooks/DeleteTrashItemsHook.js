@@ -31,7 +31,7 @@ export default function useDeleteTrashItems(items) {
         }
       })();
     }
-  }, [deleteTrash, CSRFToken]);
+  }, [deleteTrash, CSRFToken, items]);
 
   return [deleteTrash, deleteStatus, init];
 }

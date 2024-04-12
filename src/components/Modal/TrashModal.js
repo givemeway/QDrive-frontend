@@ -7,25 +7,14 @@ import Typography from "@mui/material/Typography";
 import FolderIcon from "../icons/FolderIcon";
 import CustomizedBadges from "../Badge/Badge";
 import { TrashContext } from "../UseContext";
-import {
-  Button,
-  CircularProgress,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Stack,
-} from "@mui/material";
+import { ListItem, ListItemIcon, ListItemText, Stack } from "@mui/material";
 import { FixedSizeList } from "react-window";
-import useFetchTrashBatch from "../hooks/FetchTrashBatchHook";
 import { get_file_icon, svgIconStyle } from "../fileFormats/FileFormat";
 import CollapsibleBreadCrumbs from "../breadCrumbs/CollapsibleBreadCrumbs";
-import useRestoreItems from "../hooks/RestoreItemHook";
 import { useDispatch, useSelector } from "react-redux";
 import { useGetBatchTrashItemsMutation } from "../../features/api/apiSlice";
-import { setOperation } from "../../features/operation/operationSlice";
 import SpinnerGIF from "../icons/SpinnerGIF";
 import { setSelectedTrashBatch } from "../../features/trash/selectedTrashBatch";
-import { GreyButton } from "../Buttons/GreyButton";
 import { CustomBlueButton } from "../Buttons/BlueButton";
 
 const options = {

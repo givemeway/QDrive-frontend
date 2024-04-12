@@ -98,7 +98,6 @@ const uploadFiles = async (
   filesStatus,
   metadata
 ) => {
-  let uploadStarted = false;
   let newFiles = [];
   for (let file of files) {
     if (metadata.hasOwnProperty(file.webkitRelativePath)) {

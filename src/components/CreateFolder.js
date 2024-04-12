@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CreateFolderModal from "./Modal/CreateFolderModal";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
-import { Button, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 
 export default function CreateFolder() {
   const [open, setOpen] = useState(false);

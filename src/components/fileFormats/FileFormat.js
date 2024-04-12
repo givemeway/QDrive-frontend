@@ -8,9 +8,6 @@ import ExcelIcon from "../icons/ExcelIcon";
 import FileIcon from "../icons/FileIcon";
 import PictureIcon from "../icons/PictureIcon";
 import { Link, useParams } from "react-router-dom";
-import { ImageListItem } from "@mui/material";
-import Image from "mui-image";
-import { useEffect, useState } from "react";
 
 const svgIconStyle = {
   backgroundColor: "#F7F5F2",
@@ -93,7 +90,7 @@ function Get_file_icon(filename, url, thumbURL) {
       return (
         <>
           <Link to={"/dashboard/" + path + "?preview=" + filename}>
-            <img src={thumbURL} />
+            <img src={thumbURL} alt={`${filename}`} />
           </Link>
         </>
       );

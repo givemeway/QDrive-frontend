@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { csrftokenURL, getSharedItemsURL, validateShareURL } from "../config";
 import Table from "./SharedItemsDisplayTable";
@@ -42,10 +42,7 @@ export default function Transfer() {
   const [dirNav, setDirNav] = useState("");
   const share = useRef({ nav: "h", itemId: "", nav_tracking: 0, rel: "" });
   const tempBreadCrumbs = useRef(new Map(Object.entries({ "/": "/" })));
-  // const [itemsSelected, setItemsSelection] = useState({
-  //   fileIds: [],
-  //   directories: [],
-  // });
+
   console.log("Transfer");
   const [itemsSelected, setItemsSelection] = useRecoilState(itemsSelectedAtom);
 
@@ -115,7 +112,7 @@ export default function Transfer() {
       fetch(url)
         .then((res) => res.json())
         .then((data) => {
-          const { files, directories, home, path } = data;
+          const { files, directories, path } = data;
           if (k === null) share.current.rel = path;
           setDirNav(path);
           if (k !== null) {

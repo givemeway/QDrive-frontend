@@ -1,23 +1,18 @@
-// import FolderIcon from "@mui/icons-material/FolderRounded";
-import { DataGrid, useGridApiRef } from "@mui/x-data-grid";
 import FolderIcon from "../components/icons/FolderIcon";
 import FileIcon from "../components/icons/FileIcon";
 
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   Typography,
   Box,
-  Stack,
   Button,
   Snackbar,
   CircularProgress,
 } from "@mui/material";
-import useFetchDeletedItems from "./hooks/FetchDeletedItems";
-import CollapsibleBreadCrumbs, {
-  BreadCrumb,
-} from "./breadCrumbs/CollapsibleBreadCrumbs";
 
-import { get_file_icon, svgIconStyle } from "./fileFormats/FileFormat";
+import { BreadCrumb } from "./breadCrumbs/CollapsibleBreadCrumbs";
+
+import { svgIconStyle } from "./fileFormats/FileFormat";
 import TrashModal from "./Modal/TrashModal";
 import { TrashContext } from "./UseContext";
 import BulkTrashModal from "./Modal/BulkTrashModal";
@@ -28,9 +23,8 @@ import {
 } from "material-react-table";
 
 import DeleteForeverIcon from "@mui/icons-material/DeleteForeverSharp";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setSelectedTrashBatch } from "../features/trash/selectedTrashBatch";
-import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice";
 
 const restoreButtonStyle = {
   textTransform: "none",
@@ -68,16 +62,6 @@ const deleteButtonStyle = {
   width: 200,
   color: "black",
   fontWeight: 600,
-};
-
-const gridContainerStyle = {
-  height: "100%",
-  width: "100%",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "flex-start",
-  justifyContent: "center",
-  border: "none",
 };
 
 const NameCell = ({ row }) => {

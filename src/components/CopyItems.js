@@ -1,7 +1,6 @@
 import { useState } from "react";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { Button } from "@mui/material";
-import { ModalContext } from "./UseContext.js";
 import { COPY } from "../config.js";
 import Modal from "./Modal.js";
 

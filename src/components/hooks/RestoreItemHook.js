@@ -31,7 +31,7 @@ export default function useRestoreItems(items) {
         }
       })();
     }
-  }, [restoreTrash]);
+  }, [restoreTrash, CSRFToken]);
 
   return [restoreTrash, restoreStatus, init];
 }

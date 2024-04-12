@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
 import Modal from "@mui/material/Modal";
@@ -8,7 +8,6 @@ import FolderIcon from "../icons/FolderIcon";
 import CustomizedBadges from "../Badge/Badge";
 import { TrashContext } from "../UseContext";
 import {
-  Button,
   CircularProgress,
   ListItem,
   ListItemIcon,
@@ -16,25 +15,14 @@ import {
   Stack,
 } from "@mui/material";
 import { FixedSizeList } from "react-window";
-import useFetchTrashBatch from "../hooks/FetchTrashBatchHook";
 import { get_file_icon, svgIconStyle } from "../fileFormats/FileFormat";
 import CollapsibleBreadCrumbs from "../breadCrumbs/CollapsibleBreadCrumbs";
-import useRestoreItems from "../hooks/RestoreItemHook";
 import { CustomBlueButton } from "../Buttons/BlueButton";
 import { GreyButton } from "../Buttons/GreyButton";
 import { useDispatch, useSelector } from "react-redux";
 import { setCSRFToken } from "../../features/csrftoken/csrfTokenSlice";
 import { setOperation } from "../../features/operation/operationSlice";
 import { useGetCSRFTokenQuery } from "../../features/api/apiSlice";
-
-const options = {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "numeric",
-  hour12: true,
-};
 
 const listItemIconStyle = {
   display: "flex",
@@ -192,10 +180,10 @@ export default function BulkTrashModal() {
               <FolderIcon style={svgIconStyle} />
             </CustomizedBadges>
           )}
-          {allItems[index]?.item == "singleFile" &&
+          {allItems[index]?.item === "singleFile" &&
             get_file_icon(allItems[index].name)}
 
-          {allItems[index]?.item == "file" &&
+          {allItems[index]?.item === "file" &&
             get_file_icon(allItems[index].name)}
         </ListItemIcon>
         <Stack sx={listItemTextRowStyle}>

@@ -54,7 +54,6 @@ function FolderUpload() {
   const [open, setOpen] = useState(false);
   const params = useParams();
   const subpath = params["*"];
-  const timer = useRef(null);
   const atLeastOneUploaded = useRef(false);
   const dispatch = useDispatch();
   const refresh = useSelector((state) => state.updateTable);

@@ -1,5 +1,3 @@
-/* global axios */
-
 import * as React from "react";
 
 import { useState } from "react";
@@ -91,7 +89,7 @@ const TextField = ({
 };
 
 const validateForm = (formInput, setValidForm) => {
-  for (const [key, value] of Object.entries(formInput)) {
+  for (const [_, value] of Object.entries(formInput)) {
     if (value.error === true) {
       setValidForm(false);
       return;
@@ -106,7 +104,7 @@ const validateForm = (formInput, setValidForm) => {
 };
 
 const validateFirstName = (firstname, setFormInput) => {
-  if (firstname.length == 0) {
+  if (firstname.length === 0) {
     setFormInput((prev) => ({
       ...prev,
       firstname: {
@@ -128,7 +126,7 @@ const validateFirstName = (firstname, setFormInput) => {
 };
 
 const validateLastName = (lastname, setFormInput) => {
-  if (lastname.length == 0) {
+  if (lastname.length === 0) {
     setFormInput((prev) => ({
       ...prev,
       lastname: {

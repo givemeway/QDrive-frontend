@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { GreyButton } from "../Buttons/GreyButton";
 import { CustomBlueButton } from "../Buttons/BlueButton";
 import { Modal } from "./Modal";

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Button } from "@mui/material";
 import { DOWNLOAD } from "../config";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
@@ -14,16 +14,6 @@ const Download = () => {
   const operation = useSelector((state) => state.operation);
 
   console.log("download items rendered");
-
-  // useEffect(() => {
-  //   dispatch(
-  //     setOperation({
-  //       ...operation,
-  //       type: DOWNLOAD,
-  //       status: "uninitialized",
-  //     })
-  //   );
-  // }, []);
 
   const handleClick = (e) => {
     e.preventDefault();

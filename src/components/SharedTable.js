@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { ContextIcon } from "./icons/ContextIcon";
 import ContextModal from "./Modal/ContextMenuModal.jsx";
 import { ContextButton } from "./Buttons/ContextButton";

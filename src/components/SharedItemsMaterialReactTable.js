@@ -1,10 +1,4 @@
-import React, {
-  useMemo,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-} from "react";
+import React, { useMemo, useRef, useCallback } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -15,7 +9,7 @@ import { pageSize } from "../config.js";
 
 import CellEdit from "./TableCellEdit.jsx";
 import RenderNameCell from "./NameCell.jsx";
-import RenderModifiedCell, { DownloadCell } from "./ModifiedCell.jsx";
+import { DownloadCell } from "./ModifiedCell.jsx";
 
 import { setRowHover } from "../features/rowhover/rowHover.Slice.jsx";
 import { setBrowseItems } from "../features/browseItems/browseItemsSlice.js";

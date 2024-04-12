@@ -20,7 +20,7 @@ export default React.memo(function UploadMenu() {
 
   return (
     <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
-      {tabSelected != 4 && (
+      {tabSelected !== 4 && (
         <Box
           display="flex"
           flexDirection="row"
@@ -62,7 +62,7 @@ export default React.memo(function UploadMenu() {
           )}
         </Box>
       )}
-      {tabSelected == 4 && <Box></Box>}
+      {tabSelected === 4 && <Box></Box>}
     </Stack>
   );
 });

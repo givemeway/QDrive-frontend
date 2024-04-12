@@ -1,6 +1,6 @@
 /*global axios */
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { csrftokenURL, getTrashBatchURL } from "../../config";
 import useFetchCSRFToken from "./FetchCSRFToken";
 

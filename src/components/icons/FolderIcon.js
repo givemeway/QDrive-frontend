@@ -1,12 +1,5 @@
 import { SvgIcon } from "@mui/material";
 
-const style = {
-  fontSize: 25,
-  backgroundColor: "#F7F5F2",
-  boxShadow: 1,
-  borderRadius: "2px",
-};
-
 export default function HtmlIcon({ style }) {
   return (
     <SvgIcon sx={style}>

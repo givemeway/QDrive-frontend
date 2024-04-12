@@ -10,7 +10,7 @@ import Activity from "./FileActivity.js";
 
 import { formatBytes } from "../util.js";
 import { downloadURL } from "../config.js";
-import { ItemSelectionContext, UploadFolderContenxt } from "./UseContext.js";
+import { UploadFolderContenxt } from "./UseContext.js";
 import { get_file_icon, svgIconStyle } from "./fileFormats/FileFormat.js";
 import { useSetRecoilState } from "recoil";
 import { itemsSelectedAtom } from "../Recoil/Store/atoms.js";
@@ -77,14 +77,6 @@ const typoGraphyStyle = {
   fontSize: "1rem",
   flexGrow: 1,
   textAlign: "left",
-  padding: 0,
-  margin: 0,
-};
-
-const iconStyle = {
-  width: 30,
-  height: 35,
-  color: "#A1C9F7",
   padding: 0,
   margin: 0,
 };

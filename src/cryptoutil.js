@@ -1,13 +1,6 @@
 /* global forge */
-/* global axios */
 
 import { arrayBufferToBinaryString } from "./util.js";
-
-const generateRandomBytes = (len) => {
-  let buffer = new Uint8Array(len);
-  crypto.getRandomValues(buffer);
-  return buffer;
-};
 
 const getPasswordkey = (key) => {
   const enc = new TextEncoder();

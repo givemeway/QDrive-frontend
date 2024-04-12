@@ -1,12 +1,7 @@
 /* global axios */
 
 import { selector, selectorFamily } from "recoil";
-import {
-  CSRFTokenAtom,
-  breadCrumbAtom,
-  subpathAtom,
-  trashDeleteStatusAtom,
-} from "./atoms";
+import { breadCrumbAtom, subpathAtom } from "./atoms";
 import { csrftokenURL, deleteTrashURL } from "../../config";
 
 export const folderExplorerSelector = selector({

@@ -20,7 +20,7 @@ import BulkTrashModal from "./Modal/BulkTrashModal";
 import BulkTrashDeleteModal from "./Modal/BulkTrashDeleteModal";
 
 import DeleteForeverIcon from "@mui/icons-material/DeleteForeverSharp";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setSelectedTrashBatch } from "../features/trash/selectedTrashBatch";
 import { useGetCSRFTokenQuery } from "../features/api/apiSlice";
 import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice";

@@ -1,17 +1,14 @@
-import { useEffect, useContext } from "react";
-import { Box, Divider, Typography, Fab, IconButton, Link } from "@mui/material";
+import { useEffect } from "react";
+import { Box, Typography, IconButton, Link } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
 import Badge from "@mui/material/Badge";
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import ClearIcon from "@mui/icons-material/Clear";
-import { ItemSelectionContext } from "./UseContext";
 import { useState } from "react";
 import InfoIcon from "@mui/icons-material/InfoRounded";
 import ImageIcon from "@mui/icons-material/Image";
-import { fireEvent } from "@testing-library/react";
 
 const container = {
   display: "flex",

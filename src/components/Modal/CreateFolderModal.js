@@ -1,7 +1,6 @@
 import {
   Modal,
   Box,
-  Button,
   Fade,
   Backdrop,
   Stack,
@@ -10,16 +9,14 @@ import {
   Divider,
   TextField,
 } from "@mui/material";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import FolderIcon from "../icons/FolderIcon";
 import { svgIconStyle } from "../fileFormats/FileFormat";
 import CloseIcon from "@mui/icons-material/Close";
-import { useConstant } from "@react-spring/shared";
-import { NotificationContext, PathContext } from "../UseContext";
 import useCreateFolder from "../hooks/CreateFolderHook";
 import { useNavigate } from "react-router";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { snackBarAtom, subpathAtom } from "../../Recoil/Store/atoms";
+import { useSetRecoilState } from "recoil";
+import { snackBarAtom } from "../../Recoil/Store/atoms";
 import { GreyButton } from "../Buttons/GreyButton";
 import { CustomBlueButton } from "../Buttons/BlueButton";
 import { useParams } from "react-router-dom";

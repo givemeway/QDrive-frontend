@@ -1,20 +1,17 @@
 /*global axios */
 import * as React from "react";
 import Box from "@mui/material/Box";
-import { useState, useContext } from "react";
+import { useState } from "react";
 import FolderRounded from "@mui/icons-material/FolderRounded";
 import { TreeView } from "@mui/x-tree-view/TreeView";
-import { Divider } from "@mui/material";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { csrftokenURL, getSubFoldersURL } from "../config";
 import { useNavigate } from "react-router-dom";
-import LoadingGif from "./icons/LoadingGif";
 import { CircularProgress } from "@mui/material";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import IconExpandedTreeItem from "./CustomTreeItem";
-import { FolderExplorerContext } from "./UseContext";
 import { useRecoilValue } from "recoil";
 import { folderExplorerSelector } from "../Recoil/Store/selector";
 
@@ -25,17 +22,6 @@ async function fetchCSRFToken(csrfurl) {
   const { CSRFToken } = await response.json();
   return CSRFToken;
 }
-
-// const style = {
-//   display: "flex",
-//   flexDirection: "column",
-//   justifyContent: "space-between",
-//   transform: "translate(-50%, -50%)",
-//   width: 300,
-//   height: 300,
-//   overflow: "auto",
-//   bgcolor: "background.paper",
-// };
 
 const fetchFoldersFromServer = async (path) => {
   const CSRFToken = await fetchCSRFToken(csrftokenURL);

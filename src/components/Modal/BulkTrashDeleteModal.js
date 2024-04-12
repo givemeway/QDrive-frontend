@@ -8,7 +8,6 @@ import FolderIcon from "../icons/FolderIcon";
 import CustomizedBadges from "../Badge/Badge";
 import { TrashContext } from "../UseContext";
 import {
-  Button,
   CircularProgress,
   ListItem,
   ListItemIcon,
@@ -16,50 +15,16 @@ import {
   Stack,
 } from "@mui/material";
 import { FixedSizeList } from "react-window";
-import useFetchTrashBatch from "../hooks/FetchTrashBatchHook";
 import { get_file_icon, svgIconStyle } from "../fileFormats/FileFormat";
 import CollapsibleBreadCrumbs from "../breadCrumbs/CollapsibleBreadCrumbs";
-import useRestoreItems from "../hooks/RestoreItemHook";
-import useDeleteTrashItems from "../hooks/DeleteTrashItemsHook";
-import {
-  useRecoilState,
-  useRecoilValue,
-  useRecoilValueLoadable,
-  useSetRecoilState,
-} from "recoil";
 
-import {
-  useDeleteTrashItemsMutation,
-  useGetCSRFTokenQuery,
-} from "../../features/api/apiSlice";
+import { useGetCSRFTokenQuery } from "../../features/api/apiSlice";
 
-import { Suspense } from "react";
-import {
-  statusNotificationAtom,
-  trashDeleteStatusAtom,
-} from "../../Recoil/Store/atoms";
-import {
-  CSRFTokenSelector,
-  deleteTrashItemsSelector,
-} from "../../Recoil/Store/selector";
-import useFetchCSRFToken from "../hooks/FetchCSRFToken";
-import { csrftokenURL } from "../../config";
 import { useDispatch, useSelector } from "react-redux";
 import { setCSRFToken } from "../../features/csrftoken/csrfTokenSlice";
 import { setOperation } from "../../features/operation/operationSlice";
 import { GreyButton } from "../Buttons/GreyButton";
 import { CustomBlueButton } from "../Buttons/BlueButton";
-
-const options = {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "numeric",
-  hour12: true,
-};
-
-const headingStyle = { fontSize: 18, color: "#1A1918", fontWeight: 600 };
 
 const listItemIconStyle = {
   display: "flex",
@@ -240,10 +205,10 @@ export default function BulkTrashDeleteModal() {
               <FolderIcon style={svgIconStyle} />
             </CustomizedBadges>
           )}
-          {allItems[index]?.item == "singleFile" &&
+          {allItems[index]?.item === "singleFile" &&
             get_file_icon(allItems[index].name)}
 
-          {allItems[index]?.item == "file" &&
+          {allItems[index]?.item === "file" &&
             get_file_icon(allItems[index].name)}
         </ListItemIcon>
         <Stack sx={listItemTextRowStyle}>

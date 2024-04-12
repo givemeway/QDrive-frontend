@@ -1,7 +1,5 @@
-import { Button, Box, Typography } from "@mui/material";
 import React, { useState } from "react";
 import FolderExplorer from "./FolderExplorer";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useNavigate } from "react-router-dom";
 import { useSetRecoilState } from "recoil";

@@ -1,5 +1,5 @@
 import { fetchFilesURL, username } from "./config.js";
-import { hashFileChunked, hashFile } from "./hashFile.js";
+import { hashFile } from "./hashFile.js";
 
 const getfilesCurDir = async (cwd, device, CSRFToken, backupType) => {
   const headers = {
@@ -32,7 +32,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
   if (DbFileList.length === 0) {
     return selectedFileList;
   }
-  let files = new Object();
+  let files = {};
   DbFileList.forEach((file) => {
     const extractedFileName = file.filename.split(`_${file.uuid}`);
     let fileName = file.filename;
@@ -48,7 +48,7 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
           files[file.directory][fileName].version = file.versions;
         }
       } else {
-        files[file.directory][fileName] = new Object();
+        files[file.directory][fileName] = {};
         files[file.directory][fileName].uuid = file.origin;
         files[file.directory][fileName].hash = new Set();
         files[file.directory][fileName].lmd = new Set();
@@ -57,8 +57,8 @@ const compareFiles = async (selectedFileList, DbFileList, cwd, device) => {
         files[file.directory][fileName].hash.add(file.hashvalue);
       }
     } else {
-      files[file.directory] = new Object();
-      files[file.directory][fileName] = new Object();
+      files[file.directory] = {};
+      files[file.directory][fileName] = {};
       files[file.directory][fileName].uuid = file.origin;
       files[file.directory][fileName].hash = new Set();
       files[file.directory][fileName].lmd = new Set();

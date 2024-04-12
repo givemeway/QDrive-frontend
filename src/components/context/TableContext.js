@@ -10,16 +10,7 @@ import { ContextButton } from "../Buttons/ContextButton";
 import ContextModal from "../Modal/ContextMenuModal";
 import { useDispatch, useSelector } from "react-redux";
 import { setOperation } from "../../features/operation/operationSlice";
-import {
-  MOVE,
-  COPY,
-  SHARE,
-  DELETE,
-  DOWNLOAD,
-  file,
-  downloadItemsURL,
-  server,
-} from "../../config";
+import { MOVE, COPY, SHARE, DELETE, DOWNLOAD } from "../../config";
 import { setEdit } from "../../features/rename/renameSlice";
 import { useRecoilValue } from "recoil";
 import { itemsSelectedAtom } from "../../Recoil/Store/atoms";

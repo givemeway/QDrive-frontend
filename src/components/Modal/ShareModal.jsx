@@ -25,7 +25,7 @@ export default function ShareModal({ open, onClose }) {
   const type = useRef("");
   const ref = useRef(null);
   const body = useRef({ files: [], directories: [] });
-  const { isLoading, isSuccess, isError, data } = useGetCSRFTokenQuery();
+  const { isSuccess, isError, data } = useGetCSRFTokenQuery();
   const { CSRFToken } = data ? data : { CSRFTOken: "" };
 
   const handleClose = () => {
