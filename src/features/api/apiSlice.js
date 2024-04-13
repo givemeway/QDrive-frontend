@@ -204,6 +204,8 @@ export const apiSlice = createApi({
           Authorization: `Basic ${data.encodedData}`,
         },
         body: { usernametype: "username" },
+        credentials: "include",
+        mode: "cors",
       }),
     }),
     verifySession: builder.mutation({
