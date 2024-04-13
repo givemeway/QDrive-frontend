@@ -202,8 +202,8 @@ export const apiSlice = createApi({
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           Authorization: `Basic ${data.encodedData}`,
-          body: { usernametype: "username" },
         },
+        body: { usernametype: "username" },
       }),
     }),
     verifySession: builder.mutation({
