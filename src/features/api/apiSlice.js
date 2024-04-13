@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://backup-8toq.onrender.com/app",
+    baseUrl: "https://api.qdrive.space/app",
   }),
   endpoints: (builder) => ({
     deleteTrashItems: builder.mutation({
