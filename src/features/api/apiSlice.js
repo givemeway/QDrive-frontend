@@ -202,7 +202,7 @@ export const apiSlice = createApi({
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           Authorization: `Basic ${data.encodedData}`,
-          usernametype: "username",
+          body: { usernametype: "username" },
         },
       }),
     }),
