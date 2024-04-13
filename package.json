@@ -1,6 +1,7 @@
 {
   "name": "backup-frontend",
   "version": "0.1.0",
+  "proxy": "https://backup-8toq.onrender.com",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.3",
