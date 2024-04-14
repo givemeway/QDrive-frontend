@@ -2,6 +2,7 @@ import { fetchFilesURL, username } from "./config.js";
 import { hashFile } from "./hashFile.js";
 
 const getfilesCurDir = async (cwd, device, CSRFToken, backupType) => {
+  console.log("get files request made");
   const headers = {
     "X-CSRF-Token": CSRFToken,
     devicename: device,
@@ -19,11 +20,15 @@ const getfilesCurDir = async (cwd, device, CSRFToken, backupType) => {
     body: { start: 0, end: 100000 },
   };
 
+  console.log(options);
+
   try {
     const res = await fetch(fetchFilesURL, options);
     const data = await res.json();
+    console.log(data);
     return data;
   } catch (err) {
+    console.error(err);
     return err;
   }
 };

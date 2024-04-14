@@ -32,6 +32,7 @@ const findFilesToUpload = async (cwd, filesList, device) => {
     }
     const response = await fetch(csrftokenURL);
     const { CSRFToken } = await response.json();
+    console.log("CSRFToken in worker--", CSRFToken);
 
     const DbFiles = await getfilesCurDir(
       uploadingDirPath,

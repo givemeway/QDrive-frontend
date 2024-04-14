@@ -38,6 +38,8 @@ const Login = () => {
 
   const { isLoading, isError, isSuccess, data } = loginStatus;
 
+  console.log(CSRF);
+
   const handleChange = (event) => {
     setLoginForm((prev) => {
       return { ...prev, [event.target.name]: event.target.value };
@@ -49,6 +51,8 @@ const Login = () => {
     setSuccess(false);
     const { valid, encodedData } = validateLoginForm(loginForm);
     if (valid && CSRF.data?.CSRFToken) {
+      console.log(CSRF.data?.CSRFToken);
+      console.log({ CSRFToken: CSRF.data?.CSRFToken, encodedData });
       loginQuery({ CSRFToken: CSRF.data?.CSRFToken, encodedData });
     }
   };
