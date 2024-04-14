@@ -8,6 +8,7 @@ import {
   server,
   folder,
   file as FILE,
+  PRODUCTION,
 } from "./config.js";
 
 const opts = {
@@ -49,6 +50,13 @@ const opts = {
 };
 
 export const get_url = (file) => {
+  if (process.env.NODE_ENV === PRODUCTION) {
+    return `${downloadURL}?file=${encodeURIComponent(
+      file.filename
+    )}&uuid=${encodeURIComponent(file.uuid)}&db=files&dir=${
+      file.directory
+    }&device=${file.device}`;
+  }
   return `${server}${downloadURL}?file=${encodeURIComponent(
     file.filename
   )}&uuid=${encodeURIComponent(file.uuid)}&db=files&dir=${

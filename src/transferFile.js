@@ -99,7 +99,9 @@ const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
 
       formData.append("file", file);
       let xhr = new XMLHttpRequest();
+      xhr.withCredentials = true;
       xhr.open("POST", fileUploadURL, true);
+
       for (const key in headers) {
         xhr.setRequestHeader(key, headers[key]);
       }

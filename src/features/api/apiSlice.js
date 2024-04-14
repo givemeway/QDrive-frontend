@@ -15,7 +15,7 @@ export const apiSlice = createApi({
         url: "/deleteTrashItems",
         method: "POST",
         body: { items: data.items },
-
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -30,6 +30,7 @@ export const apiSlice = createApi({
         url: "/v2/moveItems?to=" + data.to,
         method: "POST",
         body: data.items,
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -41,6 +42,7 @@ export const apiSlice = createApi({
         url: "/copyItems?to=" + data.to,
         method: "POST",
         body: data.items,
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -51,6 +53,7 @@ export const apiSlice = createApi({
       query: (params) => ({
         url: "/getSubFolders",
         method: "POST",
+        credentials: "include",
         headers: { path: params.path, "X-CSRF-Token": params.CSRFToken },
       }),
     }),
@@ -58,6 +61,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: "/delete",
         method: "DELETE",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -69,6 +73,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: "/restoreTrashItems",
         method: "POST",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -80,6 +85,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: "/renameItem",
         method: "PATCH",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -91,6 +97,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: "/trashBatch?" + data.params,
         method: "POST",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -118,6 +125,7 @@ export const apiSlice = createApi({
           "Content-Type": "application/json",
         },
         body: data.items,
+        credentials: "include",
       }),
     }),
     downloadItems: builder.mutation({
@@ -129,12 +137,14 @@ export const apiSlice = createApi({
           "Content-Type": "application/json",
         },
         body: data.items,
+        credentials: "include",
       }),
     }),
     getFileVersion: builder.mutation({
       query: (data) => ({
         url: "/getFileVersion?origin=" + data.origin,
         method: "GET",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -145,6 +155,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: "/search?param=" + data.param,
         method: "GET",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -155,6 +166,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: "/sh/getSharedLinks",
         method: "GET",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -165,6 +177,7 @@ export const apiSlice = createApi({
       query: () => ({
         url: "/getPhotos",
         method: "GET",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -174,6 +187,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: `/photopreview?path=${data.path}&filename=${data.filename}`,
         method: "GET",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -183,6 +197,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: `/sh/validate?id=${data.id}&k=${data.k}&t=${data.t}&dl=${data.dl}&nav=${data.nav}`,
         method: "GET",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -193,6 +208,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: `/sh?id=${data.id}&k=${data.k}&t=${data.t}&dl=${data.dl}&nav=${data.nav}&skip=${data.start}&take=${data.page}`,
         method: "GET",
+        credentials: "include",
         headeres: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -216,6 +232,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: "/user/verifySession",
         method: "GET",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
         },
@@ -225,12 +242,14 @@ export const apiSlice = createApi({
       query: () => ({
         url: "/user/logout",
         method: "GET",
+        credentials: "include",
       }),
     }),
     signup: builder.mutation({
       query: (data) => ({
         url: "/user/signup",
         method: "POST",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
           "Content-Type": "application/json",
@@ -251,6 +270,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: "/trash",
         method: "GET",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
         },
@@ -260,6 +280,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: `/sh/deleteShare?id=${data.id}`,
         method: "DELETE",
+        credentials: "include",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
         },
