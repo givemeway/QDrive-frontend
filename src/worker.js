@@ -130,6 +130,7 @@ const uploadFiles = async (
         console.log(err);
       }
     });
+    console.log("<-----file upload complete--->");
     postMessage({ mode: "finish" });
   } catch (err) {
     console.log(err);

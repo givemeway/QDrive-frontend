@@ -13,13 +13,14 @@ import { useEffect, useState } from "react";
 import FolderIcon from "../icons/FolderIcon";
 import { svgIconStyle } from "../fileFormats/FileFormat";
 import CloseIcon from "@mui/icons-material/Close";
-import useCreateFolder from "../hooks/CreateFolderHook";
 import { useNavigate } from "react-router";
 import { useSetRecoilState } from "recoil";
 import { snackBarAtom } from "../../Recoil/Store/atoms";
 import { GreyButton } from "../Buttons/GreyButton";
 import { CustomBlueButton } from "../Buttons/BlueButton";
 import { useParams } from "react-router-dom";
+import { useCreateFolderMutation } from "../../features/api/apiSlice";
+import { useSelector } from "react-redux";
 
 const mainContainerStyle = {
   position: "absolute",
@@ -60,12 +61,13 @@ export default function CreateFolderModal({ open, setOpen }) {
   const params = useParams();
   const subpath = params["*"];
   const navigate = useNavigate();
-  const [create, setCreate] = useState(false);
 
-  // const NotifyStatus = useContext(NotificationContext);
   const NotifyStatus = useSetRecoilState(snackBarAtom);
 
-  const [createFolder, createFolderResponse] = useCreateFolder(subpath);
+  const [createFolderQuery, createFolderStatus] = useCreateFolderMutation();
+  const { CSRFToken } = useSelector((state) => state.csrfToken);
+  const { isLoading, isSuccess, isError, error, data } = createFolderStatus;
+
   const handleChange = (e) => {
     setText(() => e.target.value);
   };
@@ -75,14 +77,14 @@ export default function CreateFolderModal({ open, setOpen }) {
   };
 
   const handleCreate = () => {
-    if (text !== "") {
-      setCreate(true);
-      createFolder(text);
+    if (text !== "" && CSRFToken) {
+      const data = { CSRFToken, subpath, folder: text };
+      createFolderQuery(data);
     }
   };
 
   useEffect(() => {
-    if (create && createFolderResponse?.done && createFolderResponse.success) {
+    if (isSuccess) {
       NotifyStatus(() => ({
         show: true,
         msg: "Folder Created",
@@ -90,27 +92,32 @@ export default function CreateFolderModal({ open, setOpen }) {
       }));
       navigate(subpath + `/${text}`);
       setOpen(false);
-    } else if (
-      create &&
-      createFolderResponse?.done &&
-      !createFolderResponse.success
-    ) {
-      if (createFolderResponse?.status === 409) {
-        NotifyStatus(() => ({
-          show: true,
-          msg: `Folder ${text} exists!`,
-          severity: "warning",
-        }));
-      } else {
-        NotifyStatus(() => ({
-          show: true,
-          msg: createFolderResponse.msg,
-          severity: "error",
-        }));
-      }
+    }
+    if (isError && error?.status === 409) {
+      NotifyStatus(() => ({
+        show: true,
+        msg: `Folder ${text} exists!`,
+        severity: "warning",
+      }));
       setOpen(false);
     }
-  }, [createFolderResponse.success, create, createFolderResponse.done]);
+    if (isError && (error?.status === 401 || error?.status === 403)) {
+      NotifyStatus(() => ({
+        show: true,
+        msg: error?.data?.msg,
+        severity: "error",
+      }));
+      setOpen(false);
+    }
+    if (isError && error?.originalStatus === 500) {
+      NotifyStatus(() => ({
+        show: true,
+        msg: "Something Went wrong try again",
+        severity: "error",
+      }));
+      setOpen(false);
+    }
+  }, [isError, isSuccess, error, isLoading]);
 
   return (
     <>

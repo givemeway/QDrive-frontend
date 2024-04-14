@@ -286,6 +286,16 @@ export const apiSlice = createApi({
         },
       }),
     }),
+    createFolder: builder.mutation({
+      query: (data) => ({
+        url: `/createFolder?subpath=${data.subpath}&folder=${data.folder}`,
+        method: "POST",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+        },
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
@@ -316,4 +326,5 @@ export const {
   useCheckUsernameMutation,
   useGetTrashMutation,
   useDeleteShareMutation,
+  useCreateFolderMutation,
 } = apiSlice;

@@ -32,6 +32,7 @@ import {
   downloadItemsURL,
   server,
   LOGOUT,
+  PRODUCTION,
 } from "../config.js";
 import { setRefresh } from "../features/table/updateTableSlice.js";
 import { setSession } from "../features/session/sessionSlice.js";
@@ -93,7 +94,9 @@ const DisplayText = ({
 }) => {
   if (data && type === DOWNLOAD && isSuccess) {
     const { key } = data;
-    window.open(`${server}${downloadItemsURL}?key=${key}&dl=1`, "_parent");
+    if (process.env.REACT_APP_ENV === PRODUCTION)
+      window.open(`${downloadItemsURL}?key=${key}&dl=1`, "_parent");
+    else window.open(`${server}${downloadItemsURL}?key=${key}&dl=1`, "_parent");
   }
 
   return (
