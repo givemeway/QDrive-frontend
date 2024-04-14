@@ -1,5 +1,3 @@
-/* global importScripts */
-
 // https://github.com/goto-bus-stop/from2-blob/tree/master
 import { fileUploadURL } from "./config.js";
 
@@ -8,7 +6,7 @@ import { hashFileChunked } from "./hashFile.js";
 // eslint-disable-next-line no-restricted-globals
 self.window = self;
 
-importScripts(new URL("../dist/forge.js", import.meta.url));
+// importScripts(new URL("../dist/forge.js", import.meta.url));
 
 const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
   return new Promise(async (resolve, reject) => {

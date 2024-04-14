@@ -1,4 +1,4 @@
-/*global forge*/
+import forge from "node-forge";
 const chunkSize = 1024 * 1024 * 100;
 
 const hashFile = async (file) => {

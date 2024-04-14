@@ -1,11 +1,8 @@
-/* global importScripts */
-/* global async*/
 import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { uploadFile } from "./transferFile.js";
 import { csrftokenURL, concurrency } from "./config.js";
 import { formatBytes } from "./util.js";
-
-importScripts(new URL("../dist/async.js", import.meta.url));
+import async from "async";
 
 const FILE = "file";
 const FOLDER = "folder";
