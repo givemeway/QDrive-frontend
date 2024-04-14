@@ -8,16 +8,12 @@ const getfilesCurDir = async (cwd, device, CSRFToken, backupType) => {
     devicename: device,
     currentdirectory: cwd,
     backuptype: backupType,
-    username: username,
-    start: 0,
-    end: 100000,
   };
   const options = {
     method: "POST",
     mode: "cors",
     credentials: "include",
     headers: headers,
-    body: { start: 0, end: 100000 },
   };
 
   console.log(options);
