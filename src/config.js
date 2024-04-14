@@ -1,7 +1,8 @@
 const host = process.env.REACT_APP_BASE_API_URL;
 const server = process.env.REACT_APP_BASE_API_URL;
-const PRODUCTION = "production";
+export const PRODUCTION = "production";
 console.log(process.env.REACT_APP_BASE_API_URL, process.env.REACT_APP_ENV);
+
 const fileUploadURL =
   process.env.REACT_APP_ENV === PRODUCTION
     ? server + `/app/receiveFiles`

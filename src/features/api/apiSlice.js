@@ -1,9 +1,13 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { PRODUCTION } from "../../config";
 
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://api.qdrive.space/app",
+    baseUrl:
+      process.env.REACT_APP_ENV === PRODUCTION
+        ? process.env.REACT_APP_BASE_API_URL + "/app"
+        : "/app",
   }),
   endpoints: (builder) => ({
     deleteTrashItems: builder.mutation({
