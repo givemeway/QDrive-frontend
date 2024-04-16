@@ -1,4 +1,4 @@
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./PhotoPreview.css";
 import CloseIcon from "./icons/CloseIcon";
 import Left from "./icons/LeftArrow.js";
@@ -128,19 +128,16 @@ const PhotoNavigation = () => {
   );
 };
 
-export default function PhotoPreview({ onClose, pth, photos, initialName }) {
+export default function PhotoPreview({ onClose, photos, initialName }) {
   const dispatch = useDispatch();
   const photo = useSelector((state) => state.photoNav);
   const navigate = useNavigate();
-  const params = useParams();
-  const subpath = params["*"];
   const location = useLocation();
 
   const [photoPreviewQuery, photoPreviewStatus] =
     useGetPhotoPreviewURLMutation();
   const { isLoading, isError, data, isSuccess } = photoPreviewStatus;
   useEffect(() => {
-    photoPreviewQuery({ path: pth, filename: initialName });
     const idx = photos.findIndex((photo) => photo.name === initialName) + 1;
     dispatch(
       setPosition({
@@ -151,11 +148,14 @@ export default function PhotoPreview({ onClose, pth, photos, initialName }) {
         path: photos[idx - 1].path,
       })
     );
+    photoPreviewQuery({ path: photos[idx - 1].path, filename: initialName });
   }, []);
 
   useEffect(() => {
     const filename = photos[photo.pos - 1]?.name;
-    navigate(`/dashboard/${subpath}?preview=${filename}`);
+    const params = new URLSearchParams(location.search);
+    params.set("preview", filename);
+    navigate(`${location.pathname}?${params.toString()}`);
   }, [photo.pos]);
 
   useEffect(() => {

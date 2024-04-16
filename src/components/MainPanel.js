@@ -44,7 +44,7 @@ export default React.memo(function MainPanel({ mode }) {
   const [newRows, setNewRows] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
   const [photos, setPhotos] = useState([]);
-  const [path, setPath] = useState("/");
+
   const [photoName, setPhotoName] = useState("");
   const reLoad = useRef(false);
   const [isPreview, setIsPreview] = useState(false);
@@ -67,13 +67,9 @@ export default React.memo(function MainPanel({ mode }) {
     : { msg: "", status: undefined };
   useEffect(() => {
     if (search.length > 0) {
-      const pathParts = subpath.split("/").slice(1).join("/");
-      const pth = pathParts === "" ? "/" : pathParts;
       setIsPreview(true);
-      setPath(pth);
       const urlParams = new URLSearchParams(search);
       const filename = urlParams.get("preview");
-      console.log(filename);
       setPhotoName(filename);
     } else {
       setIsPreview(false);
@@ -248,7 +244,7 @@ export default React.memo(function MainPanel({ mode }) {
                 setIsPreview(false);
                 navigate(subpath);
               }}
-              pth={path}
+              // pth={path}
               photos={photos}
               initialName={photoName}
             />

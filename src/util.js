@@ -50,7 +50,6 @@ const opts = {
 };
 
 export const get_url = (file) => {
-  console.log(process.env.NODE_ENV, " inside the geturl ", server, downloadURL);
   if (process.env.NODE_ENV === PRODUCTION) {
     return `${downloadURL}?file=${encodeURIComponent(
       file.filename

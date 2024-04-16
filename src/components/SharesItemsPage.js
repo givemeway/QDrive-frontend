@@ -1,4 +1,4 @@
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import BreadCrumb from "./breadCrumbs/CollapsibleBreadUnderLinedCrumbs.js";
 
@@ -40,10 +40,10 @@ export default function Shared() {
   const page = useRef(1);
   const reLoad = useRef(false);
   const [isFetching, setIsFetching] = useState(false);
-
   const [isShareValid, setIsShareValid] = useState(undefined);
   const [isPreview, setIsPreview] = useState(false);
   const [photoName, setPhotoName] = useState("");
+  const navigate = useNavigate();
 
   const [validateShareQuery, validateShareStatus] =
     useValidateShareLinkMutation();
@@ -231,6 +231,9 @@ export default function Shared() {
 
   const handleClosePreview = () => {
     setIsPreview(false);
+    const params = new URLSearchParams(location.search);
+    params.delete("preview");
+    navigate(`${location.pathname}?${params.toString()}`);
   };
 
   return (
@@ -280,7 +283,6 @@ export default function Shared() {
           <Modal style={{ background: "white", opacity: 1 }}>
             <PhotoPreview
               onClose={handleClosePreview}
-              pth={nav}
               photos={newRows}
               initialName={photoName}
             />

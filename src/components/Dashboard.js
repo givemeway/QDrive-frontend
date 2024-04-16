@@ -36,7 +36,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const { isLoading, isSuccess, isError, data } = CSRFTokenStatus;
-  console.log(session, notify, data);
 
   console.log("Dashboard rendered");
 
@@ -77,6 +76,8 @@ const Dashboard = () => {
       setMode("DELETED");
     } else if (path[0] === "photos") {
       setMode("PHOTOS");
+    } else if (path[0] === "share") {
+      setMode("SHARE");
     }
   }, [subpath]);
 
