@@ -118,9 +118,9 @@ export const DownloadCell = ({ row }) => {
                   <CopyLinkIcon
                     style={{ width: 25, height: 25, color: "#1A1918" }}
                   />
-                  <span className="text-left  text-[#1A1918] font-semibold font-sans">
+                  {/* <span className="text-left  text-[#1A1918] font-semibold font-sans">
                     Copy Link
-                  </span>
+                  </span> */}
                 </div>
               }
               style={{ height: "40px" }}
@@ -132,9 +132,9 @@ export const DownloadCell = ({ row }) => {
                   <DownloadIcon
                     style={{ width: 25, height: 25, color: "#1A1918" }}
                   />
-                  <span className="text-left  text-[#1A1918] font-semibold font-sans">
+                  {/* <span className="text-left  text-[#1A1918] font-semibold font-sans">
                     Download
-                  </span>
+                  </span> */}
                 </div>
               }
               style={{ height: "40px" }}

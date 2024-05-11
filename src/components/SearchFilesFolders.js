@@ -1,23 +1,40 @@
 import { useNavigate } from "react-router-dom";
+import { HamburgerIcon } from "./icons/HamburgerIcon";
 import { useState, useEffect } from "react";
 import { CustomBlueButton } from "./Buttons/BlueButton";
-import { HamburgerIcon } from "./icons/HamburgerIcon";
 import AvatarMenu from "./AvatarMenu";
+import { useDispatch, useSelector } from "react-redux";
+import { setPanel } from "../features/navigation/navigationPanelSlice";
 
 export default function Search({ searchValue }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState(searchValue);
+  const [context, setContext] = useState(false);
+  const dispatch = useDispatch();
+  const handleContext = () => {
+    setContext((prev) => !prev);
+  };
+
   const handleChange = (e) => {
     setQuery(e.target.value);
   };
   useEffect(() => {
     setQuery(searchValue);
   }, [searchValue]);
+
+  useEffect(() => {
+    dispatch(setPanel(context));
+  }, [context]);
+
   return (
     <div className="flex flex-row justify-start items-center w-full h-full">
-      <div className="block md:hidden">
-        <HamburgerIcon style={{ width: 50, height: "100%" }} />
+      <div className="flex flex-col justify-start items-start md:hidden">
+        <HamburgerIcon
+          style={{ width: 30, height: 30, cursor: "pointer" }}
+          onClick={handleContext}
+        />
       </div>
+
       <div className="flex justify-start items-center h-full w-1/2">
         <input
           placeholder=" Search"

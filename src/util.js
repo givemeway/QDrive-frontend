@@ -235,14 +235,31 @@ function generateLink(navPath, params, row, preview = 0) {
 
   if (layout === "transfer" && nav === "/") {
     dir = row.path.split(nav).slice(1).join("/");
-    return dir === ""
-      ? path + `/h?k=${id}`
-      : path + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
+
+    if (preview === 0)
+      return dir === ""
+        ? path + `/h?k=${id}`
+        : path + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
+    if (preview === 1)
+      return dir === ""
+        ? path + `/h?preview=${row.name}&k=${id}`
+        : path +
+            "/h" +
+            ensureStartsWithSlash(dir) +
+            `?preview=${row.name}&k=${id}`;
   }
   if (layout === "transfer" && nav !== "/") {
-    return dir === ""
-      ? path + `/h?k=${id}`
-      : path + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
+    if (preview === 0)
+      return dir === ""
+        ? path + `/h?k=${id}`
+        : path + "/h" + ensureStartsWithSlash(dir) + `?k=${id}`;
+    if (preview === 1)
+      return dir === ""
+        ? path + `/h?preview=${row.name}&k=${id}`
+        : path +
+            "/h" +
+            ensureStartsWithSlash(dir) +
+            `?preview=${row.name}&k=${id}`;
   }
 }
 

@@ -19,23 +19,9 @@ export default React.memo(function UploadMenu() {
   const tabSelected = useRecoilValue(tabSelectedAtom);
 
   return (
-    <Stack sx={{ marginBottom: 0, padding: 0, height: "100%" }}>
+    <div className="h-full w-full">
       {tabSelected !== 4 && (
-        <Box
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
-          alignContent="center"
-          sx={{
-            height: "100%",
-            background: "#F9F9F9",
-            border: "1px solid #DBDBDB",
-            boxSizing: "border-box",
-            borderLeft: "none",
-            margin: 0,
-            padding: 0,
-          }}
-        >
+        <div className="flex flex-row justify-start items-center h-full bg-[#F9F9F9] border box-border m-0 p-0">
           <FolderUpload />
           <Divider orientation="vertical" />
           <FilesUpload />
@@ -60,9 +46,9 @@ export default React.memo(function UploadMenu() {
               <Divider orientation="vertical" />
             </>
           )}
-        </Box>
+        </div>
       )}
       {tabSelected === 4 && <Box></Box>}
-    </Stack>
+    </div>
   );
 });

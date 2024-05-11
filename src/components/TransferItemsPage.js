@@ -26,23 +26,30 @@ import { StatusNotification } from "./StatusNotification.js";
 import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
 import isPicture from "./fileFormats/FileFormat.js";
 
-export default function Shared() {
+export default function Transfer() {
   const location = useLocation();
   const [isShareURLInvalid, setIsShareURLInvalid] = useState(false);
   const [sharedby, setSharedBy] = useState({ owner: "", name: "" });
-  const [breadCrumb, setBreadCrumb] = useState(["/"]);
+
+  const [breadCrumb, setBreadCrumb] = useState(
+    new Map(Object.entries({ "/": "/" }))
+  );
+  const tempBreadCrumbs = useRef(new Map(Object.entries({ "/": "/" })));
+
   const dispath = useDispatch();
   const table = useSelector((state) => state.browseItems);
 
   let { type, shareId, "*": nav } = useParams();
+
   const [dirNav, setDirNav] = useState("");
-  const share = useRef({ itemID: "", dl: "" });
+  const share = useRef({ itemID: null, dl: null, rel: "" });
   const [newRows, setNewRows] = useState([]);
   const navigatedToNewDir = useRef(null);
   const page = useRef(1);
   const reLoad = useRef(false);
   const [isFetching, setIsFetching] = useState(false);
   const [isShareValid, setIsShareValid] = useState(undefined);
+  const [browse, setBrowse] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [photoName, setPhotoName] = useState("");
   const navigate = useNavigate();
@@ -82,14 +89,13 @@ export default function Shared() {
     const dl = queryParams.get("dl");
     share.current.itemID = itemID;
     share.current.dl = dl;
-    if (
-      itemID?.length !== 36 ||
-      shareId?.length !== 24 ||
-      (type !== "fo" && type !== "fi" && type !== "t")
-    ) {
+    const type = location.pathname.split("/")[2];
+    if (shareId?.length !== 24 || type !== "t") {
+      console.log("inside the invalid link block");
       setIsShareURLInvalid(true);
     } else {
       setIsShareURLInvalid(false);
+      console.log("inside the validate share block");
       const body = {
         id: shareId,
         k: share.current.itemID,
@@ -104,11 +110,13 @@ export default function Shared() {
   useEffect(() => {
     if (validate.isSuccess && validate.data?.success) {
       setIsShareValid(true);
+      setBrowse(false);
       setSharedBy({
         owner: validate.data?.sharedBy,
         name: validate.data?.name,
       });
     } else if (validate.isError || validate.error) {
+      setBrowse(false);
       setIsShareValid(false);
     }
   }, [validate.isSuccess, validate.data, validate.error, validate.isError]);
@@ -123,14 +131,21 @@ export default function Shared() {
         nav: nav,
         start: (page.current - 1) * pageSize,
         page: pageSize,
+        nav_tracking: 0,
       };
       browseShareQuery(body);
     }
   }, [isShareValid, isShareURLInvalid]);
 
   useEffect(() => {
-    if (!isShareURLInvalid && isShareValid) {
+    if (!isShareURLInvalid && isShareValid && browse) {
       page.current = 1;
+      const queryParams = new URLSearchParams(location.search);
+      const itemID = queryParams.get("k");
+      const dl = queryParams.get("dl");
+      share.current.itemID = itemID;
+      share.current.dl = dl;
+      const type = location.pathname.split("/")[2];
       const body = {
         id: shareId,
         k: share.current.itemID,
@@ -139,13 +154,22 @@ export default function Shared() {
         nav: nav,
         start: (page.current - 1) * pageSize,
         page: pageSize,
+        nav_tracking: 1,
       };
       navigatedToNewDir.current = true;
       reLoad.current = false;
       setIsFetching(false);
       browseShareQuery(body);
     }
-  }, [location.pathname, nav, shareId, type, isShareValid, isShareURLInvalid]);
+  }, [
+    location.pathname,
+    nav,
+    shareId,
+    type,
+    isShareValid,
+    isShareURLInvalid,
+    browse,
+  ]);
 
   useEffect(() => {
     if (!isShareURLInvalid && isShareValid) {
@@ -162,8 +186,30 @@ export default function Shared() {
   useEffect(() => {
     if (browseShare.data?.success) {
       const { files, directories, home, path, total } = browseShare.data;
+      const queryParams = new URLSearchParams(location.search);
+      const k = queryParams.get("k");
+      if (k === null) share.current.rel = path;
       setDirNav(path);
-      setBreadCrumb(() => [home, ...nav.split("/").slice(1)]);
+      if (k !== null) {
+        setBreadCrumb((prev) =>
+          new Map(prev).set(share.current.itemID, nav.split("/").slice(-1)[0])
+        );
+        tempBreadCrumbs.current = new Map(tempBreadCrumbs.current).set(
+          share.current.itemID,
+          nav.split("/").slice(-1)[0]
+        );
+      }
+      if (
+        nav.split("/").length !== Array.from(tempBreadCrumbs.current).length
+      ) {
+        Array.from(tempBreadCrumbs.current).forEach((entry, idx) => {
+          if (idx >= nav.split("/").length) {
+            tempBreadCrumbs.current.delete(entry[0]);
+          }
+        });
+        setBreadCrumb(tempBreadCrumbs.current);
+      }
+      console.log(files);
       const fileRows = files.map((file) => buildCellValueForFile(file));
       const folderRows = directories.map((fo) => buildCellValueForFolder(fo));
 
@@ -206,6 +252,7 @@ export default function Shared() {
       );
       reLoad.current = false;
       setIsFetching(false);
+      setBrowse(true);
     }
   }, [
     browseShare.data?.sucess,
@@ -258,32 +305,31 @@ export default function Shared() {
             <div className="w-full flex flex-col justify-around items-center">
               <ShareBanner
                 owner={sharedby.owner}
-                item={type === "fi" ? "file" : "folder"}
-                name={sharedby.name}
+                name={`${sharedby.name} items`}
               />
               <DownloadHeader />
             </div>
-            {type === "fo" && (
-              <div className="w-full flex flex-row justify-start items-center">
-                <BreadCrumb
-                  queue={breadCrumb}
-                  link={`/sh/fo/${shareId}/h`}
-                  layout={"share"}
-                  k={share.current.itemID}
-                />
-              </div>
-            )}
+
+            <div className="w-full flex flex-row justify-start items-center">
+              <BreadCrumb
+                queue={breadCrumb}
+                link={`/sh/t/${shareId}/h`}
+                layout={"transfer"}
+                k={share.current.itemID}
+              />
+            </div>
+
             <div className="h-4/6 w-full grow">
               <Table
-                layout={"share"}
-                path={`/sh/${type}/${shareId}`}
+                layout={"transfer"}
+                path={`/sh/t/${shareId}`}
                 isLoading={browseShare.isLoading}
                 isError={browseShare.isError}
                 status={browseShare.status}
                 startedTimeStamp={browseShare.startedTimeStamp}
                 rows={newRows}
                 isFetching={isFetching}
-                nav={dirNav}
+                nav={share.current.rel}
               />
             </div>
           </div>

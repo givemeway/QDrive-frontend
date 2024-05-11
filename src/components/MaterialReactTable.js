@@ -38,7 +38,7 @@ const colFn = (layout, path, nav) => [
   {
     accessorKey: "name",
     header: "Name",
-    size: 300,
+    size: 200,
     enableColumnActions: false,
     muiTableHeadCellProps: {
       align: "left",
@@ -78,7 +78,7 @@ const colFn = (layout, path, nav) => [
     header: "Modified",
     enableEditing: false,
     enableColumnActions: false,
-    size: 200,
+    size: 100,
     Cell: ({ row }) => <DownloadCell row={row.original} />,
   },
 ];
@@ -264,9 +264,9 @@ const DataTable = ({
     muiBottomToolbarProps: () => ({
       sx: { display: "block" },
     }),
-    muiTableBodyProps: () => ({
-      sx: { minHeight: "60vh" },
-    }),
+    // muiTableBodyProps: () => ({
+    //   sx: { minHeight: "60vh" },
+    // }),
     muiTableBodyRowProps: ({ row }) => ({
       onClick: (e) => handleRowClick(row, e),
       onContextMenu: (e) => contextMenu(e, row, e),

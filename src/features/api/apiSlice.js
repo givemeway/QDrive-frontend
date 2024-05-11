@@ -51,10 +51,10 @@ export const apiSlice = createApi({
     }),
     getFolders: builder.mutation({
       query: (params) => ({
-        url: "/getSubFolders",
-        method: "POST",
+        url: `/getSubFolders?path=${params.path}`,
+        method: "GET",
         credentials: "include",
-        headers: { path: params.path, "X-CSRF-Token": params.CSRFToken },
+        headers: { "X-CSRF-Token": params.CSRFToken },
       }),
     }),
     deleteItems: builder.mutation({
@@ -118,7 +118,7 @@ export const apiSlice = createApi({
     }),
     createShare: builder.mutation({
       query: (data) => ({
-        url: "/createShare?t=" + data.type,
+        url: "/sh/createShare?t=" + data.type,
         method: "POST",
         headers: {
           "X-CSRF-Token": data.CSRFToken,
@@ -126,6 +126,16 @@ export const apiSlice = createApi({
         },
         body: data.items,
         credentials: "include",
+      }),
+    }),
+    copyShare: builder.mutation({
+      query: (data) => ({
+        url: `/sh/copyshare?type=${data.type}&id=${data.id}`,
+        credentials: "include",
+        headers: {
+          "X-CSRF-Token": data.CSRFToken,
+          "Content-Type": "application/json",
+        },
       }),
     }),
     downloadItems: builder.mutation({
@@ -164,7 +174,7 @@ export const apiSlice = createApi({
     }),
     getShares: builder.mutation({
       query: (data) => ({
-        url: "/sh/getSharedLinks",
+        url: `/sh/getSharedLinks?skip=${data.start}&limit=${data.page}&type=${data.type}`,
         method: "GET",
         credentials: "include",
         headers: {
@@ -206,7 +216,7 @@ export const apiSlice = createApi({
     }),
     browseSharedItems: builder.mutation({
       query: (data) => ({
-        url: `/sh?id=${data.id}&k=${data.k}&t=${data.t}&dl=${data.dl}&nav=${data.nav}&skip=${data.start}&take=${data.page}`,
+        url: `/sh?id=${data.id}&k=${data.k}&t=${data.t}&dl=${data.dl}&nav=${data.nav}&skip=${data.start}&take=${data.page}&nav_tracking=${data.nav_tracking}`,
         method: "GET",
         credentials: "include",
         headeres: {
@@ -278,7 +288,7 @@ export const apiSlice = createApi({
     }),
     deleteShare: builder.mutation({
       query: (data) => ({
-        url: `/sh/deleteShare?id=${data.id}`,
+        url: `/sh/deleteShare?id=${data.id}&type=${data.type}`,
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -327,4 +337,5 @@ export const {
   useGetTrashMutation,
   useDeleteShareMutation,
   useCreateFolderMutation,
+  useCopyShareMutation,
 } = apiSlice;

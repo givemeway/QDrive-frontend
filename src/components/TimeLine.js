@@ -96,7 +96,7 @@ const TimeLineFilter = () => {
   }, [idx]);
 
   return (
-    <div className="h-full grid grid-cols-6 content-center pl-4 border border-l-0 divide-x gap-2">
+    <div className="h-full grid grid-cols-6 content-center border divide-x gap-2">
       <div className="col-span-2">
         <div className="flex flex-row">
           <button
@@ -311,7 +311,7 @@ export const TimeLine = () => {
       <div
         key={index}
         style={style}
-        className="flex flex-row items-center justify-start gap-1 pl-4"
+        className="flex flex-row items-center justify-start gap-1"
       >
         {Array.isArray(data[index]?.value) ? (
           data[index].value.map((photo) => {

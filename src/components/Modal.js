@@ -43,9 +43,8 @@ const FolderTreeView = ({ CSRFToken, setToPath, toPath, setNodeSelected }) => {
   const [expanded, setExpanded] = useState([]);
   const [folders, setFolders] = useState([]);
   const clickedNode = useRef("1");
-  const [getFoldersMutation, getFolders] = useGetFoldersMutation();
-  let { status, isLoading, isError, isSuccess, data } = getFolders;
-  console.log({ status, isLoading, isError, isSuccess, data });
+  const [getFoldersQuery, getfoldersStatus] = useGetFoldersMutation();
+  let { status, isLoading, isError, isSuccess, data } = getfoldersStatus;
   if (!data) {
     data = {};
     data.folders = [];
@@ -53,7 +52,7 @@ const FolderTreeView = ({ CSRFToken, setToPath, toPath, setNodeSelected }) => {
 
   useEffect(() => {
     setExpanded(["1"]);
-    getFoldersMutation({ path: toPath, CSRFToken });
+    getFoldersQuery({ path: toPath, CSRFToken });
   }, []);
 
   useEffect(() => {
@@ -81,10 +80,9 @@ const FolderTreeView = ({ CSRFToken, setToPath, toPath, setNodeSelected }) => {
   }, [data.folders, isSuccess, status]);
 
   const handleClick = async (path, nodeId) => {
-    // Fetch folders from server while expanding
     if (!expanded.includes(nodeId)) {
       clickedNode.current = nodeId;
-      getFoldersMutation({ path, CSRFToken });
+      getFoldersQuery({ path, CSRFToken });
     } else {
       setExpanded((prev) => {
         return prev.includes(nodeId)
@@ -123,39 +121,39 @@ const FolderTreeView = ({ CSRFToken, setToPath, toPath, setNodeSelected }) => {
   };
 
   const renderTree = (nodes) => {
-    return nodes.map((node) => (
-      <IconExpandedTreeItem
-        nodeId={`${node.uuid};${node.path}`}
-        key={node.uuid}
-        label={
-          <Box
-            display={"flex"}
-            flexDirection={"row"}
-            gap={1}
-            justifyContent={"flex-start"}
-          >
-            <FolderRounded sx={{ color: "#A1C9F7" }} /> {node.folder}
-          </Box>
-        }
-        icon={
-          expanded.includes(node.uuid + ";" + node.path) ? (
-            <ExpandMoreIcon
-              onClick={() =>
-                handleClick(node.path, `${node.uuid};${node.path}`)
-              }
-            />
-          ) : (
-            <ChevronRightIcon
-              onClick={() =>
-                handleClick(node.path, `${node.uuid};${node.path}`)
-              }
-            />
-          )
-        }
-      >
-        {node.children && renderTree(node.children)}
-      </IconExpandedTreeItem>
-    ));
+    return nodes.map((node) => {
+      const nodeId = `${node.uuid};${node.path}`;
+      return (
+        <IconExpandedTreeItem
+          nodeId={nodeId}
+          key={node.uuid}
+          label={
+            <div className="flex justify-start gap-1 items-center">
+              <FolderRounded sx={{ color: "#A1C9F7" }} /> {node.folder}
+              {nodeId === clickedNode.current && isLoading && (
+                <SpinnerGIF
+                  style={{
+                    width: 20,
+                    height: 20,
+                  }}
+                />
+              )}
+            </div>
+          }
+          icon={
+            expanded.includes(node.uuid + ";" + node.path) ? (
+              <ExpandMoreIcon onClick={() => handleClick(node.path, nodeId)} />
+            ) : (
+              <ChevronRightIcon
+                onClick={() => handleClick(node.path, nodeId)}
+              />
+            )
+          }
+        >
+          {node.children && renderTree(node.children)}
+        </IconExpandedTreeItem>
+      );
+    });
   };
 
   return (
@@ -171,6 +169,9 @@ const FolderTreeView = ({ CSRFToken, setToPath, toPath, setNodeSelected }) => {
     >
       <IconExpandedTreeItem nodeId="1" label="Home">
         {renderTree(folders)}
+        {clickedNode.current === "1" && isLoading && (
+          <SpinnerGIF style={{ width: 50, height: 50 }} />
+        )}
       </IconExpandedTreeItem>
     </TreeView>
   );

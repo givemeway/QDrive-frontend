@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import {
   useCopyItemsMutation,
+  useCopyShareMutation,
   useCreateShareMutation,
   useDeleteItemsMutation,
   useDeleteTrashItemsMutation,
@@ -28,6 +29,7 @@ import {
   RENAME,
   DELETETRASH,
   RESTORETRASH,
+  COPYSHARE,
   EMPTYTRASH,
   downloadItemsURL,
   server,
@@ -160,6 +162,13 @@ const DisplayText = ({
       )}
 
       {type === SHARE && isSuccess && <CopyToClipBoard url={data.url} />}
+      {type === COPYSHARE && isSuccess && <CopyToClipBoard url={data.url} />}
+      {type === COPYSHARE && isLoading && (
+        <span className={className}>Copying Share..</span>
+      )}
+      {type === COPYSHARE && isError && (
+        <span className={className}>Error Copying Share</span>
+      )}
 
       {type === DELETETRASH && isError && (
         <span className={className}>Error Deleting Items from Trash</span>
@@ -212,6 +221,7 @@ export function StatusNotification() {
   const createShareMutation = useCreateShareMutation();
   const downloadItemsMutation = useDownloadItemsMutation();
   const logoutMutation = useLogoutMutation();
+  const copyShareMutation = useCopyShareMutation();
 
   const [open, setOpen] = useState(false);
   const timer = useRef();
@@ -219,6 +229,9 @@ export function StatusNotification() {
   const count = useRef(1);
 
   switch (operation.type) {
+    case COPYSHARE:
+      init_operation = copyShareMutation;
+      break;
     case DELETETRASH:
       init_operation = deleteTrashMutation;
       break;
@@ -279,6 +292,14 @@ export function StatusNotification() {
     if (operation.status === "initialized" && CSRFToken.length > 0) {
       setOpen(true);
       switch (operation.type) {
+        case COPYSHARE:
+          console.log("copy share initialized");
+          init_operation[0]({
+            CSRFToken,
+            type: operation.data.type,
+            id: operation.data.id,
+          });
+          break;
         case DELETETRASH:
           console.log("trash initialilzed");
           init_operation[0]({ items: operation.data, CSRFToken });

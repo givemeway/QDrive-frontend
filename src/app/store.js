@@ -14,6 +14,9 @@ import updateTable from "../features/table/updateTableSlice.js";
 import photoNav from "../features/photopreview/previewSlice.js";
 import selected from "../features/selectedRows/selectedRowsSlice.js";
 import session from "../features/session/sessionSlice.js";
+import navigatePanel from "../features/navigation/navigationPanelSlice.js";
+import sharedTable from "../features/sharedTable/sharedTableSlice.js";
+
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -31,6 +34,8 @@ export const store = configureStore({
     photoNav: photoNav,
     selected: selected,
     session: session,
+    navigatePanel: navigatePanel,
+    sharedTable: sharedTable,
   },
   middleware: (getDefaultMiddleWare) =>
     getDefaultMiddleWare().concat(apiSlice.middleware),

@@ -120,11 +120,13 @@ const DELETE = "DELETE";
 const DELETETRASH = "DELETETRASH";
 const EMPTYTRASH = "EMPTYTRASH";
 const RESTORETRASH = "RESTORETRASH";
+const COPYSHARE = "COPYSHARE";
 const pageSize = 50;
 const multiple = "multiple";
 const file = "file";
 const folder = "folder";
 const fileVersion = "fileVersion";
+const FRONTEND_DOMAIN = `http://localhost:3001`;
 const timeOpts = {
   year: "numeric",
   month: "short",
@@ -167,6 +169,7 @@ export {
   deleteTrashURL,
   createFolderURL,
   RENAME,
+  FRONTEND_DOMAIN,
   COPY,
   MOVE,
   pageSize,
@@ -180,6 +183,7 @@ export {
   DOWNLOAD,
   DELETETRASH,
   RESTORETRASH,
+  COPYSHARE,
   EMPTYTRASH,
   getFileVersionURL,
   LOGOUT,

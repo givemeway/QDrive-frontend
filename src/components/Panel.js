@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import FolderExplorer from "./FolderExplorer";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useSetRecoilState } from "recoil";
 import { tabSelectedAtom } from "../Recoil/Store/atoms";
 import { AllFilesIcon } from "./icons/AllFilesIcon";
@@ -9,6 +9,7 @@ import PictureIcon from "./icons/PictureIcon";
 import { SharedIcon } from "./icons/SharedIcon";
 import { DeletedIcon } from "./icons/DeletedIcon";
 import { ChevronDown } from "./icons/ChevronDown";
+import useOutSideClick from "./hooks/useOutsideClick";
 
 const style = {
   display: "flex",
@@ -41,7 +42,10 @@ const TabButton = ({ active, children, onClick }) => {
 const Panel = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const params = useParams();
+  const subpath = params["*"];
   const setTabSelected = useSetRecoilState(tabSelectedAtom);
+  const panelRef = useRef(null);
   const [active, setActive] = useState({
     allFiles: true,
     photos: false,
@@ -80,11 +84,51 @@ const Panel = () => {
     setTabSelected(2);
   };
 
+  useEffect(() => {
+    const path = subpath.split("/");
+    if (path[0] === "home") {
+      setActive({
+        allFiles: true,
+        photos: false,
+        shared: false,
+        deleted: false,
+      });
+      setTabSelected(1);
+    } else if (path[0] === "deleted") {
+      setActive({
+        allFiles: false,
+        photos: false,
+        shared: false,
+        deleted: true,
+      });
+
+      setTabSelected(4);
+    } else if (path[0] === "photos") {
+      setActive({
+        allFiles: false,
+        photos: true,
+        shared: false,
+        deleted: false,
+      });
+
+      setTabSelected(2);
+    } else if (path[0] === "share") {
+      setActive({
+        allFiles: false,
+        photos: false,
+        shared: true,
+        deleted: false,
+      });
+      setTabSelected(3);
+    }
+  }, [subpath]);
+
   return (
     <div
       className="flex flex-col items-start gap-0 w-[240px] 
-          h-screen bg-[#F7F5F2] border-r border-[#D4D2D0] 
+          h-full bg-[#F7F5F2] border-r border-[#D4D2D0] 
           box-border "
+      ref={panelRef}
     >
       <h3
         className="cursor-pointer mt-5 mb-8 ml-2 text-5xl font-semibold"

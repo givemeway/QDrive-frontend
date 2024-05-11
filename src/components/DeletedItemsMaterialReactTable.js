@@ -135,10 +135,12 @@ export default React.memo(function DeletedItemsTable({
   const dispatch = useDispatch();
 
   const handleBulkRestore = () => {
+    setShowRestoreButton(false);
     setOpenTrashItems(true);
   };
 
   const handleBulkTrashDelete = () => {
+    setShowRestoreButton(false);
     setOpenBulkTrashDelete(true);
   };
 

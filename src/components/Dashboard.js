@@ -1,12 +1,13 @@
 import Search from "./SearchFilesFolders";
 import SnackBar from "./Snackbar/SnackBar.js";
+import { HamburgerIcon } from "./icons/HamburgerIcon";
 
 import NavigatePanel from "./Panel";
 import Header from "./Header";
 import MainPanel from "./MainPanel";
 import Menu from "./UploadMenu";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 
 import { useRecoilState } from "recoil";
@@ -34,8 +35,11 @@ const Dashboard = () => {
   const [userSession, userSessionStatus] = useVerifySessionMutation();
   const session = useSelector((state) => state.session);
   const navigate = useNavigate();
-
+  const { open } = useSelector((state) => state.navigatePanel);
   const { isLoading, isSuccess, isError, data } = CSRFTokenStatus;
+  const searchRef = useRef();
+  const containerRef = useRef();
+  const [contextHeight, setContextHeight] = useState(0);
 
   console.log("Dashboard rendered");
 
@@ -87,24 +91,34 @@ const Dashboard = () => {
     }
   }, [isSuccess, data]);
 
+  useEffect(() => {
+    console.log(containerRef.current?.getBoundingClientRect());
+    console.log(searchRef.current?.getBoundingClientRect());
+  }, []);
+
   return (
     <>
       {session.isLoggedIn && (
-        <div className="w-screen h-screen flex flex-row gap-0">
+        <div
+          className="w-screen h-screen flex flex-row gap-0"
+          ref={containerRef}
+        >
           <div className="w-[240px] hidden h-screen md:block">
             <NavigatePanel />
           </div>
+
           <div className="h-screen grow flex flex-col pl-4 pr-4">
-            <div className="w-full h-[80px] pt-4">
+            <div className="w-full h-[60px] pt-4 mb-2" ref={searchRef}>
               <Search searchValue={searchValue} />
             </div>
+
             {(mode === "BROWSE" || mode === "SEARCH") && (
-              <div className="w-full h-[85px]">
+              <div className="w-full h-[50px]">
                 <Header search={isSearch} />
               </div>
             )}
             {mode === "BROWSE" && (
-              <div className="w-full h-[85px]">
+              <div className="w-full h-[50px]">
                 <Menu />
               </div>
             )}
@@ -118,6 +132,18 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {open && (
+        <div
+          className={`absolute z-[1000]  inset-y-[61px]  flex-grow
+                    flex justify-start items-center 
+                    w-full h-full
+                    bg-black bg-opacity-50 md:hidden`}
+        >
+          <NavigatePanel />
+        </div>
+      )}
+
       {notify.show && (
         <SnackBar
           msg={notify.msg}

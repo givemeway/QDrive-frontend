@@ -18,7 +18,7 @@ const colFn = (layout, path, nav) => [
   {
     accessorKey: "name",
     header: "Name",
-    size: 350,
+    size: 200,
     enableColumnActions: false,
     muiTableHeadCellProps: {
       align: "left",
@@ -33,7 +33,7 @@ const colFn = (layout, path, nav) => [
   {
     accessorKey: "size", //normal accessorKey
     header: "Size",
-    size: 100,
+    size: 50,
     enableEditing: false,
     enableColumnActions: false,
     muiTableHeadCellProps: {
@@ -45,7 +45,7 @@ const colFn = (layout, path, nav) => [
     header: "Modified",
     enableEditing: false,
     enableColumnActions: false,
-    size: 150,
+    size: 100,
     Cell: ({ row }) => <DownloadCell row={row.original} />,
   },
 ];
@@ -137,7 +137,8 @@ const DataTable = ({
     muiTableContainerProps: ({ table }) => ({
       ref: tableContainerRef,
       sx: {
-        height: `calc(100% - ${table.refs.topToolbarRef.current?.offsetHeight}px - ${table.refs.bottomToolbarRef.current?.offsetHeight}px)`,
+        // height: `calc(100% - ${table.refs.topToolbarRef.current?.offsetHeight}px - ${table.refs.bottomToolbarRef.current?.offsetHeight}px)`,
+        height: "300px",
         width: "100%",
       },
       onScroll: (event) => fetchMoreOnBottomReached(event.target),
