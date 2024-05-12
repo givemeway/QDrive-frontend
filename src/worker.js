@@ -2,7 +2,7 @@ import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { uploadFile } from "./transferFile.js";
 import { csrftokenURL, concurrency } from "./config.js";
 import { formatBytes } from "./util.js";
-import { eachOfLimit } from "async-es";
+// import { eachOfLimit } from "async-es";
 
 const FILE = "file";
 const FOLDER = "folder";
@@ -116,34 +116,34 @@ const uploadFiles = async (
       total: files.length,
       processed: 0,
     });
-    // const results = [];
-    // for (let i = 0; i < newFiles.length; i += concurrency) {
-    //   const batch = newFiles.slice(i, i + concurrency);
-    //   const batchPromises = batch.map((file) =>
-    //     uploadFile(socket_main_id, file, cwd, file.modified, device, CSRFToken)
-    //   );
-    //   try {
-    //     const batchResults = await Promise.all(batchPromises);
-    //     results.push(batchResults);
-    //   } catch (err) {
-    //     console.log(err);
-    //   }
-    // }
-
-    await eachOfLimit(newFiles, concurrency, async (file) => {
+    const results = [];
+    for (let i = 0; i < newFiles.length; i += concurrency) {
+      const batch = newFiles.slice(i, i + concurrency);
+      const batchPromises = batch.map((file) =>
+        uploadFile(socket_main_id, file, cwd, file.modified, device, CSRFToken)
+      );
       try {
-        await uploadFile(
-          socket_main_id,
-          file,
-          cwd,
-          file.modified,
-          device,
-          CSRFToken
-        );
+        const batchResults = await Promise.all(batchPromises);
+        results.push(batchResults);
       } catch (err) {
         console.log(err);
       }
-    });
+    }
+
+    // await eachOfLimit(newFiles, concurrency, async (file) => {
+    //   try {
+    //     await uploadFile(
+    //       socket_main_id,
+    //       file,
+    //       cwd,
+    //       file.modified,
+    //       device,
+    //       CSRFToken
+    //     );
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // });
     console.log("<-----file upload complete--->");
     postMessage({ mode: "finish" });
   } catch (err) {
