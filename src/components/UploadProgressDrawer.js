@@ -140,7 +140,7 @@ export default React.memo(function UploadProgressDrawer({
 
   return (
     <Draggable>
-      <div className="flex flex-col z-[300] w-[30%] absolute shadow-md bg-white bottom-2">
+      <div className="flex flex-col z-[300] absolute shadow-md bg-white bottom-2 w-full md:w-[300px]">
         <div
           onClick={close}
           className="flex flex-nowrap justify-between items-center w-full h-[48px]

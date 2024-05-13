@@ -107,7 +107,7 @@ const Login = () => {
       )}
       {CSRF.isSuccess && verifySessionStatus.isError && CSRF.data && (
         <div className="w-full grow flex flex-row justify-center items-center">
-          <div className="w-[300px] flex flex-col gap-2 p-2 shadow-md">
+          <div className=" flex flex-col gap-2 p-2 shadow-md w-full md:w-[300px] sm:w-[300px]">
             <div className="w-full">
               <h3 className="text-center font-semibold text-md text-[#716B61]">
                 Sign In to QDrive

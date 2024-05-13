@@ -206,15 +206,16 @@ const SharedTable = ({
       {(isFetching || isSuccess) && items?.length === 0 && (
         <div className="w-full flex justify-center items-center grow">
           <span className="font-sans font-semibold text-[#DBDBDB]">
-            No Items Shared
+            No Items
           </span>
         </div>
       )}
       {(isFetching || isSuccess) && items?.length > 0 && height && (
         <div className="w-full h-[50px] grid grid-cols-4 content-center border-b border-[#DBDBDB] pl-[50px]">
           <h4 className="col-span-2 text-left pl-2 font-bold">Name</h4>
-          <h4 className="col-span-1 text-left pl-2 font-bold">Created On</h4>
-          <h4 className="col-span-1 text-left pl-2 font-bold">Expires On</h4>
+          <h4 className="col-span-1 text-left pl-2 font-bold">Size</h4>
+          <h4 className="col-span-1 text-left pl-2 font-bold">Versions</h4>
+          <h4 className="col-span-1 text-left pl-2 font-bold">Modified</h4>
         </div>
       )}
 
@@ -223,8 +224,8 @@ const SharedTable = ({
           isItemLoaded={isItemLoaded}
           itemCount={10000}
           loadMoreItems={loadMoreItems}
-          // threshold={1}
-          // minimumBatchSize={50}
+          threshold={1}
+          minimumBatchSize={50}
         >
           {({ onItemsRendered, ref }) => (
             <List

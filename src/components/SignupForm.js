@@ -489,7 +489,9 @@ export default function Signup() {
 
   return (
     <div className="w-screen h-screen flex flex-col justify-start items-center">
-      <Header />
+      <div className="w-full h-[60px]">
+        <Header />
+      </div>
       {CSRFToken.isLoading && (
         <div className="flex justify-center items-center">
           <SpinnerGIF style={{ width: 50, height: 50 }} />
@@ -505,7 +507,7 @@ export default function Signup() {
       {CSRFToken.isSuccess && CSRFToken.data && (
         <div className="flex justify-center items-center grow">
           <form onSubmit={handleSubmit}>
-            <div className="w-[400px] h-[406px] flex flex-col p-2 shadow-md">
+            <div className="w-full sm:w-[400px] h-[406px] flex flex-col p-2 shadow-md">
               <div className="w-full h-[50px] flex justify-center items-center">
                 <span className="text-center font-sans font-semibold text-md text-[#716B61]">
                   Join QDrive Today!

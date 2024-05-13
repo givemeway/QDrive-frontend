@@ -54,8 +54,13 @@ export const ShareList = () => {
     );
   };
 
+  const handleContext = (e) => {
+    console.log(e);
+  };
+
   const _loadNextPage = useCallback(
     (...args) => {
+      console.log("next page fetching......", args, state.items.length);
       setIsFetching(true);
       if (state.items.length < state.total) {
         setState((prev) => ({ ...prev, hasNextPage: true }));
@@ -82,10 +87,6 @@ export const ShareList = () => {
       setState((prev) => ({ ...prev, isNextPageLoading: true }));
     }
   }, [isLoading]);
-
-  useEffect(() => {
-    console.log(rowSelection);
-  }, [rowSelection]);
 
   useEffect(() => {
     setIsFetching(false);
@@ -122,6 +123,7 @@ export const ShareList = () => {
   ]);
 
   useEffect(() => {
+    console.log(data);
     if (data && isSuccess && (delShareStatus.isSuccess || tabSwitched)) {
       setState(() => ({
         isNextPageLoading: false,
@@ -179,6 +181,7 @@ export const ShareList = () => {
             isFetching,
             handleShareDelete,
             handleCopy,
+            handleContext,
             rowSelection,
             setRowSelection,
             CSRFToken,
