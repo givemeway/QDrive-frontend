@@ -54,6 +54,7 @@ const Login = () => {
   };
 
   useEffect(() => {
+    console.log(CSRF);
     if (
       CSRF.data?.CSRFToken &&
       CSRF.isSuccess &&

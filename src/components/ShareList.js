@@ -10,7 +10,7 @@ import SharedTable from "./SharedTable.js";
 import "./ShareList.css";
 import { setOperation } from "../features/operation/operationSlice.jsx";
 import { COPYSHARE } from "../config.js";
-
+import TableContext from "./context/TableContext.js";
 const tabs = { folders: true, files: false, transfer: false };
 
 export const ShareList = () => {
@@ -19,6 +19,10 @@ export const ShareList = () => {
 
   const { CSRFToken } = useSelector((state) => state.csrfToken);
   // const { rowSelection } = useSelector((state) => state.sharedTable);
+  const [cord, setCord] = useState({ x: 0, y: 0 });
+  const [showContext, setShowContext] = useState(false);
+  const shareListRef = useRef(null);
+
   const operation = useSelector((state) => state.operation);
   const [isFetching, setIsFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(tabs);
@@ -36,6 +40,10 @@ export const ShareList = () => {
     total: 0,
     items: [],
   });
+
+  const handleContextClose = () => {
+    setShowContext(false);
+  };
 
   const handleShareDelete = (e) => {
     const id = e.target.closest(".shared-table-row").id;
@@ -55,7 +63,30 @@ export const ShareList = () => {
   };
 
   const handleContext = (e) => {
-    console.log(e);
+    setShowContext(true);
+    if (shareListRef.current) {
+      const { bottom, right } = shareListRef.current.getBoundingClientRect();
+      const x = e.clientX;
+      const y = e.clientY;
+      const width = x + 150;
+      const height = y + 200;
+      let newX = 0;
+      let newY = 0;
+      if (width > right && height < bottom) {
+        newX = right - 150;
+        newY = e.clientY;
+      } else if (width > right && height > bottom) {
+        newX = right - 160;
+        newY = bottom - 220;
+      } else if (height > bottom) {
+        newX = e.clientX;
+        newY = bottom - 220;
+      } else {
+        newX = x;
+        newY = y;
+      }
+      setCord({ x: newX, y: newY });
+    }
   };
 
   const _loadNextPage = useCallback(
@@ -123,7 +154,6 @@ export const ShareList = () => {
   ]);
 
   useEffect(() => {
-    console.log(data);
     if (data && isSuccess && (delShareStatus.isSuccess || tabSwitched)) {
       setState(() => ({
         isNextPageLoading: false,
@@ -168,7 +198,10 @@ export const ShareList = () => {
 
   return (
     <>
-      <div className="w-full h-full flex flex-col justify-start items-center">
+      <div
+        className="w-full h-full flex flex-col justify-start items-center"
+        ref={shareListRef}
+      >
         <SharedTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
         <SharedTable
@@ -192,6 +225,13 @@ export const ShareList = () => {
           loadNextPage={_loadNextPage}
         />
       </div>
+      {showContext && (
+        <TableContext
+          style={{ top: cord.y, left: cord.x }}
+          open={showContext}
+          onClose={handleContextClose}
+        />
+      )}
     </>
   );
 };

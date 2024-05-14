@@ -580,7 +580,7 @@ export default function Signup() {
                   errorText={formInput.password.helperText}
                 />
               </div>
-              <div className="col-span-2 flex justify-start items-start h-[50px]">
+              <div className="col-span-2 flex justify-start items-center h-[75px] gap-1">
                 <input
                   type="checkbox"
                   className="w-[20px] h-[20px] mt-[2px]"
