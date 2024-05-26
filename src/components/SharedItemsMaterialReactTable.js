@@ -27,7 +27,16 @@ const colFn = (layout, path, nav) => [
 
     Edit: ({ row, table }) => <CellEdit row={row.original} table={table} />,
     Cell: ({ row }) => (
-      <RenderNameCell row={row.original} params={{ nav, layout, path }} />
+      <RenderNameCell
+        rowID={row.original.id}
+        rowPath={row.original.path}
+        rowName={row.original.name}
+        item={row.original.item}
+        layout={layout}
+        thumbURL={row.original?.thumbURL}
+        path={path}
+        url={row.original.url}
+      />
     ),
   },
   {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   useDeleteShareMutation,
@@ -9,7 +9,7 @@ import SharedTabs from "./SharedTab.js";
 import SharedTable from "./SharedTable.js";
 import "./ShareList.css";
 import { setOperation } from "../features/operation/operationSlice.jsx";
-import { COPYSHARE } from "../config.js";
+import { COPYSHARE, pageSize } from "../config.js";
 import TableContext from "./context/TableContext.js";
 const tabs = { folders: true, files: false, transfer: false };
 
@@ -31,9 +31,8 @@ export const ShareList = () => {
   const [delShareQuery, delShareStatus] = useDeleteShareMutation();
   const [height, setHeight] = useState(undefined);
   const { isLoading, isSuccess, isError, data, error } = shareListStatus;
-  const pagination = useRef({ start: 0, page: 50 });
+  const pagination = useRef({ start: 0, page: pageSize });
   const [type, setType] = useState("fo");
-  const [tabSwitched, setTabSwitched] = useState(false);
   const [state, setState] = useState({
     hasNextPage: true,
     isNextPageLoading: false,
@@ -61,7 +60,6 @@ export const ShareList = () => {
       })
     );
   };
-
   const handleContext = (e) => {
     setShowContext(true);
     if (shareListRef.current) {
@@ -73,7 +71,7 @@ export const ShareList = () => {
       let newX = 0;
       let newY = 0;
       if (width > right && height < bottom) {
-        newX = right - 150;
+        newX = right - 160;
         newY = e.clientY;
       } else if (width > right && height > bottom) {
         newX = right - 160;
@@ -89,29 +87,22 @@ export const ShareList = () => {
     }
   };
 
-  const _loadNextPage = useCallback(
-    (...args) => {
-      console.log("next page fetching......", args, state.items.length);
+  const _loadNextPage = (...args) => {
+    if (state.items.length < state.total && !isFetching) {
       setIsFetching(true);
-      if (state.items.length < state.total) {
-        setState((prev) => ({ ...prev, hasNextPage: true }));
-        pagination.current.start = args[0];
-        pagination.current.page = args[1] - args[0];
-        const data = {
-          CSRFToken,
-          start: args[0],
-          page: args[1] - args[0],
-          type: type,
-        };
-
-        shareListQuery(data);
-      } else {
-        console.log("reached end");
-        setState((prev) => ({ ...prev, hasNextPage: false }));
-      }
-    },
-    [state.hasNextPage, state.isNextPageLoading, type]
-  );
+      setState((prev) => ({ ...prev, hasNextPage: true }));
+      pagination.current.start = args[0];
+      const data = {
+        CSRFToken,
+        start: pagination.current.start,
+        page: pagination.current.page,
+        type: type,
+      };
+      shareListQuery(data);
+    } else {
+      setState((prev) => ({ ...prev, hasNextPage: false }));
+    }
+  };
 
   useEffect(() => {
     if (isLoading) {
@@ -121,8 +112,6 @@ export const ShareList = () => {
 
   useEffect(() => {
     setIsFetching(false);
-    setTabSwitched(false);
-
     const data = {
       CSRFToken,
       start: 0,
@@ -154,34 +143,59 @@ export const ShareList = () => {
   ]);
 
   useEffect(() => {
-    if (data && isSuccess && (delShareStatus.isSuccess || tabSwitched)) {
-      setState(() => ({
-        isNextPageLoading: false,
-        hasNextPage: true,
-        total: data.total,
-        items: [...data.items],
-      }));
+    if (data && isSuccess) {
+      if (isFetching) {
+        setIsFetching(false);
+        setState((prev) => ({
+          ...prev,
+          isNextPageLoading: false,
+          total: data.total,
+          items: [
+            ...prev.items.map((item) => ({ ...item, id: item._id })),
+            ...data.items.map((item) => ({ ...item, id: item._id })),
+          ],
+        }));
+      } else {
+        setState(() => ({
+          isNextPageLoading: false,
+          hasNextPage: true,
+          total: data.total,
+          items: [...data.items.map((item) => ({ ...item, id: item._id }))],
+        }));
+      }
     }
-    if (data && isSuccess && !(delShareStatus.isSuccess || tabSwitched)) {
-      setState((prev) => ({
-        ...prev,
-        isNextPageLoading: false,
-        total: data.total,
-        items: [...prev.items, ...data.items],
-      }));
-    }
-  }, [isSuccess, data, delShareStatus.isSuccess]);
+  }, [isSuccess, data]);
 
   useEffect(() => {
     if (activeTab.folders) {
       setType("fo");
-      setTabSwitched(true);
+      setRowSelection({});
+      setState(() => ({
+        hasNextPage: true,
+        isNextPageLoading: false,
+        total: 0,
+        items: [],
+      }));
     } else if (activeTab.files) {
       setType("fi");
-      setTabSwitched(true);
+      setRowSelection({});
+
+      setState(() => ({
+        hasNextPage: true,
+        isNextPageLoading: false,
+        total: 0,
+        items: [],
+      }));
     } else if (activeTab.transfer) {
       setType("t");
-      setTabSwitched(true);
+      setRowSelection({});
+
+      setState(() => ({
+        hasNextPage: true,
+        isNextPageLoading: false,
+        total: 0,
+        items: [],
+      }));
     }
   }, [activeTab.folders, activeTab.files, activeTab.transfer]);
 
@@ -203,7 +217,6 @@ export const ShareList = () => {
         ref={shareListRef}
       >
         <SharedTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-
         <SharedTable
           params={{
             ref: elementRef,

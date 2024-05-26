@@ -27,6 +27,7 @@ import { Modal } from "./Modal/Modal.jsx";
 import isPicture from "./fileFormats/FileFormat.js";
 import DeletedItemsMaterialReactTable from "./DeletedItemsMaterialReactTable.js";
 import { setSession } from "../features/session/sessionSlice.js";
+import Table from "./Table.js";
 
 export default React.memo(function MainPanel({ mode }) {
   const navigate = useNavigate();
@@ -44,6 +45,15 @@ export default React.memo(function MainPanel({ mode }) {
   const [newRows, setNewRows] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
   const [photos, setPhotos] = useState([]);
+  const [height, setHeight] = useState(0);
+  const containerRef = useRef(null);
+  const [state, setState] = useState({
+    hasNextPage: true,
+    isNextPageLoading: false,
+    total: 0,
+    items: [],
+  });
+  const pagination = useRef({ start: 0, page: pageSize });
 
   const [photoName, setPhotoName] = useState("");
   const reLoad = useRef(false);
@@ -76,6 +86,24 @@ export default React.memo(function MainPanel({ mode }) {
     }
   }, [search, subpath]);
 
+  const _loadNextPage = (...args) => {
+    navigatedToNewDir.current = false;
+    reLoad.current = dashboard.reLoad;
+    if (state.items.length < state.total && !isFetching && isSuccess) {
+      setIsFetching(true);
+      setState((prev) => ({ ...prev, hasNextPage: true }));
+      pagination.current.start = args[0];
+      browseFolderQuery({
+        device: device.current,
+        curDir: currentDir.current,
+        sort: "ASC",
+        start: pagination.current.start,
+        end: pageSize,
+      });
+    } else if (state.items.length >= state.total || isError) {
+      setState((prev) => ({ ...prev, hasNextPage: false }));
+    }
+  };
   const fetchRows = useCallback(
     (isRefresh) => {
       const path = pathRef.current.split("/");
@@ -105,7 +133,6 @@ export default React.memo(function MainPanel({ mode }) {
         } else {
           reLoad.current = true;
         }
-        console.log("quering the browse");
         browseFolderQuery({
           device: device.current,
           curDir: currentDir.current,
@@ -118,7 +145,6 @@ export default React.memo(function MainPanel({ mode }) {
           param: path[1],
         });
       } else if (path[0] === "deleted") {
-        console.log("inside the deleted trash");
         getTrashQuery({ CSRFToken });
       }
     },
@@ -133,19 +159,23 @@ export default React.memo(function MainPanel({ mode }) {
     ) {
       const fileRows = data.files.map((file) => buildCellValueForFile(file));
       const folderRows = data.folders.map((fo) => buildCellValueForFolder(fo));
-      let rows = [];
-
-      if (navigatedToNewDir.current) {
-        rows = [...fileRows, ...folderRows];
+      if (navigatedToNewDir.current || reLoad.current) {
         setNewRows([...fileRows, ...folderRows]);
+        setState({
+          hasNextPage: true,
+          isNextPageLoading: false,
+          items: [...fileRows, ...folderRows],
+          total: data.total,
+        });
       } else {
         setNewRows((prev) => {
-          rows = [...prev, ...fileRows, ...folderRows];
           return [...prev, ...fileRows, ...folderRows];
         });
+        setState((prev) => ({
+          ...prev,
+          items: [...prev.items, ...fileRows, ...folderRows],
+        }));
       }
-      const pictures = rows.filter((row) => isPicture(row.name));
-      setPhotos(pictures);
 
       dispatch(
         setBrowseItems({
@@ -168,7 +198,6 @@ export default React.memo(function MainPanel({ mode }) {
         data.folders?.length >= 0 ||
         data.file?.length >= 0)
     ) {
-      console.log("INSIDE THE DELETED");
       const files = data.files.map((file) => buildCellValueForFile_trash(file));
       const singleFile = data.file.map((file) =>
         buildCellValueForSingleFile_trash(file)
@@ -187,6 +216,13 @@ export default React.memo(function MainPanel({ mode }) {
   }, []);
 
   useEffect(() => {
+    if (state.items.length > 0) {
+      const pictures = state.items.filter((row) => isPicture(row.name));
+      setPhotos(pictures);
+    }
+  }, [state.items, state.items.length]);
+
+  useEffect(() => {
     if (refresh) {
       fetchRows(true);
     }
@@ -198,21 +234,28 @@ export default React.memo(function MainPanel({ mode }) {
   }, [subpath]);
 
   useEffect(() => {
-    if (dashboard.query) {
-      setIsFetching(true);
-      reLoad.current = dashboard.reLoad;
-      navigatedToNewDir.current = false;
-      page.current = dashboard.page;
-      const data = {
-        device: device.current,
-        curDir: currentDir.current,
-        sort: "ASC",
-        start: (dashboard.page - 1) * pageSize,
-        end: pageSize,
-      };
-      browseFolderQuery(data);
+    if (containerRef.current) {
+      const { height } = containerRef.current.getBoundingClientRect();
+      setHeight(height);
     }
-  }, [dashboard.query, dashboard.reLoad]);
+  }, [containerRef.current]);
+
+  // useEffect(() => {
+  //   if (dashboard.query) {
+  //     setIsFetching(true);
+  //     reLoad.current = dashboard.reLoad;
+  //     navigatedToNewDir.current = false;
+  //     page.current = dashboard.page;
+  //     const data = {
+  //       device: device.current,
+  //       curDir: currentDir.current,
+  //       sort: "ASC",
+  //       start: (dashboard.page - 1) * pageSize,
+  //       end: pageSize,
+  //     };
+  //     browseFolderQuery(data);
+  //   }
+  // }, [dashboard.query, dashboard.reLoad]);
 
   useEffect(() => {
     if (isError && (error.status === 403 || error.status === 401)) {
@@ -224,16 +267,39 @@ export default React.memo(function MainPanel({ mode }) {
   return (
     <>
       {!isPreview && (mode === "SEARCH" || mode === "BROWSE") && (
-        <MaterialReactTable
-          layout={"dashboard"}
-          path={"/dashboard/home"}
-          isLoading={isLoading}
-          isError={isError}
-          status={status}
-          startedTimeStamp={startedTimeStamp}
-          rows={newRows}
-          isFetching={isFetching}
-        />
+        <div
+          className="w-full h-full flex flex-row justify-start items-center"
+          ref={containerRef}
+        >
+          <Table
+            layout={"dashboard"}
+            urlPath={"/dashboard/home"}
+            params={{
+              height,
+              isSuccess,
+              isLoading,
+              isError,
+              isFetching,
+              reLoad: reLoad.current,
+              newDir: navigatedToNewDir.current,
+            }}
+            hasNextPage={state.hasNextPage}
+            isNextPageLoading={state.isNextPageLoading}
+            items={state.items}
+            loadNextPage={_loadNextPage}
+          />
+        </div>
+
+        // <MaterialReactTable
+        //   layout={"dashboard"}
+        //   path={"/dashboard/home"}
+        //   isLoading={isLoading}
+        //   isError={isError}
+        //   status={status}
+        //   startedTimeStamp={startedTimeStamp}
+        //   rows={newRows}
+        //   isFetching={isFetching}
+        // />
       )}
       {isPreview &&
         photos.length > 0 &&

@@ -133,7 +133,6 @@ export default function PhotoPreview({ onClose, photos, initialName }) {
   const photo = useSelector((state) => state.photoNav);
   const navigate = useNavigate();
   const location = useLocation();
-
   const [photoPreviewQuery, photoPreviewStatus] =
     useGetPhotoPreviewURLMutation();
   const { isLoading, isError, data, isSuccess } = photoPreviewStatus;

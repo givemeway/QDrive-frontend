@@ -20,7 +20,7 @@ const flexRowStyle = {
   margin: 0,
 };
 
-export default function Edit({ row, table }) {
+export default function Edit({ row, setEditingCell }) {
   const [value, setValue] = useState(row.name);
   const selected = useRecoilValue(itemsSelectedAtom);
   const { fileIds, directories } = selected;
@@ -42,8 +42,6 @@ export default function Edit({ row, table }) {
     status: "initialized",
     data: {},
   };
-
-  const renameUninit = { ...operation, type: RENAME, status: "uninitialized" };
 
   const prepareBody = () => {
     let body = {};
@@ -76,7 +74,7 @@ export default function Edit({ row, table }) {
       dispatch(setOperation({ ...renameInit, data: body }));
     }
     dispatch(setEdit(editIdle));
-    table.setEditingCell(null);
+    setEditingCell(null);
   };
   const onChange = (event) => {
     setValue(event.target.value);
@@ -90,12 +88,8 @@ export default function Edit({ row, table }) {
         dispatch(setOperation({ ...renameInit, data: body }));
       }
       dispatch(setEdit(editIdle));
-      table.setEditingCell(null);
+      setEditingCell(null);
     }
-  };
-
-  const onFocus = () => {
-    dispatch(setOperation(renameUninit));
   };
 
   return (
@@ -111,12 +105,11 @@ export default function Edit({ row, table }) {
             onKeyDown={onKeyDown}
             autoFocus={true}
             value={value}
-            onFocus={onFocus}
           ></TextField>
         </Box>
       ) : (
         <Box sx={flexRowStyle}>
-          {get_file_icon(row.name, row.url)}
+          {get_file_icon(row.name, row.url, row.thumbURL)}
           <TextField
             fullWidth
             size="small"

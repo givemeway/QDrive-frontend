@@ -130,17 +130,16 @@ const Dashboard = () => {
             {isSuccess && mode !== "" && <MainPanel mode={mode} />}
             {isError && <div className="w-full">Something Went Wrong</div>}
           </div>
-        </div>
-      )}
-
-      {open && (
-        <div
-          className={`absolute z-[1000]  inset-y-[61px]  flex-grow
+          {open && (
+            <div
+              className={`absolute z-[1000]  inset-y-[61px]
                     flex justify-start items-center 
-                    w-full h-full
+                    w-full grow
                     bg-black bg-opacity-50 md:hidden`}
-        >
-          <NavigatePanel />
+            >
+              <NavigatePanel />
+            </div>
+          )}
         </div>
       )}
 

@@ -55,6 +55,7 @@ export default function ShareModal({ open, onClose }) {
     }
     body.current.files = fileIds;
     body.current.directories = directories;
+    console.log(body.current);
     dispatch(
       setOperation({
         ...operation,
@@ -88,7 +89,12 @@ export default function ShareModal({ open, onClose }) {
         disablePadding
       >
         <ListItemIcon>
-          {items[index]?.type === file && get_file_icon(items[index]?.name)}
+          {items[index]?.type === file &&
+            get_file_icon(
+              items[index]?.name,
+              items[index].url,
+              items[index].thumbURL
+            )}
           {items[index]?.type === folder && <FolderIcon style={svgIconStyle} />}
         </ListItemIcon>
         <Box

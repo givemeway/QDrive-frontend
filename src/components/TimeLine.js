@@ -1,6 +1,6 @@
 import { VariableSizeList as List } from "react-window";
 import { useGetPhotosMutation } from "../features/api/apiSlice";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import SpinnerGIF from "./icons/SpinnerGIF";
 import "./Timeline.css";
@@ -15,12 +15,16 @@ import { Minus } from "./icons/MinusIcon";
 import { Plus } from "./icons/PlusIcon";
 import { Image } from "./Image";
 import { Skeleton } from "@mui/material";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { buildCellValueForFile, generateLink } from "../util";
+import PhotoPreview from "./PhotoPreview";
+import { Modal } from "./Modal/Modal.jsx";
 
 const RANGE = [82, 103, 168, 211, 425];
 
 const TimeLineFilter = () => {
   const dispatch = useDispatch();
-  const [idx, setIdx] = useState(2);
+  const [idx, setIdx] = useState(0);
   const [active, setActive] = useState({
     days: true,
     years: false,
@@ -243,29 +247,55 @@ export const TimeLine = () => {
   const { isLoading, isError, data, isSuccess } = photosStatus;
   const [rowHeights, setRowHeights] = useState([]);
   const state = useSelector((state) => state.timeline);
+  const resizeObserver = useRef(null);
+  const urlParams = useParams();
+  const navPath = urlParams["*"];
+  const location = useLocation();
+  const [isPreview, setIsPreview] = useState(false);
+  const [photos, setPhotos] = useState([]);
+  const [initialName, setInitialName] = useState("");
+  const navigate = useNavigate();
+
+  const getBoundingClientRect = useCallback(() => {
+    const parentEl = elementRef.current;
+    const filterEl = filterRef.current;
+
+    const filter = filterEl.getBoundingClientRect();
+    const { height, width } = parentEl.getBoundingClientRect();
+    console.log(height, width);
+    setDim({ height: height - filter.height, width });
+  }, [elementRef.current, filterRef.current]);
+
+  const onClose = () => {
+    setIsPreview(false);
+    navigate("/dashboard/photos");
+  };
 
   useEffect(() => {
     photosQuery();
-    const parentEl = elementRef.current;
-    const filterEl = filterRef.current;
-    const filter = filterEl.getBoundingClientRect();
-    const { height, width } = parentEl.getBoundingClientRect();
-    setDim({ height: height - filter.height, width });
+    resizeObserver.current = new ResizeObserver((observe) => {
+      getBoundingClientRect();
+    });
+    return () => {
+      if (resizeObserver.current) {
+        resizeObserver.current.disconnect();
+      }
+    };
   }, []);
 
   useEffect(() => {
-    const parentEl = elementRef.current;
-    const filterEl = filterRef.current;
-    const filter = filterEl.getBoundingClientRect();
-    const { height, width } = parentEl.getBoundingClientRect();
-    setDim({ height: height - filter.height, width });
-    console.log("parent changed");
+    if (elementRef.current) {
+      resizeObserver.current.observe(elementRef.current);
+      getBoundingClientRect();
+    }
   }, [elementRef.current]);
 
   useEffect(() => {
     if (data && dim.height && dim.width) {
+      const photos = data.map((file) => buildCellValueForFile(file));
+      setPhotos(photos);
+      console.log(photos);
       const grouped = applyGroupFilter(data, state.timeline);
-      console.log(grouped);
       let gallery = [];
       let rowHeights = [];
       Object.entries(grouped).forEach(([k, v]) => {
@@ -276,7 +306,7 @@ export const TimeLine = () => {
         let row = [];
         let filledWidth = 0;
         v.forEach((file) => {
-          const item = { value: file.signedURL };
+          const item = { value: file.signedURL, ...file };
           const currentWidth = filledWidth + state.renderSize;
           if (currentWidth < dim.width) {
             row.push(item);
@@ -305,6 +335,16 @@ export const TimeLine = () => {
     state.timeline,
     elementRef,
   ]);
+  useEffect(() => {
+    if (location.search) {
+      const params = new URLSearchParams(location.search);
+      if (params.get("preview")) {
+        setIsPreview(true);
+        setInitialName(params.get("preview"));
+        console.log(params.get("preview"));
+      }
+    }
+  }, [location.search]);
 
   const Row = ({ style, data, index }) => {
     return (
@@ -317,22 +357,24 @@ export const TimeLine = () => {
           data[index].value.map((photo) => {
             return (
               <>
-                <Image
-                  src={photo.value}
-                  style={{
-                    width: state.renderSize,
-                    height: state.renderSize,
-                    className: "gallery-image",
-                  }}
-                  ShowLoading={() => (
-                    <Skeleton
-                      height={state.renderSize}
-                      width={state.renderSize}
-                      animation="wave"
-                    />
-                  )}
-                  ErrorIcon={() => <>Error</>}
-                />
+                <Link to={`/dashboard/photos?preview=${photo.filename}`}>
+                  <Image
+                    src={photo.value}
+                    style={{
+                      width: state.renderSize,
+                      height: state.renderSize,
+                      className: "gallery-image",
+                    }}
+                    ShowLoading={() => (
+                      <Skeleton
+                        height={state.renderSize}
+                        width={state.renderSize}
+                        animation="wave"
+                      />
+                    )}
+                    ErrorIcon={() => <>Error</>}
+                  />
+                </Link>
               </>
             );
           })
@@ -343,8 +385,8 @@ export const TimeLine = () => {
     );
   };
 
-  const getItemSize = (index) => rowHeights[index];
-
+  const getItemSize = useCallback((index) => rowHeights[index], [rowHeights]);
+  console.log("gallery re-rendered");
   return (
     <div className="w-full h-full flex flex-col" ref={elementRef}>
       <div className="w-full h-[75px]" ref={filterRef}>
@@ -360,7 +402,7 @@ export const TimeLine = () => {
             height={dim.height}
             itemCount={gallery.length}
             itemData={gallery}
-            itemSize={getItemSize}
+            itemSize={(index) => rowHeights[index]}
           >
             {Row}
           </List>
@@ -375,6 +417,15 @@ export const TimeLine = () => {
         <div className="w-full flex flex-grow justify-center items-center">
           <h2 className="font-bold">Something Went wrong</h2>
         </div>
+      )}
+      {isPreview && (
+        <Modal style={{ background: "white", opacity: 1 }}>
+          <PhotoPreview
+            photos={photos}
+            onClose={onClose}
+            initialName={initialName}
+          />
+        </Modal>
       )}
     </div>
   );

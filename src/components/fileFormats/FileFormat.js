@@ -90,7 +90,8 @@ function Get_file_icon(filename, url, thumbURL) {
       return (
         <>
           <Link to={"/dashboard/" + path + "?preview=" + filename}>
-            <img src={thumbURL} alt={`${filename}`} />
+            {thumbURL && <img src={thumbURL} alt={`${filename}`} />}
+            {!thumbURL && <PictureIcon style={svgIconStyle} />}
           </Link>
         </>
       );

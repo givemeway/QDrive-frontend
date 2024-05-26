@@ -240,7 +240,6 @@ export default function Shared() {
     params.delete("preview");
     navigate(`${location.pathname}?${params.toString()}`);
   };
-
   return (
     <>
       <div className="w-screen h-screen flex flex-col justify-start items-center">

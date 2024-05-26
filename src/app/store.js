@@ -16,6 +16,7 @@ import selected from "../features/selectedRows/selectedRowsSlice.js";
 import session from "../features/session/sessionSlice.js";
 import navigatePanel from "../features/navigation/navigationPanelSlice.js";
 import sharedTable from "../features/sharedTable/sharedTableSlice.js";
+import checkbox from "../features/table/checkboxSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -36,6 +37,7 @@ export const store = configureStore({
     session: session,
     navigatePanel: navigatePanel,
     sharedTable: sharedTable,
+    checkbox: checkbox,
   },
   middleware: (getDefaultMiddleWare) =>
     getDefaultMiddleWare().concat(apiSlice.middleware),

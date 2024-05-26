@@ -12,6 +12,10 @@ export const browseSlice = createSlice({
     type: "",
     total: 0,
     refresh: false,
+    ref: null,
+    cellEdit: null,
+    layout: "",
+    urlPath: "",
   },
   reducers: {
     setBrowseItems: (state, action) => {
@@ -23,9 +27,29 @@ export const browseSlice = createSlice({
     setRowSelected: (state, action) => {
       state.rowSelection = action.payload;
     },
+    setRef: (state, action) => {
+      state.ref = action.payload;
+    },
+
+    setCellEdit: (state, action) => {
+      state.cellEdit = action.payload;
+    },
+    setLayout: (state, action) => {
+      state.layout = action.payload;
+    },
+    setUrlPath: (state, action) => {
+      state.urlPath = action.payload;
+    },
   },
 });
 
-export const { setBrowseItems, setSelectedToEdit, setRowSelected } =
-  browseSlice.actions;
+export const {
+  setBrowseItems,
+  setSelectedToEdit,
+  setRowSelected,
+  setRef,
+  setCellEdit,
+  setLayout,
+  setUrlPath,
+} = browseSlice.actions;
 export default browseSlice.reducer;

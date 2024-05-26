@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ContextIcon } from "./icons/ContextIcon";
 import ContextModal from "./Modal/ContextMenuModal.jsx";
 import { ContextButton } from "./Buttons/ContextButton";
-import { timeOpts } from "../config";
+import { pageSize, timeOpts } from "../config";
 import { FixedSizeList as List } from "react-window";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import FolderIcon from "./icons/FolderIcon";
@@ -62,17 +62,67 @@ const SharedTable = ({
   } = params;
 
   const [showAllCheckBoxes, setShowAllCheckBoxes] = useState();
+  const [selected, setSelected] = useState(0);
+  const [selectAll, setSelectAll] = useState(false);
+  const checkboxRef = useRef(null);
   const isItemLoaded = (index) => !hasNextPage || index < items.length;
   const itemCount = hasNextPage ? items?.length + 1 : items?.length;
   const loadMoreItems = isNextPageLoading ? () => {} : loadNextPage;
+  console.log("sharedtable rendered");
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectAll(true);
+      const selectionArr = Object.entries(rowSelection).map(([k, v]) => [
+        k,
+        true,
+      ]);
+      const selectionObj = Object.fromEntries(selectionArr);
+      setShowAllCheckBoxes(true);
+      setRowSelection(selectionObj);
+    } else {
+      setSelectAll(false);
+      setShowAllCheckBoxes(false);
+      const selectionArr = Object.entries(rowSelection).map(([k, v]) => [
+        k,
+        false,
+      ]);
+      const selectionObj = Object.fromEntries(selectionArr);
+      setRowSelection(selectionObj);
+    }
+  };
 
   useEffect(() => {
     if (items) {
-      const arr = items?.map((_, idx) => [idx, false]);
+      const arr = items?.map((item) => [
+        item.id,
+        rowSelection[item.id] ? rowSelection[item.id] : false,
+      ]);
       const obj = Object.fromEntries(arr);
-      setRowSelection(obj);
+      setRowSelection((prev) => ({ ...prev, ...obj }));
     }
   }, [items]);
+
+  useEffect(() => {
+    const rows = Object.entries(rowSelection);
+    const selected = rows.filter(([_, v]) => v);
+    setSelected(selected.length);
+    if (selected.length === 0) {
+      setSelectAll(false);
+      if (checkboxRef.current) {
+        checkboxRef.current.indeterminate = false;
+      }
+    } else if (selected.length < rows.length) {
+      if (checkboxRef.current) {
+        checkboxRef.current.indeterminate = true;
+      }
+    } else if (selected.length === rows.length) {
+      setSelectAll(true);
+      if (checkboxRef.current) {
+        checkboxRef.current.indeterminate = false;
+      }
+    }
+  }, [rowSelection, checkboxRef.current]);
 
   const Row = React.memo(({ index, style }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -98,10 +148,10 @@ const SharedTable = ({
       e.stopPropagation();
       if (e.target.checked) {
         setShowAllCheckBoxes(true);
-        setRowSelection((prev) => ({ ...prev, [index]: true }));
+        setRowSelection((prev) => ({ ...prev, [items[index].id]: true }));
       } else {
         setRowSelection((prev) => {
-          const selection = { ...prev, [index]: false };
+          const selection = { ...prev, [items[index].id]: false };
           const exists = Object.entries(selection).find(([_, v]) => v === true);
           if (exists === undefined) setShowAllCheckBoxes(false);
           else setShowAllCheckBoxes(true);
@@ -112,12 +162,22 @@ const SharedTable = ({
     if (items[index]) {
       return (
         <div
-          className={`grid grid-cols-4 content-center shared-table-row
-          ${rowSelection[index] ? "bg-[#DEEBFF]" : "hover:bg-[#E8E8E8]"} `}
-          id={`${items[index]["_id"]}`}
+          className={`grid grid-cols-2 md:grid-cols-4 
+                      content-center shared-table-row
+                      ${
+                        rowSelection[items[index].id]
+                          ? "bg-[#DEEBFF]"
+                          : "hover:bg-[#E8E8E8]"
+                      } 
+                  `}
+          id={`${items[index]["id"]}`}
           style={{
             ...style,
             borderBottom: "1px solid #DBDBDB",
+            // boxSizing: "border-box",
+            // borderLeft: rowSelection[items[index].id]
+            //   ? "2px solid #0061FE"
+            //   : "none",
           }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
@@ -129,12 +189,14 @@ const SharedTable = ({
             }`}
           >
             {(showAllCheckBoxes || isHovered) && (
-              <div className="w-[50px] h-full flex justify-center items-center">
+              <div
+                className={`w-[50px] h-full flex justify-center items-center`}
+              >
                 <input
                   type="checkbox"
-                  className="h-[20px] w-[20px] cursor-pointer"
+                  className={`h-[20px] w-[20px] cursor-pointer `}
                   onChange={handleCheck}
-                  checked={rowSelection[index] ? true : false}
+                  checked={rowSelection[items[index].id] ? true : false}
                 />
               </div>
             )}
@@ -147,7 +209,7 @@ const SharedTable = ({
               {items[index]["name"]}
             </span>
           </div>
-          <div className="h-full col-span-1 text-left  content-center">
+          <div className="h-full col-span-1 text-left  content-center hidden md:block">
             <span className="grow text-[#736C64] font-sans text-md">
               {new Date(items[index]["created_at"]).toLocaleString(
                 "en-in",
@@ -155,7 +217,7 @@ const SharedTable = ({
               )}
             </span>
           </div>
-          <div className="h-full col-span-1 text-left content-center">
+          <div className="h-full col-span-1 text-left content-center hidden md:block">
             <span className="grow text-[#736C64] font-sans text-md">
               {new Date(items[index]["expires_at"]).toLocaleString(
                 "en-in",
@@ -210,25 +272,58 @@ const SharedTable = ({
           </span>
         </div>
       )}
+
       {(isFetching || isSuccess) && items?.length > 0 && height && (
-        <div className="w-full h-[50px] grid grid-cols-4 content-center border-b border-[#DBDBDB] pl-[50px]">
-          <h4 className="col-span-2 text-left pl-2 font-bold">Name</h4>
-          <h4 className="col-span-1 text-left pl-2 font-bold">Created On</h4>
-          <h4 className="col-span-1 text-left pl-2 font-bold">Expires On</h4>
+        <div className="w-full h-[30px] flex justify-end items-center">
+          {selected > 0 && (
+            <span className="font-sans font-semibold text-md">
+              {selected} Selected
+            </span>
+          )}
+          <div className="w-[50px] h-full flex justify-center items-center">
+            <input
+              type="checkbox"
+              className="h-[20px] w-[20px] cursor-pointer pr-2"
+              onChange={handleSelectAll}
+              checked={selectAll}
+              ref={checkboxRef}
+            ></input>
+          </div>
         </div>
       )}
-
+      {(isFetching || isSuccess) && items?.length > 0 && height && (
+        <div className="w-full h-[50px] grid grid-cols-2 md:grid-cols-4 content-center border-b border-[#DBDBDB]">
+          <div className="col-span-2 flex justify-start items-center">
+            <div className="w-[50px] h-full flex justify-center items-center">
+              {/* <input
+                type="checkbox"
+                className="h-[20px] w-[20px] cursor-pointer pr-2"
+                onChange={handleSelectAll}
+                checked={selectAll}
+                ref={checkboxRef}
+              ></input> */}
+            </div>
+            <h4 className="text-left pl-2 font-bold">Name</h4>
+          </div>
+          <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
+            Created On
+          </h4>
+          <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
+            Expires On
+          </h4>
+        </div>
+      )}
       {(isFetching || isSuccess) && items?.length > 0 && height && (
         <InfiniteLoader
           isItemLoaded={isItemLoaded}
           itemCount={10000}
           loadMoreItems={loadMoreItems}
-          // threshold={1}
-          // minimumBatchSize={50}
+          threshold={2}
+          minimumBatchSize={pageSize}
         >
           {({ onItemsRendered, ref }) => (
             <List
-              height={height - 50}
+              height={isFetching ? height - 130 : height - 90}
               width={"100%"}
               itemCount={itemCount}
               itemSize={50}
@@ -241,6 +336,7 @@ const SharedTable = ({
           )}
         </InfiniteLoader>
       )}
+      {isFetching && <SpinnerGIF style={{ height: 50, width: 50 }} />}
       {!isFetching && isLoading && (
         <SpinnerGIF style={{ height: 50, width: 50 }} />
       )}

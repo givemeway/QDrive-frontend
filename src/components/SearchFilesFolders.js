@@ -35,7 +35,7 @@ export default function Search({ searchValue }) {
         />
       </div>
 
-      <div className="flex justify-start items-center h-full w-1/2">
+      <div className="flex justify-start items-center h-full grow">
         <input
           placeholder=" Search"
           value={query}
@@ -45,7 +45,7 @@ export default function Search({ searchValue }) {
 
         <CustomBlueButton
           text={"Search"}
-          style={{ width: "100px", height: "100%" }}
+          style={{ width: "70px", height: "100%" }}
           onClick={() => navigate(`/dashboard/search/${query}`)}
         />
       </div>

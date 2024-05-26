@@ -198,7 +198,7 @@ const buildCellValueForFile = (file) => {
     name: file.filename,
     icon: FILE,
     size: formatBytes(file.size),
-    dir: `${file.device}/${file.directory}`,
+    dir: file.directory,
     path: get_file_path(file),
     url: get_url(file),
     thumbURL: file?.signedURL,
@@ -260,6 +260,9 @@ function generateLink(navPath, params, row, preview = 0) {
             "/h" +
             ensureStartsWithSlash(dir) +
             `?preview=${row.name}&k=${id}`;
+  }
+  if (layout === "photos") {
+    return path + "?preview";
   }
 }
 

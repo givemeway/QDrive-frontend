@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { setFileDetails } from "../../features/itemdetails/fileDetails.Slice";
 import { get_url } from "../../util";
 
-const TableContextMenu = ({ style, open, onClose }) => {
+const TableContextMenu = ({ style, open, onClose, buttonRef }) => {
   console.log("file context rendered");
   const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
   const [selectionType, setSelectionType] = useState({
@@ -97,7 +97,12 @@ const TableContextMenu = ({ style, open, onClose }) => {
   };
   return (
     <>
-      <ContextModal style={style} open={open} onClose={onClose}>
+      <ContextModal
+        style={style}
+        open={open}
+        onClose={onClose}
+        buttonRef={buttonRef}
+      >
         <ContextButton onClick={handleMove}>
           <DriveFileMoveIcon />
           Move
