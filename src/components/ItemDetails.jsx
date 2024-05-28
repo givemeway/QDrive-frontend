@@ -71,7 +71,6 @@ const ItemDetails = () => {
   useEffect(() => {
     if (data) {
       let { files } = data;
-      console.log(files);
       const versions = [
         ...files.map((file) => ({
           ...file,

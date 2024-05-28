@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ContextIcon } from "./icons/ContextIcon";
-import ContextModal from "./Modal/ContextMenuModal.jsx";
-import { ContextButton } from "./Buttons/ContextButton";
 import { timeOpts } from "../config";
 import { FixedSizeList as List } from "react-window";
 import SpinnerGIF from "./icons/SpinnerGIF";
@@ -348,17 +346,6 @@ const SharedTable = ({
       fileIds: [...files],
       directories: [...folders],
     }));
-    const rowSelectedArr = Object.entries(rowSelection).filter(([k, v]) => v);
-    if (rowSelectedArr.length === 1) {
-      dispatch(setSelectedToEdit(rowSelectedArr[0][0]));
-      if (files.length === 1 && fileDetails.open) {
-        const selectedRow = items.find((row) => row.id === selectedToEdit);
-        dispatch(setFileDetails({ open: true, file: selectedRow }));
-      }
-    } else {
-      dispatch(setSelectedToEdit(undefined));
-      dispatch(setFileDetails({ open: false, file: {} }));
-    }
 
     if (selectedCount.length === 0) {
       setSelectAll(false);
@@ -375,13 +362,27 @@ const SharedTable = ({
         checkboxRef.current.indeterminate = false;
       }
     }
-  }, [rowSelection, checkboxRef.current]);
+  }, [rowSelection, checkboxRef.current, selectedCount]);
+
+  useEffect(() => {
+    const rowSelectedArr = Object.entries(rowSelection).filter(([k, v]) => v);
+    if (selected.fileIds.length === 1 && rowSelectedArr.length === 1) {
+      dispatch(setSelectedToEdit(rowSelectedArr[0][0]));
+    } else {
+      dispatch(setSelectedToEdit(undefined));
+      dispatch(setFileDetails({ open: false, file: {} }));
+    }
+  }, [rowSelection, selected.fileIds, selected.directories]);
 
   useEffect(() => {
     if (edit.editStart && selectedToEdit) {
       dispatch(setCellEdit(selectedToEdit));
     }
-  }, [edit, selectedToEdit]);
+    if (fileDetails.open && selected.fileIds.length === 1 && selectedToEdit) {
+      const selectedRow = items.find((row) => row.id === selectedToEdit);
+      dispatch(setFileDetails({ open: true, file: selectedRow }));
+    }
+  }, [edit, selectedToEdit, selected.fileIds, fileDetails.open, items]);
 
   useEffect(() => {
     if (ref.current && resizeObserver.current) {
