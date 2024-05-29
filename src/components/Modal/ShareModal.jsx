@@ -130,6 +130,21 @@ export default function ShareModal({ open, onClose }) {
     ]);
   }, []);
 
+  useEffect(() => {
+    setItems(() => [
+      ...fileIds.map((fi) => ({
+        id: fi.id,
+        name: fi.file,
+        type: file,
+      })),
+      ...directories.map((fo) => ({
+        id: fo.uuid,
+        name: fo.folder,
+        type: folder,
+      })),
+    ]);
+  }, [fileIds, directories]);
+
   return (
     <>
       {open && (

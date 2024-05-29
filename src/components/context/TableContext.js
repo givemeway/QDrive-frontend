@@ -95,6 +95,35 @@ const TableContextMenu = ({ style, open, onClose, buttonRef }) => {
     dispatch(setFileDetails({ open: true, file: fileIds[0] }));
     onClose();
   };
+  const ItemSelected = () => {
+    const total = fileIds.length + directories.length;
+    if (fileIds.length === 1 && directories.length === 0) {
+      return (
+        <div className="flex border-b justify-center items-center p-2 w-full h-40px">
+          <p className="w-full  text-md text-left font-sans font-semibold truncate">
+            {fileIds[0].file}
+          </p>
+        </div>
+      );
+    }
+    if (fileIds.length === 0 && directories.length === 1) {
+      return (
+        <div className="flex border-b justify-center items-center p-2 w-full h-40px">
+          <p className="w-full  text-md text-left font-sans font-semibold text-ellipsis">
+            {directories[0].folder}
+          </p>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex border-b justify-center items-center p-2 w-full h-40px">
+          <p className="w-full  text-md text-left font-sans font-semibold">
+            {total} selected
+          </p>
+        </div>
+      );
+    }
+  };
   return (
     <>
       <ContextModal
@@ -103,6 +132,7 @@ const TableContextMenu = ({ style, open, onClose, buttonRef }) => {
         onClose={onClose}
         buttonRef={buttonRef}
       >
+        <ItemSelected />
         <ContextButton onClick={handleMove}>
           <DriveFileMoveIcon />
           Move

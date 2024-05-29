@@ -40,14 +40,21 @@ const File = ({ path, row, params }) => {
       </div>
       <div className="w-auto">
         {picture && (
-          <Link to={generateLink(path, params, row, 1)}>{row.name}</Link>
+          <Link to={generateLink(path, params, row, 1)} className="grow">
+            {row.name}
+          </Link>
         )}
 
         {!picture && (
-          <a href={row.url} rel="noreferrer" target="_blank">
-            <h3 className="text-left capitalize text-[#808080] tracking-wider font-medium">
+          <a
+            href={row.url}
+            rel="noreferrer"
+            target="_blank"
+            className="truncate"
+          >
+            <p className="grow text-left capitalize text-[#808080] tracking-wider font-medium">
               {row.name}
-            </h3>
+            </p>
           </a>
         )}
       </div>

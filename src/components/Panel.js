@@ -125,7 +125,7 @@ const Panel = () => {
 
   return (
     <div
-      className="flex flex-col items-start gap-0 w-[240px] 
+      className="flex flex-col items-start gap-0 w-[190px] md:w-[240px] 
           h-full bg-[#F7F5F2] border-r border-[#D4D2D0] 
           box-border "
       ref={panelRef}

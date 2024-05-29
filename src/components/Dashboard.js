@@ -107,7 +107,7 @@ const Dashboard = () => {
             <NavigatePanel />
           </div>
 
-          <div className="h-screen grow flex flex-col pl-4 pr-4">
+          <div className="h-screen w-full md:grow flex flex-col pl-4 pr-4">
             <div className="w-full h-[60px] pt-4 mb-2" ref={searchRef}>
               <Search searchValue={searchValue} />
             </div>
@@ -132,9 +132,9 @@ const Dashboard = () => {
           </div>
           {open && (
             <div
-              className={`absolute z-[1000]  inset-y-[61px]
+              className={`absolute z-[1000]  inset-y-[60px]
                     flex justify-start items-center 
-                    w-full grow
+                    w-screen h-screen
                     bg-black bg-opacity-50 md:hidden`}
             >
               <NavigatePanel />

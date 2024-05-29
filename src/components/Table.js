@@ -100,12 +100,12 @@ const Row = React.memo(({ index, data, style }) => {
     setShowContext((prev) => !prev);
     const topOffset = e.currentTarget.offsetHeight + e.currentTarget.offsetTop;
     const leftOffset = e.currentTarget.offsetLeft;
-    const height = e.clientY + 200;
+    const height = e.clientY + 250;
     const { bottom } = dims;
     const newX = leftOffset - 125;
     let newY = topOffset;
     if (height > bottom) {
-      newY = topOffset - 225;
+      newY = topOffset - 275;
     }
     setCords({ top: newY, left: newX });
   };
@@ -237,7 +237,7 @@ const Row = React.memo(({ index, data, style }) => {
                     width: 150,
                     top: cords.top,
                     left: cords.left,
-                    height: 200,
+                    height: 250,
                   }}
                   open={showContext}
                   onClose={() => setShowContext(false)}
@@ -475,7 +475,7 @@ const SharedTable = ({
         {(isFetching || isSuccess || reLoad) && items?.length > 0 && height && (
           <div className="w-full flex flex-col md:flex-row h-full">
             <div
-              className={`flex flex-col ${
+              className={`h-full flex flex-col ${
                 fileDetails.open ? "w-[100%] md:w-[80%]" : "w-[100%]"
               } `}
             >
@@ -495,7 +495,6 @@ const SharedTable = ({
                       <CopyLinkIcon style={{ width: 25, height: 25 }} />
                       Share Selected
                     </button>
-
                     <button
                       className="w-[110px] h-[30px] justify-center   
                         items-center  text-sm tracking-wider
@@ -575,7 +574,7 @@ const SharedTable = ({
               >
                 {({ onItemsRendered, ref }) => (
                   <List
-                    height={isFetching ? height - 130 : height - 90}
+                    height={isFetching ? height - 150 : height - 100}
                     width={"100%"}
                     itemCount={itemCount}
                     itemData={items}
@@ -609,7 +608,7 @@ const SharedTable = ({
           style={{
             top: cord.top,
             left: cord.left,
-            height: 200,
+            height: 250,
             overflow: "auto",
           }}
           open={showContext}

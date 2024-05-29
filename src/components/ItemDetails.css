@@ -1,8 +1,8 @@
 .itemdetails {
   display: flex;
   flex-direction: column;
-  justify-content: start;
-  align-items: start;
+  justify-content: flex-start;
+  align-items: flex-start;
   width: 300px;
   border: 1px solid #d3d3d3;
 }
@@ -21,8 +21,8 @@
     border: 1px solid #e5e7eb;
     display: flex;
     flex-direction: column;
-    justify-content: start;
-    align-items: start;
+    justify-content: flex-start;
+    align-items: flex-start;
     background: #f9f9f9;
   }
 }
