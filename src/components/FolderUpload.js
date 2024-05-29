@@ -346,7 +346,7 @@ function FolderUpload() {
             onChange={handleFolderSelection}
             onBlur={(e) => console.log("onblur")}
           />
-          <div className="flex justify-start items-center w-full">
+          <div className="flex flex-col justify-start items-center w-full">
             <DriveFolderUploadIcon
               color="black"
               sx={{ cursor: "pointer", fontSize: 25 }}

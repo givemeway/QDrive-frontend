@@ -319,7 +319,7 @@ function FilesUpload() {
             multiple={true}
             onChange={handleFileSelection}
           />
-          <div className="flex justify-start items-center w-full">
+          <div className="flex flex-col justify-start items-center w-full">
             <UploadFileIcon
               color="black"
               sx={{ cursor: "pointer", fontSize: 25 }}
