@@ -333,7 +333,6 @@ const SharedTable = ({
   };
 
   const handleDownload = () => {
-    console.log("download handled");
     if (selectionType.file) {
       const { file, device, dir, id } = fileIds[0];
       const fileData = { filename: file, directory: dir, device, uuid: id };
@@ -352,7 +351,6 @@ const SharedTable = ({
   };
 
   const handleShare = () => {
-    console.log("share handled");
     dispatch(setOperation({ ...operation, type: SHARE, open: true }));
   };
 
@@ -419,7 +417,10 @@ const SharedTable = ({
 
   useEffect(() => {
     const rowSelectedArr = Object.entries(rowSelection).filter(([k, v]) => v);
-    if (selected.fileIds.length === 1 && rowSelectedArr.length === 1) {
+    if (
+      (selected.fileIds.length === 1 || selected.directories.length === 1) &&
+      rowSelectedArr.length === 1
+    ) {
       dispatch(setSelectedToEdit(rowSelectedArr[0][0]));
     } else {
       dispatch(setSelectedToEdit(undefined));
