@@ -11,6 +11,8 @@ import CloseIcon from "./icons/CloseIcon";
 import { setFileDetails } from "../features/itemdetails/fileDetails.Slice";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { get_file_icon } from "./fileFormats/FileFormat";
+import "./ItemDetails.css";
+import { borderRight } from "@mui/system";
 
 const styleVersions = {
   display: "flex",
@@ -19,8 +21,8 @@ const styleVersions = {
   alignItems: "center",
   width: "100%",
   border: "1px solid #E0E0E0",
-  borderTop: "none",
   borderLeft: "none",
+  borderRight: "none",
   gap: 2,
 };
 
@@ -96,11 +98,8 @@ const ItemDetails = () => {
   };
 
   return (
-    <div
-      className="h-[100%] min-w-[400px] flex flex-col grow justify-start items-start
-                 border-[#D3D3D3] border-solid border-x-[1px] divide-y "
-    >
-      <div className="grid grid-cols-2 px-3 w-full h-[50px] items-center">
+    <div className="itemdetails">
+      <div className="grid grid-cols-2 px-3 w-full h-[50px] items-center border-b">
         <h2 className="col-span-1 text-left font-semibold text-md text-[#808080]">
           {fileDetails.file?.name ? fileDetails.file?.name : "File"} Info
         </h2>
@@ -112,14 +111,14 @@ const ItemDetails = () => {
         </div>
       </div>
 
-      <div className="w-[100%] h-[200px] flex flex-row justify-center items-center pl-2">
+      <div className="w-full h-[100px] flex flex-row justify-center items-center pl-2">
         {get_file_icon(
           fileDetails.file?.name,
           fileDetails.file?.url,
           fileDetails.file?.thumbURL
         )}
       </div>
-      <div className="flex flex-row justify-center items-center h-[50px] w-full">
+      <div className="flex flex-row justify-center items-center h-[50px] w-full border-t">
         <h3 className="text-left font-medium text-[#808080] text-md w-full px-3  items-center">
           Previous Versions
         </h3>
@@ -136,7 +135,7 @@ const ItemDetails = () => {
         </div>
       )}
       {isSuccess && (
-        <div className="flex flex-col justify-center items-center overflow-auto ">
+        <div className="flex flex-col justify-start items-center overflow-auto w-full grow">
           {allVersions.map((file) => {
             return (
               <Box sx={styleVersions} key={file.id}>

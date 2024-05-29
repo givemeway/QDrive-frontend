@@ -18,16 +18,13 @@ const Header = ({ search }) => {
     }
   }, [search]);
   return (
-    <div className="h-full w-full flex flex-row">
-      {/* <AvatarMenu /> */}
+    <div className="h-[50px] w-full flex flex-row">
       {showBreadCrumb ? (
-        <div className="grow h-full">
-          <BreadCrumb
-            queue={queue}
-            layout={"dashboard"}
-            link={"/dashboard/home"}
-          />
-        </div>
+        <BreadCrumb
+          queue={queue}
+          layout={"dashboard"}
+          link={"/dashboard/home"}
+        />
       ) : (
         <div className="flex flex-row justify-start items-center">
           <IconButton

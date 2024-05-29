@@ -7,7 +7,7 @@ import { setOperation } from "../features/operation/operationSlice";
 import { DOWNLOAD } from "../config.js";
 import { extract_items_from_ids } from "../util.js";
 
-const DownloadBox = ({ onClick }) => {
+export const DownloadBox = ({ onClick }) => {
   return (
     <>
       <CustomBlueButton

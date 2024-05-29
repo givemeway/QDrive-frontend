@@ -10,6 +10,8 @@ import { Button, Snackbar, Box, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setRefresh } from "../features/table/updateTableSlice.js";
+import { CustomBlueButton } from "./Buttons/BlueButton.jsx";
+import "./Buttons/BlueButton.css";
 
 const ETA = (starttime, total, uploaded) => {
   const timeElapsed = new Date() - starttime;
@@ -293,15 +295,20 @@ function FilesUpload() {
 
   return (
     <>
-      <CustomButton>
+      <button
+        className="deleteButton fill-blue"
+        style={{ width: 130, height: 80, padding: 12, cursor: "pointer" }}
+      >
         <label
           htmlFor="upload-file"
           style={{
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            margin: "0px",
-            padding: "0px",
+            justifyContent: "start",
+            height: "100%",
+            width: "100%",
+            cursor: "pointer",
           }}
         >
           <input
@@ -312,12 +319,15 @@ function FilesUpload() {
             multiple={true}
             onChange={handleFileSelection}
           />
-          <UploadFileIcon
-            color="primary"
-            sx={{ cursor: "pointer", fontSize: 25 }}
-          />
+          <div className="flex justify-start items-center w-full">
+            <UploadFileIcon
+              color="black"
+              sx={{ cursor: "pointer", fontSize: 25 }}
+            />
+          </div>
+          <span className="text-left w-full">Upload File</span>
         </label>
-      </CustomButton>
+      </button>
       {open && (
         <UploadProgressDrawer
           trackFilesProgress={trackFilesProgress}

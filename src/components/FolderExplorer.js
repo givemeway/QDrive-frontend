@@ -128,8 +128,6 @@ export default function CustomizedTreeView() {
       </IconExpandedTreeItem>
     ));
   };
-  console.log(clickedNode.current, isLoading, clickedNode.current === "1");
-
   return (
     <>
       <TreeView

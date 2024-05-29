@@ -7,10 +7,13 @@ import InfiniteLoader from "react-window-infinite-loader";
 import { useRecoilState } from "recoil";
 import { itemsSelectedAtom } from "../Recoil/Store/atoms";
 import { useDispatch, useSelector } from "react-redux";
-import { COPY, MOVE, pageSize, SHARE, DELETE } from "../config.js";
+import { COPY, MOVE, pageSize, SHARE, DELETE, DOWNLOAD } from "../config.js";
 import CellEdit from "./TableCellEdit.jsx";
 
 import { setOperation } from "../features/operation/operationSlice.jsx";
+import { CopyLinkIcon } from "./icons/CopyLinkIcon.js";
+import { get_url } from "../util.js";
+import { DownloadIcon } from "./icons/DownloadIcon";
 
 import RenderNameCell from "./NameCell.jsx";
 
@@ -103,7 +106,6 @@ const Row = React.memo(({ index, data, style }) => {
     let newY = topOffset;
     if (height > bottom) {
       newY = topOffset - 225;
-      console.log(newY);
     }
     setCords({ top: newY, left: newX });
   };
@@ -263,6 +265,7 @@ const SharedTable = ({
   const ref = useRef(null);
   const resizeObserver = useRef(null);
   const [selected, setItemsSelection] = useRecoilState(itemsSelectedAtom);
+  const { fileIds, directories } = selected;
   const [selectedCount, setSelected] = useState(0);
   const [selectAll, setSelectAll] = useState(false);
   const checkboxRef = useRef(null);
@@ -275,7 +278,33 @@ const SharedTable = ({
   const { selectedToEdit, rowSelection, reLoad } = useSelector(
     (state) => state.browseItems
   );
+  const contextButtonRef = useRef(null);
   const { cord, showContext } = useSelector((state) => state.checkbox);
+  const [cords, setCords] = useState({ top: 0, left: 0 });
+  const [showContextHeader, setShowContext] = useState(false);
+
+  const [selectionType, setSelectionType] = useState({
+    file: undefined,
+    folder: undefined,
+    multiple: undefined,
+  });
+
+  useEffect(() => {
+    if (fileIds.length === 1 && directories.length === 0) {
+      setSelectionType({ file: true, folder: false, multiple: false });
+    } else if (fileIds.length === 0 && directories.length === 1) {
+      setSelectionType({ file: false, folder: true, multiple: false });
+    } else {
+      setSelectionType({ file: false, folder: false, multiple: true });
+    }
+  }, [fileIds, directories]);
+
+  const handleClick = (e) => {
+    setShowContext((prev) => !prev);
+    const top = e.currentTarget.offsetTop + e.currentTarget.offsetHeight;
+    const left = e.currentTarget.offsetLeft;
+    setCords({ top, left });
+  };
 
   const dispatch = useDispatch();
   console.log("table rendered");
@@ -301,6 +330,30 @@ const SharedTable = ({
         open: false,
       })
     );
+  };
+
+  const handleDownload = () => {
+    console.log("download handled");
+    if (selectionType.file) {
+      const { file, device, dir, id } = fileIds[0];
+      const fileData = { filename: file, directory: dir, device, uuid: id };
+      const url = get_url(fileData);
+      window.open(url, "_parent");
+    } else if (selectionType.folder || selectionType.multiple) {
+      dispatch(
+        setOperation({
+          ...operation,
+          type: DOWNLOAD,
+          status: "initialized",
+          data: { files: fileIds, directories: directories },
+        })
+      );
+    }
+  };
+
+  const handleShare = () => {
+    console.log("share handled");
+    dispatch(setOperation({ ...operation, type: SHARE, open: true }));
   };
 
   const handleSelectAll = (e) => {
@@ -407,7 +460,7 @@ const SharedTable = ({
   return (
     <>
       <div
-        className="w-full grow flex flex-col justify-center items-center"
+        className="w-full h-full flex justify-center items-center flex-col"
         ref={ref}
       >
         {(isFetching || isSuccess || reLoad) && items?.length === 0 && (
@@ -419,63 +472,125 @@ const SharedTable = ({
         )}
 
         {(isFetching || isSuccess || reLoad) && items?.length > 0 && height && (
-          <div className="w-full h-[30px] flex justify-end items-center">
-            {selectedCount > 0 && (
-              <span className="font-sans font-semibold text-md">
-                {selectedCount} Selected
-              </span>
-            )}
-            <div className="w-[50px] h-full flex justify-center items-center">
-              <input
-                type="checkbox"
-                className="h-[20px] w-[20px] cursor-pointer pr-2"
-                onChange={handleSelectAll}
-                checked={selectAll}
-                ref={checkboxRef}
-              ></input>
-            </div>
-          </div>
-        )}
-        {(isFetching || isSuccess || reLoad) && items?.length > 0 && height && (
-          <div className="w-full h-[50px] grid grid-cols-2 md:grid-cols-5 content-center border-b border-[#DBDBDB]">
-            <div className="col-span-2 flex justify-start items-center">
-              <div className="w-[50px] h-full flex justify-center items-center"></div>
-              <h4 className="text-left pl-2 font-bold">Name</h4>
-            </div>
-            <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
-              Size
-            </h4>
-            <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
-              Versions
-            </h4>
-            <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
-              Modified
-            </h4>
-          </div>
-        )}
-        {(isFetching || isSuccess || reLoad) && items?.length > 0 && height && (
-          <InfiniteLoader
-            isItemLoaded={isItemLoaded}
-            itemCount={10000000}
-            loadMoreItems={loadMoreItems}
-            threshold={2}
-            minimumBatchSize={pageSize}
-          >
-            {({ onItemsRendered, ref }) => (
-              <List
-                height={isFetching ? height - 130 : height - 90}
-                width={"100%"}
-                itemCount={itemCount}
-                itemData={items}
-                itemSize={50}
-                onItemsRendered={onItemsRendered}
-                ref={ref}
+          <div className="w-full flex flex-col md:flex-row h-full">
+            <div
+              className={`flex flex-col ${
+                fileDetails.open ? "w-[100%] md:w-[80%]" : "w-[100%]"
+              } `}
+            >
+              <div className="w-full h-[50px] flex justify-end items-center">
+                {(fileIds.length > 0 || directories.length > 0) && (
+                  <div className="flex flex-row  h-[50px] grow gap-1 justify-start items-center">
+                    <button
+                      className="w-[140px] h-[30px] flex flex-row justify-center   
+                              items-center  text-sm tracking-wider
+                              font-semibold
+                              rounded
+                              hover:bg-[#ECE1CE]
+                              bg-[#F5EFE5]
+                              hover:overflow-hidden"
+                      onClick={handleShare}
+                    >
+                      <CopyLinkIcon style={{ width: 25, height: 25 }} />
+                      Share Selected
+                    </button>
+
+                    <button
+                      className="w-[110px] h-[30px] justify-center   
+                        items-center  text-sm tracking-wider
+                        font-semibold
+                        gap-1 
+                        rounded
+                        hover:bg-[#ECE1CE]
+                        bg-[#F5EFE5]
+                        hover:overflow-hidden
+                        hidden sm:flex sm:flex-row
+                        "
+                      onClick={handleDownload}
+                    >
+                      <DownloadIcon style={{ width: 25, height: 25 }} />
+                      Download
+                    </button>
+                    <button
+                      className={` hover:bg-[#ECE1CE] ${
+                        showContextHeader ? "bg-[#F5EFE5]" : ""
+                      } h-[30px] w-[30px] flex justify-center items-center bg-[#F5EFE5] rounded`}
+                      onClick={handleClick}
+                      ref={contextButtonRef}
+                    >
+                      <ContextIcon style={{ width: 24, height: 24 }} />
+                    </button>
+                    <TableContext
+                      open={showContextHeader}
+                      onClose={() => setShowContext(false)}
+                      style={{
+                        width: 125,
+                        top: cords.top,
+                        left: cords.left,
+                        height: 200,
+                      }}
+                      buttonRef={contextButtonRef}
+                    ></TableContext>
+                  </div>
+                )}
+
+                {selectedCount > 0 && (
+                  <span className="font-sans font-semibold text-md">
+                    {selectedCount} Selected
+                  </span>
+                )}
+                <div className="w-[50px] h-full flex justify-center items-center">
+                  <input
+                    type="checkbox"
+                    className="h-[20px] w-[20px] cursor-pointer pr-2"
+                    onChange={handleSelectAll}
+                    checked={selectAll}
+                    ref={checkboxRef}
+                  ></input>
+                </div>
+              </div>
+
+              <div className="w-full h-[50px] grid grid-cols-2 md:grid-cols-5 content-center border-b border-[#DBDBDB]">
+                <div className="col-span-2 flex justify-start items-center">
+                  <div className="w-[50px] h-full flex justify-center items-center"></div>
+                  <h4 className="text-left pl-2 font-bold">Name</h4>
+                </div>
+                <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
+                  Size
+                </h4>
+                <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
+                  Versions
+                </h4>
+                <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
+                  Modified
+                </h4>
+              </div>
+              <InfiniteLoader
+                isItemLoaded={isItemLoaded}
+                itemCount={10000000}
+                loadMoreItems={loadMoreItems}
+                threshold={2}
+                minimumBatchSize={pageSize}
               >
-                {Row}
-              </List>
-            )}
-          </InfiniteLoader>
+                {({ onItemsRendered, ref }) => (
+                  <List
+                    height={isFetching ? height - 130 : height - 90}
+                    width={"100%"}
+                    itemCount={itemCount}
+                    itemData={items}
+                    itemSize={50}
+                    onItemsRendered={onItemsRendered}
+                    ref={ref}
+                  >
+                    {Row}
+                  </List>
+                )}
+              </InfiniteLoader>
+            </div>
+            {fileDetails.open && <ItemDetails />}
+          </div>
         )}
+
         {isFetching && <SpinnerGIF style={{ height: 50, width: 50 }} />}
         {!isFetching && isLoading && !reLoad && (
           <SpinnerGIF style={{ height: 50, width: 50 }} />
@@ -488,7 +603,6 @@ const SharedTable = ({
           </div>
         )}
       </div>
-      {fileDetails.open && <ItemDetails />}
       {showContext && (
         <TableContext
           style={{

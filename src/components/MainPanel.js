@@ -240,23 +240,6 @@ export default React.memo(function MainPanel({ mode }) {
     }
   }, [containerRef.current]);
 
-  // useEffect(() => {
-  //   if (dashboard.query) {
-  //     setIsFetching(true);
-  //     reLoad.current = dashboard.reLoad;
-  //     navigatedToNewDir.current = false;
-  //     page.current = dashboard.page;
-  //     const data = {
-  //       device: device.current,
-  //       curDir: currentDir.current,
-  //       sort: "ASC",
-  //       start: (dashboard.page - 1) * pageSize,
-  //       end: pageSize,
-  //     };
-  //     browseFolderQuery(data);
-  //   }
-  // }, [dashboard.query, dashboard.reLoad]);
-
   useEffect(() => {
     if (isError && (error.status === 403 || error.status === 401)) {
       dispatch(setSession({ isLoggedIn: false, isLoggedOut: true }));
@@ -289,17 +272,6 @@ export default React.memo(function MainPanel({ mode }) {
             loadNextPage={_loadNextPage}
           />
         </div>
-
-        // <MaterialReactTable
-        //   layout={"dashboard"}
-        //   path={"/dashboard/home"}
-        //   isLoading={isLoading}
-        //   isError={isError}
-        //   status={status}
-        //   startedTimeStamp={startedTimeStamp}
-        //   rows={newRows}
-        //   isFetching={isFetching}
-        // />
       )}
       {isPreview &&
         photos.length > 0 &&
@@ -310,7 +282,6 @@ export default React.memo(function MainPanel({ mode }) {
                 setIsPreview(false);
                 navigate(subpath);
               }}
-              // pth={path}
               photos={photos}
               initialName={photoName}
             />

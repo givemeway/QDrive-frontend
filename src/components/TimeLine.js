@@ -294,7 +294,6 @@ export const TimeLine = () => {
     if (data && dim.height && dim.width) {
       const photos = data.map((file) => buildCellValueForFile(file));
       setPhotos(photos);
-      console.log(photos);
       const grouped = applyGroupFilter(data, state.timeline);
       let gallery = [];
       let rowHeights = [];

@@ -112,18 +112,18 @@ const Dashboard = () => {
               <Search searchValue={searchValue} />
             </div>
 
+            {mode === "BROWSE" && (
+              <div className="w-full h-[80px]">
+                <Menu />
+              </div>
+            )}
             {(mode === "BROWSE" || mode === "SEARCH") && (
               <div className="w-full h-[50px]">
                 <Header search={isSearch} />
               </div>
             )}
-            {mode === "BROWSE" && (
-              <div className="w-full h-[50px]">
-                <Menu />
-              </div>
-            )}
             {isLoading && (
-              <div className="w-full flex flex-row justify-center items-center grow">
+              <div className="w-full flex justify-center items-center">
                 <SpinnerGIF style={{ width: 50, height: 50 }} />
               </div>
             )}

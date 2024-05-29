@@ -12,6 +12,8 @@ import { socket } from "./Socket.js";
 import { formatBytes, formatSeconds } from "../util.js";
 import { useDispatch, useSelector } from "react-redux";
 import { setRefresh } from "../features/table/updateTableSlice.js";
+import { CustomBlueButton } from "./Buttons/BlueButton.jsx";
+import "./Buttons/BlueButton.css";
 
 function CustomButton({ children }) {
   return (
@@ -313,15 +315,26 @@ function FolderUpload() {
   };
   return (
     <>
-      <CustomButton>
+      <button
+        className="deleteButton fill-blue"
+        style={{
+          width: 130,
+          height: 80,
+          padding: 12,
+          cursor: "pointer",
+          background: "black",
+        }}
+      >
         <label
           htmlFor="upload-folder"
           style={{
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            margin: "0px",
-            padding: "0px",
+            justifyContent: "start",
+            height: "100%",
+            width: "100%",
+            cursor: "pointer",
           }}
         >
           <input
@@ -333,12 +346,15 @@ function FolderUpload() {
             onChange={handleFolderSelection}
             onBlur={(e) => console.log("onblur")}
           />
-          <DriveFolderUploadIcon
-            color="primary"
-            sx={{ cursor: "pointer", fontSize: 25 }}
-          />
+          <div className="flex justify-start items-center w-full">
+            <DriveFolderUploadIcon
+              color="black"
+              sx={{ cursor: "pointer", fontSize: 25 }}
+            />
+          </div>
+          <span>Upload Folder</span>
         </label>
-      </CustomButton>
+      </button>
       {open && (
         <UploadProgressDrawer
           trackFilesProgress={trackFilesProgress}
