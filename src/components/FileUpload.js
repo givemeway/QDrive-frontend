@@ -320,10 +320,12 @@ function FilesUpload() {
             onChange={handleFileSelection}
           />
           <div className="flex flex-col justify-start items-center w-full">
-            <UploadFileIcon
-              color="black"
-              sx={{ cursor: "pointer", fontSize: 25 }}
-            />
+            <div className="w-full flex justify-start items-center">
+              <UploadFileIcon
+                color="black"
+                sx={{ cursor: "pointer", fontSize: 25 }}
+              />
+            </div>
             <span className="text-left w-full">Upload File</span>
           </div>
         </label>

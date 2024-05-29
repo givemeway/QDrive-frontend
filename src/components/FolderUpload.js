@@ -347,10 +347,12 @@ function FolderUpload() {
             onBlur={(e) => console.log("onblur")}
           />
           <div className="flex flex-col justify-start items-center w-full">
-            <DriveFolderUploadIcon
-              color="black"
-              sx={{ cursor: "pointer", fontSize: 25 }}
-            />
+            <div className="w-full flex justify-start items-center">
+              <DriveFolderUploadIcon
+                color="black"
+                sx={{ cursor: "pointer", fontSize: 25 }}
+              />
+            </div>
             <span className="w-full text-left">Upload Folder</span>
           </div>
         </label>

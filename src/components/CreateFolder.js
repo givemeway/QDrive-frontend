@@ -17,7 +17,9 @@ export default function CreateFolder() {
         style={{ width: 130, height: 80, padding: 12 }}
       >
         <div className="flex flex-col w-full h-full">
-          <CreateNewFolderIcon color="black" />
+          <div className="w-full flex justify-start items-center">
+            <CreateNewFolderIcon color="black" />
+          </div>
           <span className="w-full text-left">Create Folder</span>
         </div>
       </button>
