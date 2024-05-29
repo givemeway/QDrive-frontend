@@ -324,8 +324,8 @@ function FilesUpload() {
               color="black"
               sx={{ cursor: "pointer", fontSize: 25 }}
             />
+            <span className="text-left w-full">Upload File</span>
           </div>
-          <span className="text-left w-full">Upload File</span>
         </label>
       </button>
       {open && (

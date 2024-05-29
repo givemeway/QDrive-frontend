@@ -18,7 +18,7 @@ export default function CreateFolder() {
       >
         <div className="flex flex-col w-full h-full">
           <CreateNewFolderIcon color="black" />
-          <span className="text-left">Create Folder</span>
+          <span className="w-full text-left">Create Folder</span>
         </div>
       </button>
       {open && <CreateFolderModal open={open} setOpen={setOpen} />}

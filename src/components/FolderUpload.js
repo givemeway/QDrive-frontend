@@ -351,8 +351,8 @@ function FolderUpload() {
               color="black"
               sx={{ cursor: "pointer", fontSize: 25 }}
             />
+            <span className="w-full text-left">Upload Folder</span>
           </div>
-          <span>Upload Folder</span>
         </label>
       </button>
       {open && (
