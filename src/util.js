@@ -219,7 +219,13 @@ function ensureStartsWithSlash(input) {
 function generateLink(navPath, params, row, preview = 0) {
   const { path, layout, nav } = params;
   const id = row.id.split(";")[4];
-  let dir = row.path.split(nav)[1];
+  let dir;
+  if (nav === null) {
+    const tempDir = row.path.split("/").slice(2).join("/");
+    dir = tempDir === "" ? "" : "/" + tempDir;
+  } else {
+    dir = row.path.split(nav)[1];
+  }
   if (layout === "dashboard" && preview === 1)
     return "/dashboard/" + navPath + "?preview=" + row.name;
 

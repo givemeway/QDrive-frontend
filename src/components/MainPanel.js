@@ -64,7 +64,7 @@ export default React.memo(function MainPanel({ mode }) {
   const [searchQuery, searchStatus] = useSearchItemsMutation();
   const [getTrashQuery, getTrashStatus] = useGetTrashMutation();
 
-  let { isError, isLoading, isSuccess, error, data, status, startedTimeStamp } =
+  let { isError, isLoading, isSuccess, error, data, status } =
     mode === "BROWSE"
       ? browseFolderStatus
       : mode === "SEARCH"

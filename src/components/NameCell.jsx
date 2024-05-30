@@ -94,11 +94,13 @@ const RenderCell = ({
   item,
   thumbURL,
   url,
+  nav,
 }) => {
   const urlParams = useParams();
   const navPath = urlParams["*"];
   const row = { id: rowID, name: rowName, path: rowPath, item, thumbURL, url };
-  const params = { layout, path };
+  const params = { layout, path, nav };
+
   return (
     <>
       {row.item === folder ? (

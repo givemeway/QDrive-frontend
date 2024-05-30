@@ -16,6 +16,7 @@ export const browseSlice = createSlice({
     cellEdit: null,
     layout: "",
     urlPath: "",
+    nav: null,
   },
   reducers: {
     setBrowseItems: (state, action) => {
@@ -40,6 +41,9 @@ export const browseSlice = createSlice({
     setUrlPath: (state, action) => {
       state.urlPath = action.payload;
     },
+    setNav: (state, action) => {
+      state.nav = action.payload;
+    },
   },
 });
 
@@ -51,5 +55,6 @@ export const {
   setCellEdit,
   setLayout,
   setUrlPath,
+  setNav,
 } = browseSlice.actions;
 export default browseSlice.reducer;

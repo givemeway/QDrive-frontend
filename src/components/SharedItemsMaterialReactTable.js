@@ -36,6 +36,7 @@ const colFn = (layout, path, nav) => [
         thumbURL={row.original?.thumbURL}
         path={path}
         url={row.original.url}
+        nav={nav}
       />
     ),
   },
@@ -74,6 +75,7 @@ const DataTable = ({
   const dispatch = useDispatch();
   const tableContainerRef = useRef(null);
   const rowVirtualizerInstanceRef = useRef(null);
+  console.log(nav);
 
   const columns = useMemo(() => colFn(layout, path, nav), [layout, path, nav]);
 

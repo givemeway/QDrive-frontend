@@ -19,12 +19,145 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { buildCellValueForFile, generateLink } from "../util";
 import PhotoPreview from "./PhotoPreview";
 import { Modal } from "./Modal/Modal.jsx";
+import ContextModal from "./Modal/ContextMenuModal";
 
 const RANGE = [82, 103, 168, 211, 425];
 
+const DownArrowIcon = () => {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      width="16"
+      height="16"
+      role="presentation"
+      focusable="false"
+      style={{ marginLeft: "-2px", marginRight: "-2px" }}
+    >
+      <path
+        d="m5.25 9.25 6.5 6.25 6.5-6.25"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-miterlimit="10"
+        vector-effect="non-scaling-stroke"
+      ></path>
+    </svg>
+  );
+};
+
+const SetSizeComponent = ({ decrement, increment, idx }) => {
+  return (
+    <>
+      <div className="flex flex-row gap-1">
+        <button
+          onClick={decrement}
+          className="bg-[#F5EFE5] w-10 h-10 hover:bg-[#ECE1CE]"
+        >
+          <Minus
+            style={{
+              width: "25px",
+              height: "25px",
+              margin: "auto",
+            }}
+          />
+        </button>
+        <input type="range" min={82} max={425} value={RANGE[idx]} />
+        <button
+          onClick={increment}
+          className="bg-[#F5EFE5] w-10 h-10 hover:bg-[#ECE1CE]"
+        >
+          <Plus
+            style={{
+              width: "23px",
+              height: "23px",
+              margin: "auto",
+            }}
+          />
+        </button>
+      </div>
+    </>
+  );
+};
+
+const ItemSelectionComponent = ({
+  handleAllItems,
+  handlePhotos,
+  handleVideos,
+  active,
+}) => {
+  return (
+    <>
+      <button
+        className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
+          active.allItems ? "active" : ""
+        }`}
+        onClick={handleAllItems}
+      >
+        All Items
+      </button>
+      <button
+        className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
+          active.photos ? "active" : ""
+        }`}
+        onClick={handlePhotos}
+      >
+        Photos
+      </button>
+      <button
+        className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
+          active.videos ? "active" : ""
+        }`}
+        onClick={handleVideos}
+      >
+        Videos
+      </button>
+    </>
+  );
+};
+
+const TimeLineSelectionComponent = ({
+  handleYears,
+  handleMonths,
+  handleDays,
+  active,
+}) => {
+  return (
+    <>
+      <button
+        className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
+          active.years ? "active" : ""
+        }`}
+        onClick={handleYears}
+      >
+        Years
+      </button>
+      <button
+        className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
+          active.months ? "active" : ""
+        }`}
+        onClick={handleMonths}
+      >
+        Months
+      </button>
+      <button
+        className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
+          active.days ? "active" : ""
+        }`}
+        onClick={handleDays}
+      >
+        Days
+      </button>
+    </>
+  );
+};
+
 const TimeLineFilter = () => {
   const dispatch = useDispatch();
+  const [showItemsContext, setShowItemsContext] = useState(false);
+  const [showTimelineContext, setTimelineContext] = useState(false);
+
   const [idx, setIdx] = useState(0);
+  const [cords, setCords] = useState({ top: 0, left: 0 });
   const [active, setActive] = useState({
     days: true,
     years: false,
@@ -33,6 +166,8 @@ const TimeLineFilter = () => {
     videos: false,
     allItems: false,
   });
+  const itemButtonRef = useRef(null);
+  const timelineButtonRef = useRef(null);
 
   const increment = () => {
     setIdx((prev) => {
@@ -99,96 +234,129 @@ const TimeLineFilter = () => {
     dispatch(setItemSize(RANGE[idx]));
   }, [idx]);
 
+  const handleItemSelection = (e) => {
+    console.log("clicked");
+    e.preventDefault();
+    e.stopPropagation();
+    setShowItemsContext((prev) => !prev);
+    const top = e.currentTarget.offsetTop + e.currentTarget.offsetHeight;
+    const left = e.currentTarget.offsetLeft;
+    setCords({ top, left });
+  };
+  const handleTimelineSelection = (e) => {
+    console.log("clicked");
+    e.preventDefault();
+    e.stopPropagation();
+    setTimelineContext((prev) => !prev);
+    const top = e.currentTarget.offsetTop + e.currentTarget.offsetHeight;
+    const left = e.currentTarget.offsetLeft;
+    setCords({ top, left });
+  };
+
   return (
-    <div className="h-full grid grid-cols-6 content-center border divide-x gap-2">
-      <div className="col-span-2">
-        <div className="flex flex-row">
+    <>
+      <div className="flex md:hidden flex-col justify-start items-center h-full w-full">
+        <div className="w-full h-[30px]">
+          <h3 className="text-xl font-sans font-bold text-left">Photos</h3>
+        </div>
+        <div className="flex flex-row justify-start items-center gap-1 w-full border-b border-t-2 h-[70px]">
           <button
-            className={`w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-              active.allItems ? "active" : ""
-            }`}
-            onClick={handleAllItems}
+            onClick={handleItemSelection}
+            className="h-10 w-[90px] flex flex-row justify-center items-center gap-1 bg-[#F5EFE5] hover:bg-[#ECE1CE] rounded"
+            ref={itemButtonRef}
           >
-            All Items
+            {active.allItems && (
+              <span className="font-semibold font-sans text-md">All Items</span>
+            )}
+            {active.photos && (
+              <span className="font-semibold font-sans text-md">Photos</span>
+            )}
+            {active.videos && (
+              <span className="font-semibold font-sans text-md">Videos</span>
+            )}
+            <DownArrowIcon />
           </button>
+          <ContextModal
+            open={showItemsContext}
+            onClose={() => setShowItemsContext(false)}
+            style={{ width: 100, top: cords.top, left: cords.left }}
+            buttonRef={itemButtonRef}
+          >
+            <ItemSelectionComponent
+              handleAllItems={handleAllItems}
+              handlePhotos={handlePhotos}
+              handleVideos={handleVideos}
+              active={active}
+            />
+          </ContextModal>
           <button
-            className={`w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-              active.photos ? "active" : ""
-            }`}
-            onClick={handlePhotos}
+            onClick={handleTimelineSelection}
+            className="h-10 w-[90px] flex flex-row justify-center items-center gap-1 bg-[#F5EFE5] hover:bg-[#ECE1CE] rounded"
+            ref={timelineButtonRef}
           >
-            Photos
+            {active.months && (
+              <span className="font-semibold font-sans text-md">Months</span>
+            )}
+            {active.years && (
+              <span className="font-semibold font-sans text-md">Years</span>
+            )}
+            {active.days && (
+              <span className="font-semibold font-sans text-md">Days</span>
+            )}
+            <DownArrowIcon />
           </button>
-          <button
-            className={`w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-              active.videos ? "active" : ""
-            }`}
-            onClick={handleVideos}
+          <ContextModal
+            open={showTimelineContext}
+            onClose={() => setTimelineContext(false)}
+            style={{ width: 100, top: cords.top, left: cords.left }}
+            buttonRef={timelineButtonRef}
           >
-            Videos
-          </button>
+            <TimeLineSelectionComponent
+              handleDays={handleDays}
+              handleMonths={handleMonths}
+              handleYears={handleYears}
+              active={active}
+            />
+          </ContextModal>
+          <SetSizeComponent
+            increment={increment}
+            decrement={decrement}
+            idx={idx}
+          />
         </div>
       </div>
-      <div className="col-span-2 pl-2 content-center">
+      <div className="w-full h-full hidden md:grid grid-cols-6 content-center border divide-x gap-2">
         <div className="col-span-2">
-          <div className="flex flex-row ">
-            <button
-              className={`w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-                active.years ? "active" : ""
-              }`}
-              onClick={handleYears}
-            >
-              Years
-            </button>
-            <button
-              className={`w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-                active.months ? "active" : ""
-              }`}
-              onClick={handleMonths}
-            >
-              Months
-            </button>
-            <button
-              className={`w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-                active.days ? "active" : ""
-              }`}
-              onClick={handleDays}
-            >
-              Days
-            </button>
+          <div className="flex flex-row w-full justify-center items-center">
+            <ItemSelectionComponent
+              handleAllItems={handleAllItems}
+              handlePhotos={handlePhotos}
+              handleVideos={handleVideos}
+              active={active}
+            />
           </div>
         </div>
-      </div>
-      <div className="col-span-2 pl-2 content-center">
-        <div className="flex flex-row  gap-1">
-          <button
-            onClick={decrement}
-            className="bg-[#F5EFE5] w-10 h-10 hover:bg-[#ECE1CE]"
-          >
-            <Minus
-              style={{
-                width: "25px",
-                height: "25px",
-                margin: "auto",
-              }}
-            />
-          </button>
-          <input type="range" min={82} max={425} value={RANGE[idx]} />
-          <button
-            onClick={increment}
-            className="bg-[#F5EFE5] w-10 h-10 hover:bg-[#ECE1CE]"
-          >
-            <Plus
-              style={{
-                width: "23px",
-                height: "23px",
-                margin: "auto",
-              }}
-            />
-          </button>
+        <div className="col-span-2 pl-2 content-center">
+          <div className="col-span-2">
+            <div className="flex flex-row w-full justify-center items-center">
+              <TimeLineSelectionComponent
+                handleDays={handleDays}
+                handleMonths={handleMonths}
+                handleYears={handleYears}
+                active={active}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="col-span-2 pl-2 content-center">
+          <SetSizeComponent
+            increment={increment}
+            decrement={decrement}
+            idx={idx}
+          />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -262,7 +430,6 @@ export const TimeLine = () => {
 
     const filter = filterEl.getBoundingClientRect();
     const { height, width } = parentEl.getBoundingClientRect();
-    console.log(height, width);
     setDim({ height: height - filter.height, width });
   }, [elementRef.current, filterRef.current]);
 
@@ -384,11 +551,10 @@ export const TimeLine = () => {
     );
   };
 
-  const getItemSize = useCallback((index) => rowHeights[index], [rowHeights]);
   console.log("gallery re-rendered");
   return (
     <div className="w-full h-full flex flex-col" ref={elementRef}>
-      <div className="w-full h-[75px]" ref={filterRef}>
+      <div className="w-full h-[100px]" ref={filterRef}>
         <TimeLineFilter></TimeLineFilter>
       </div>
       {isSuccess &&
