@@ -143,7 +143,6 @@ const SharedTable = ({
   const isItemLoaded = (index) => !hasNextPage || index < items.length;
   const itemCount = hasNextPage ? items?.length + 1 : items?.length;
   const loadMoreItems = isNextPageLoading ? () => {} : loadNextPage;
-
   const fileDetails = useSelector((state) => state.fileDetails);
   const { reLoad } = useSelector((state) => state.browseItems);
 

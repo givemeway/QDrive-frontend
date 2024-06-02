@@ -75,8 +75,6 @@ const DataTable = ({
   const dispatch = useDispatch();
   const tableContainerRef = useRef(null);
   const rowVirtualizerInstanceRef = useRef(null);
-  console.log(nav);
-
   const columns = useMemo(() => colFn(layout, path, nav), [layout, path, nav]);
 
   const fetchMoreOnBottomReached = useCallback(

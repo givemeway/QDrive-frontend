@@ -10,7 +10,7 @@ import {
 import { buildCellValueForFile, buildCellValueForFolder } from "../util.js";
 import { useDispatch, useSelector } from "react-redux";
 import { setBrowseItems } from "../features/browseItems/browseItemsSlice.js";
-import Table from "./SharedItemsMaterialReactTable.js";
+import Table from "./ShareItemsTable.js";
 import SpinnerGIF from "./icons/SpinnerGIF.js";
 import { file, folder, pageSize } from "../config.js";
 import { Header } from "./Header.jsx";
@@ -26,30 +26,30 @@ import { StatusNotification } from "./StatusNotification.js";
 import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
 import isPicture from "./fileFormats/FileFormat.js";
 
-export default function Transfer() {
+export default function Shared() {
   const location = useLocation();
   const [isShareURLInvalid, setIsShareURLInvalid] = useState(false);
   const [sharedby, setSharedBy] = useState({ owner: "", name: "" });
-
   const [breadCrumb, setBreadCrumb] = useState(
     new Map(Object.entries({ "/": "/" }))
   );
   const tempBreadCrumbs = useRef(new Map(Object.entries({ "/": "/" })));
-
   const dispath = useDispatch();
   const table = useSelector((state) => state.browseItems);
-
+  const [state, setState] = useState({
+    hasNextPage: true,
+    isNextPageLoading: false,
+    total: 0,
+    items: [],
+  });
   let { type, shareId, "*": nav } = useParams();
-
-  const [dirNav, setDirNav] = useState("");
-  const share = useRef({ itemID: null, dl: null, rel: "" });
-  const [newRows, setNewRows] = useState([]);
+  const [dirNav, setDirNav] = useState("/");
+  const share = useRef({ itemID: "", dl: "" });
   const navigatedToNewDir = useRef(null);
   const page = useRef(1);
   const reLoad = useRef(false);
   const [isFetching, setIsFetching] = useState(false);
   const [isShareValid, setIsShareValid] = useState(undefined);
-  const [browse, setBrowse] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [photoName, setPhotoName] = useState("");
   const navigate = useNavigate();
@@ -58,6 +58,11 @@ export default function Transfer() {
     useValidateShareLinkMutation();
   const [browseShareQuery, browseShareStatus] = useBrowseSharedItemsMutation();
   const { isLoading, isError, isSuccess, data } = useGetCSRFTokenQuery();
+
+  const pagination = useRef({ start: 0, page: pageSize });
+  const tableContainerRef = useRef(null);
+  const [height, setHeight] = useState(0);
+  const browse = useRef(false);
 
   const validate = {
     isLoading: validateShareStatus.isLoading,
@@ -77,11 +82,44 @@ export default function Transfer() {
     startedTimeStamp: browseShareStatus.startedTimeStamp,
   };
 
+  const _loadNextPage = (...args) => {
+    if (
+      state.items.length < state.total &&
+      !isFetching &&
+      browseShare.isSuccess
+    ) {
+      setIsFetching(true);
+      console.log("Fetching....", args);
+      pagination.current.start = args[0];
+      navigatedToNewDir.current = false;
+      reLoad.current = table.reLoad;
+      page.current = table.page;
+      const body = {
+        id: shareId,
+        k: share.current.itemID,
+        t: type,
+        dl: share.current.dl,
+        nav: nav,
+        start: pagination.current.start,
+        page: pageSize,
+        nav_tracking: 1,
+      };
+      browseShareQuery(body);
+    }
+  };
+
   useEffect(() => {
     if (isSuccess && data) {
       dispath(setCSRFToken(data.CSRFToken));
     }
   }, [isSuccess, data]);
+
+  useEffect(() => {
+    if (tableContainerRef.current) {
+      const { height } = tableContainerRef.current.getBoundingClientRect();
+      setHeight(height);
+    }
+  }, [tableContainerRef.current]);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -91,11 +129,9 @@ export default function Transfer() {
     share.current.dl = dl;
     const type = location.pathname.split("/")[2];
     if (shareId?.length !== 24 || type !== "t") {
-      console.log("inside the invalid link block");
       setIsShareURLInvalid(true);
     } else {
       setIsShareURLInvalid(false);
-      console.log("inside the validate share block");
       const body = {
         id: shareId,
         k: share.current.itemID,
@@ -109,14 +145,15 @@ export default function Transfer() {
 
   useEffect(() => {
     if (validate.isSuccess && validate.data?.success) {
+      navigatedToNewDir.current = true;
       setIsShareValid(true);
-      setBrowse(false);
+      browse.current = false;
       setSharedBy({
         owner: validate.data?.sharedBy,
         name: validate.data?.name,
       });
     } else if (validate.isError || validate.error) {
-      setBrowse(false);
+      browse.current = false;
       setIsShareValid(false);
     }
   }, [validate.isSuccess, validate.data, validate.error, validate.isError]);
@@ -138,7 +175,7 @@ export default function Transfer() {
   }, [isShareValid, isShareURLInvalid]);
 
   useEffect(() => {
-    if (!isShareURLInvalid && isShareValid && browse) {
+    if (!isShareURLInvalid && isShareValid && browse.current) {
       page.current = 1;
       const queryParams = new URLSearchParams(location.search);
       const itemID = queryParams.get("k");
@@ -161,15 +198,7 @@ export default function Transfer() {
       setIsFetching(false);
       browseShareQuery(body);
     }
-  }, [
-    location.pathname,
-    nav,
-    shareId,
-    type,
-    isShareValid,
-    isShareURLInvalid,
-    browse,
-  ]);
+  }, [location.pathname, nav, shareId, type, isShareValid, isShareURLInvalid]);
 
   useEffect(() => {
     if (!isShareURLInvalid && isShareValid) {
@@ -178,7 +207,10 @@ export default function Transfer() {
       if (filename !== null) {
         setPhotoName(filename);
         setIsPreview(true);
-        setNewRows((prev) => prev.filter((file) => isPicture(file.name)));
+        setState((prev) => ({
+          ...prev,
+          items: prev.items.filter((file) => isPicture(file.name)),
+        }));
       }
     }
   }, [location.search]);
@@ -186,6 +218,15 @@ export default function Transfer() {
   useEffect(() => {
     if (browseShare.data?.success) {
       const { files, directories, home, path, total } = browseShare.data;
+      const subTotal = files.length + directories.length + state.items.length;
+      const subTotal_newDir = files.length + directories.length;
+      if (!navigatedToNewDir.current && subTotal < total) {
+        setState((prev) => ({ ...prev, total, hasNextPage: true }));
+      } else if (navigatedToNewDir.current && subTotal_newDir < total) {
+        setState((prev) => ({ ...prev, total, hasNextPage: true }));
+      } else {
+        setState((prev) => ({ ...prev, total, hasNextPage: false }));
+      }
       const queryParams = new URLSearchParams(location.search);
       const k = queryParams.get("k");
       if (k === null) share.current.rel = path;
@@ -209,7 +250,6 @@ export default function Transfer() {
         });
         setBreadCrumb(tempBreadCrumbs.current);
       }
-      console.log(files);
       const fileRows = files.map((file) => buildCellValueForFile(file));
       const folderRows = directories.map((fo) => buildCellValueForFolder(fo));
 
@@ -217,42 +257,42 @@ export default function Transfer() {
         dispath(setFilesSelected(fileRows.map((file) => file.id)));
         dispath(setFoldersSelected(folderRows.map((folder) => folder.id)));
 
-        setNewRows([...fileRows, ...folderRows]);
+        setState((prev) => ({
+          ...prev,
+          items: [...fileRows, ...folderRows],
+        }));
       } else {
-        setNewRows((prev) => {
-          const files = prev
-            .filter((item) => item.item === file)
-            .map((file) => file.id);
+        const files = state.items
+          .filter((item) => item.item === file)
+          .map((file) => file.id);
 
-          const folders = prev
-            .filter((item) => item.item === folder)
-            .map((folder) => folder.id);
+        const folders = state.items
+          .filter((item) => item.item === folder)
+          .map((folder) => folder.id);
 
-          dispath(
-            setFilesSelected([...files, ...fileRows.map((file) => file.id)])
-          );
-          dispath(
-            setFoldersSelected([
-              ...folders,
-              ...folderRows.map((folder) => folder.id),
-            ])
-          );
-
-          return [...prev, ...fileRows, ...folderRows];
-        });
+        dispath(
+          setFilesSelected([...files, ...fileRows.map((file) => file.id)])
+        );
+        dispath(
+          setFoldersSelected([
+            ...folders,
+            ...folderRows.map((folder) => folder.id),
+          ])
+        );
+        setState((prev) => ({
+          ...prev,
+          items: [...prev.items, ...fileRows, ...folderRows],
+        }));
       }
       dispath(
         setBrowseItems({
           ...table,
-          page: page.current,
-          query: false,
           reLoad: reLoad.current,
-          total: total,
         })
       );
       reLoad.current = false;
       setIsFetching(false);
-      setBrowse(true);
+      browse.current = true;
     }
   }, [
     browseShare.data?.sucess,
@@ -262,44 +302,42 @@ export default function Transfer() {
     browseShare.data?.path,
   ]);
 
-  useEffect(() => {
-    if (table.query) {
-      setIsFetching(true);
-      reLoad.current = table.reLoad;
-      navigatedToNewDir.current = false;
-      page.current = table.page;
-      const body = {
-        id: shareId,
-        k: share.current.itemID,
-        t: type,
-        dl: share.current.dl,
-        nav: nav,
-        start: (table.page - 1) * pageSize,
-        page: pageSize,
-      };
-      browseShareQuery(body);
-    }
-  }, [table.query, table.reLoad]);
-
   const handleClosePreview = () => {
     setIsPreview(false);
     const params = new URLSearchParams(location.search);
     params.delete("preview");
     navigate(`${location.pathname}?${params.toString()}`);
   };
-
   return (
     <>
       <div className="w-screen h-screen flex flex-col justify-start items-center">
         <Header />
         {(validate.isLoading || isLoading) && (
-          <SpinnerGIF style={{ width: 50, height: 50 }} />
+          <div className="w-full h-full flex justify-center items-center">
+            <SpinnerGIF style={{ width: 50, height: 50 }} />
+          </div>
         )}
-        {validate.isError && <div>Share Link Expired or Deleted</div>}
+        {validate.isError && (
+          <div className="w-full h-full flex justify-center items-center">
+            <p className="text-center font-sans font-semibold text-[red]">
+              Share Link Expired or Deleted
+            </p>
+          </div>
+        )}
         {isShareURLInvalid && (
-          <div>Share Link is incorrect. Please check it</div>
+          <div className="w-full h-full flex justify-center items-center">
+            <p className="text-center font-sans font-semibold text-[red]">
+              Share Link is incorrect. Please check it
+            </p>
+          </div>
         )}
-        {isError && <div>Something Went wrong try again.</div>}
+        {isError && (
+          <div className="w-full h-full flex justify-center items-center">
+            <p className="text-center font-sans font-semibold text-[red]">
+              Something Went wrong try again.
+            </p>
+          </div>
+        )}
         {isShareValid && (
           <div className="w-full md:w-2/3 h-5/6 flex flex-col justify-between items-center grow">
             <div className="w-full flex flex-col justify-around items-center">
@@ -318,18 +356,27 @@ export default function Transfer() {
                 k={share.current.itemID}
               />
             </div>
-
-            <div className="h-4/6 w-full grow">
+            <div
+              className="w-full grow flex justify-start items-center"
+              ref={tableContainerRef}
+            >
               <Table
                 layout={"transfer"}
-                path={`/sh/t/${shareId}`}
-                isLoading={browseShare.isLoading}
-                isError={browseShare.isError}
-                status={browseShare.status}
-                startedTimeStamp={browseShare.startedTimeStamp}
-                rows={newRows}
-                isFetching={isFetching}
-                nav={share.current.rel}
+                urlPath={`/sh/t/${shareId}`}
+                params={{
+                  height,
+                  isSuccess: browseShare.isSuccess,
+                  isLoading: browseShare.isLoading,
+                  isError: browseShare.isError,
+                  isFetching: isFetching,
+                  reLoad: reLoad.current,
+                  newDir: navigatedToNewDir.current,
+                  nav: dirNav,
+                }}
+                hasNextPage={state.hasNextPage}
+                isNextPageLoading={state.isNextPageLoading}
+                items={state.items}
+                loadNextPage={_loadNextPage}
               />
             </div>
           </div>
@@ -338,7 +385,7 @@ export default function Transfer() {
           <Modal style={{ background: "white", opacity: 1 }}>
             <PhotoPreview
               onClose={handleClosePreview}
-              photos={newRows}
+              photos={state.items}
               initialName={photoName}
             />
           </Modal>

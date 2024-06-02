@@ -238,10 +238,8 @@ function generateLink(navPath, params, row, preview = 0) {
     return dir === ""
       ? path + `/h?preview=${row.name}&k=${id}`
       : path + `/h${dir}?preview=${row.name}&k=${id}`;
-
   if (layout === "transfer" && nav === "/") {
     dir = row.path.split(nav).slice(1).join("/");
-
     if (preview === 0)
       return dir === ""
         ? path + `/h?k=${id}`

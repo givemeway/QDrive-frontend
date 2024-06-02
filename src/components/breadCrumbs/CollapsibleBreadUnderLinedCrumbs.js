@@ -6,12 +6,19 @@ import { Button } from "@mui/material";
 
 const ensureToAddKeyToURLString = (layout, link, entry) => {
   if (layout === "transfer" && entry[1] === "/") return link;
+  if (layout === "share") return (link += `?k=${entry[0]}&dl=0`);
   return layout === "transfer" ? (link += `?k=${entry[0]}`) : link;
 };
 
 // TypeScript only: need a type cast here because https://github.com/Microsoft/TypeScript/issues/26591
 
-export default function CustomizedBreadcrumbs({ queue, layout, link, k }) {
+export default function CustomizedBreadcrumbs({
+  queue,
+  layout,
+  link,
+  k,
+  home,
+}) {
   let label;
   return (
     <Breadcrumbs
@@ -35,7 +42,7 @@ export default function CustomizedBreadcrumbs({ queue, layout, link, k }) {
         },
       }}
     >
-      {(layout === "share" || layout === "dashboard") &&
+      {layout === "dashboard" &&
         queue.map((dir, idx) => {
           if (dir === "/") {
             label = "Home";
@@ -68,10 +75,14 @@ export default function CustomizedBreadcrumbs({ queue, layout, link, k }) {
           );
         })}
 
-      {layout === "transfer" &&
+      {(layout === "transfer" || layout === "share") &&
         Array.from(queue).map((entry, idx) => {
-          if (entry[1] === "/") label = "Home";
-          else {
+          if (entry[1] === "/") {
+            label = "Home";
+          } else if (layout === "share" && entry[1] === "h") {
+            label = home;
+            link += "/h";
+          } else {
             label = entry[1];
             link += `/${entry[1]}`;
           }

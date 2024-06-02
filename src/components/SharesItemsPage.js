@@ -30,7 +30,11 @@ export default function Shared() {
   const location = useLocation();
   const [isShareURLInvalid, setIsShareURLInvalid] = useState(false);
   const [sharedby, setSharedBy] = useState({ owner: "", name: "" });
-  const [breadCrumb, setBreadCrumb] = useState(["/"]);
+  const [breadCrumbMap, setBreadCrumbMap] = useState(
+    new Map(Object.entries({ "/": "/" }))
+  );
+  const tempBreadCrumbs = useRef(new Map(Object.entries({ "/": "/" })));
+
   const dispath = useDispatch();
   const table = useSelector((state) => state.browseItems);
   const [state, setState] = useState({
@@ -56,6 +60,7 @@ export default function Shared() {
     useValidateShareLinkMutation();
   const [browseShareQuery, browseShareStatus] = useBrowseSharedItemsMutation();
   const { isLoading, isError, isSuccess, data } = useGetCSRFTokenQuery();
+
   const pagination = useRef({ start: 0, page: pageSize });
   const tableContainerRef = useRef(null);
   const [height, setHeight] = useState(0);
@@ -79,18 +84,15 @@ export default function Shared() {
   };
 
   const _loadNextPage = (...args) => {
-    navigatedToNewDir.current = false;
-    reLoad.current = table.reLoad;
     if (
       state.items.length < state.total &&
       !isFetching &&
       browseShare.isSuccess
     ) {
       setIsFetching(true);
-      setState((prev) => ({ ...prev, hasNextPage: true }));
       pagination.current.start = args[0];
-      setIsFetching(true);
       navigatedToNewDir.current = false;
+      reLoad.current = table.reLoad;
       page.current = table.page;
       const body = {
         id: shareId,
@@ -102,8 +104,6 @@ export default function Shared() {
         page: pageSize,
       };
       browseShareQuery(body);
-    } else if (state.items.length >= state.total || isError) {
-      setState((prev) => ({ ...prev, hasNextPage: false }));
     }
   };
 
@@ -112,6 +112,13 @@ export default function Shared() {
       dispath(setCSRFToken(data.CSRFToken));
     }
   }, [isSuccess, data]);
+
+  useEffect(() => {
+    if (tableContainerRef.current) {
+      const { height } = tableContainerRef.current.getBoundingClientRect();
+      setHeight(height);
+    }
+  }, [tableContainerRef.current]);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -145,6 +152,16 @@ export default function Shared() {
         owner: validate.data?.sharedBy,
         name: validate.data?.name,
       });
+      setBreadCrumbMap((prev) => {
+        prev.delete("/");
+        prev.set(share.current.itemID, validate.data?.name);
+        return prev;
+      });
+      tempBreadCrumbs.current.delete("/");
+      tempBreadCrumbs.current = new Map(tempBreadCrumbs.current).set(
+        share.current.itemID,
+        validate.data?.name
+      );
     } else if (validate.isError || validate.error) {
       setIsShareValid(false);
     }
@@ -152,6 +169,11 @@ export default function Shared() {
 
   useEffect(() => {
     if (!isShareURLInvalid && isShareValid) {
+      const queryParams = new URLSearchParams(location.search);
+      const itemID = queryParams.get("k");
+      const dl = queryParams.get("dl");
+      share.current.itemID = itemID;
+      share.current.dl = dl;
       page.current = 1;
       const body = {
         id: shareId,
@@ -167,7 +189,15 @@ export default function Shared() {
       setIsFetching(false);
       browseShareQuery(body);
     }
-  }, [location.pathname, nav, shareId, type, isShareValid, isShareURLInvalid]);
+  }, [
+    location.pathname,
+    location.search,
+    nav,
+    shareId,
+    type,
+    isShareValid,
+    isShareURLInvalid,
+  ]);
 
   useEffect(() => {
     if (!isShareURLInvalid && isShareValid) {
@@ -187,8 +217,32 @@ export default function Shared() {
   useEffect(() => {
     if (browseShare.data?.success) {
       const { files, directories, home, path, total } = browseShare.data;
+      const subTotal = files.length + directories.length + state.items.length;
+      const subTotal_newDir = files.length + directories.length;
+      if (!navigatedToNewDir.current && subTotal < total) {
+        setState((prev) => ({ ...prev, total, hasNextPage: true }));
+      } else if (navigatedToNewDir.current && subTotal_newDir < total) {
+        setState((prev) => ({ ...prev, total, hasNextPage: true }));
+      } else {
+        setState((prev) => ({ ...prev, total, hasNextPage: false }));
+      }
       setDirNav(path);
-      setBreadCrumb(() => [home, ...nav.split("/").slice(1)]);
+      const params = new URLSearchParams(location.search);
+      const k = params.get("k");
+      const relPathParts = nav.split("/");
+      tempBreadCrumbs.current.set(k, relPathParts.slice(-1)[0]);
+      const navLength = nav.split("h/").slice(-1)[0].split("/").length;
+      const presentBreadCrumbLength = Array.from(
+        tempBreadCrumbs.current
+      ).length;
+      if (navLength !== presentBreadCrumbLength) {
+        Array.from(tempBreadCrumbs.current).forEach((entry, idx) => {
+          if (idx >= nav.split("/").length) {
+            tempBreadCrumbs.current.delete(entry[0]);
+          }
+        });
+      }
+      setBreadCrumbMap(tempBreadCrumbs.current);
       const fileRows = files.map((file) => buildCellValueForFile(file));
       const folderRows = directories.map((fo) => buildCellValueForFolder(fo));
 
@@ -228,10 +282,7 @@ export default function Shared() {
       dispath(
         setBrowseItems({
           ...table,
-          page: page.current,
-          query: false,
           reLoad: reLoad.current,
-          total: total,
         })
       );
       reLoad.current = false;
@@ -244,13 +295,6 @@ export default function Shared() {
     browseShare.data?.home,
     browseShare.data?.path,
   ]);
-
-  useEffect(() => {
-    if (tableContainerRef.current) {
-      const { height } = tableContainerRef.current.getBoundingClientRect();
-      setHeight(height);
-    }
-  }, [tableContainerRef.current]);
 
   const handleClosePreview = () => {
     setIsPreview(false);
@@ -301,10 +345,11 @@ export default function Shared() {
             {type === "fo" && (
               <div className="w-full flex flex-row justify-start items-center">
                 <BreadCrumb
-                  queue={breadCrumb}
-                  link={`/sh/fo/${shareId}/h`}
+                  queue={breadCrumbMap}
+                  link={`/sh/fo/${shareId}`}
                   layout={"share"}
                   k={share.current.itemID}
+                  home={validate.data?.name}
                 />
               </div>
             )}
