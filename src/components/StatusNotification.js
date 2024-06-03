@@ -365,13 +365,19 @@ export function StatusNotification() {
   // useEffect(() => {
   //   return () => clearInterval(timer.current);
   // }, []);
-  useEffect(() => {}, []);
-
   useEffect(() => {
     if (isLoading) {
-      refreshTimer.current = setInterval(() => {
-        dispath(setRefresh({ toggle: !refresh.toggle, refresh: true }));
-      }, 2000);
+      if (
+        (operation.type === DELETE ||
+          operation.type === MOVE ||
+          operation.type === RENAME) &&
+        operation.type !== ""
+      ) {
+        console.log("refreshing the table....");
+        refreshTimer.current = setInterval(() => {
+          dispath(setRefresh({ toggle: !refresh.toggle, refresh: true }));
+        }, 2000);
+      }
     }
     if ((isSuccess || isError) && status !== "uninitialized") {
       if (refreshTimer.current) {

@@ -83,6 +83,8 @@ export default function Shared() {
   };
 
   const _loadNextPage = (...args) => {
+    console.log("fetching function loading....");
+
     if (
       state.items.length < state.total &&
       !isFetching &&
@@ -218,6 +220,7 @@ export default function Shared() {
   useEffect(() => {
     if (browseShare.data?.success) {
       const { files, directories, home, path, total } = browseShare.data;
+      console.log(files, directories, total);
       const subTotal = files.length + directories.length + state.items.length;
       const subTotal_newDir = files.length + directories.length;
       if (!navigatedToNewDir.current && subTotal < total) {

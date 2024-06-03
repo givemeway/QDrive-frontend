@@ -25,6 +25,7 @@ import {
 import { StatusNotification } from "./StatusNotification.js";
 import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
 import isPicture from "./fileFormats/FileFormat.js";
+import { CoPresentSharp } from "@mui/icons-material";
 
 export default function Shared() {
   const location = useLocation();
@@ -84,12 +85,14 @@ export default function Shared() {
   };
 
   const _loadNextPage = (...args) => {
+    console.log("fetching function loading....");
     if (
       state.items.length < state.total &&
       !isFetching &&
       browseShare.isSuccess
     ) {
       setIsFetching(true);
+      console.log("fetching...", args);
       pagination.current.start = args[0];
       navigatedToNewDir.current = false;
       reLoad.current = table.reLoad;
@@ -217,6 +220,7 @@ export default function Shared() {
   useEffect(() => {
     if (browseShare.data?.success) {
       const { files, directories, home, path, total } = browseShare.data;
+      console.log(files, directories, total);
       const subTotal = files.length + directories.length + state.items.length;
       const subTotal_newDir = files.length + directories.length;
       if (!navigatedToNewDir.current && subTotal < total) {
