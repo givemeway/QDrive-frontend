@@ -6,7 +6,7 @@ export default function CloseIcon({ onClose, style }) {
       viewBox="0 0 24 24"
       stroke-width="1.5"
       stroke="currentColor"
-      className="w-6 h-6 cursor-pointer"
+      className="w-6 h-6 cursor-pointer hover:bg-[#f5efe5]"
       onClick={onClose}
       style={{ ...style }}
     >

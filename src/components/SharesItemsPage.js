@@ -25,7 +25,6 @@ import {
 import { StatusNotification } from "./StatusNotification.js";
 import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
 import isPicture from "./fileFormats/FileFormat.js";
-import { CoPresentSharp } from "@mui/icons-material";
 
 export default function Shared() {
   const location = useLocation();

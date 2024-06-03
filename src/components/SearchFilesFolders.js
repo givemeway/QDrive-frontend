@@ -3,7 +3,7 @@ import { HamburgerIcon } from "./icons/HamburgerIcon";
 import { useState, useEffect } from "react";
 import { CustomBlueButton } from "./Buttons/BlueButton";
 import AvatarMenu from "./AvatarMenu";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setPanel } from "../features/navigation/navigationPanelSlice";
 
 export default function Search({ searchValue }) {
@@ -11,7 +11,8 @@ export default function Search({ searchValue }) {
   const [query, setQuery] = useState(searchValue);
   const [context, setContext] = useState(false);
   const dispatch = useDispatch();
-  const handleContext = () => {
+  const handleContext = (e) => {
+    e.stopPropagation();
     setContext((prev) => !prev);
   };
 
@@ -27,8 +28,14 @@ export default function Search({ searchValue }) {
   }, [context]);
 
   return (
-    <div className="flex flex-row justify-start items-center w-full h-full">
-      <div className="flex flex-col justify-start items-start md:hidden">
+    <div
+      className="flex flex-row justify-start items-center w-full h-full"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div
+        className="flex flex-col justify-start items-start md:hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         <HamburgerIcon
           style={{ width: 30, height: 30, cursor: "pointer" }}
           onClick={handleContext}

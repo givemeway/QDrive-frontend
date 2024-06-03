@@ -10,6 +10,8 @@ import { SharedIcon } from "./icons/SharedIcon";
 import { DeletedIcon } from "./icons/DeletedIcon";
 import { ChevronDown } from "./icons/ChevronDown";
 import useOutSideClick from "./hooks/useOutsideClick";
+import { useDispatch } from "react-redux";
+import { setPanel } from "../features/navigation/navigationPanelSlice";
 
 const style = {
   display: "flex",
@@ -41,6 +43,7 @@ const TabButton = ({ active, children, onClick }) => {
 
 const Panel = () => {
   const [open, setOpen] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const params = useParams();
   const subpath = params["*"];
@@ -52,8 +55,6 @@ const Panel = () => {
     shared: false,
     deleted: false,
   });
-
-  console.log("side panel rendered");
   const handleClick = () => {
     setOpen((prev) => !prev);
   };
@@ -122,6 +123,16 @@ const Panel = () => {
       setTabSelected(3);
     }
   }, [subpath]);
+
+  useOutSideClick(panelRef, () => {
+    dispatch(setPanel(false));
+  });
+
+  useEffect(() => {
+    if (panelRef.current) {
+      console.log(panelRef.current.getBoundingClientRect());
+    }
+  }, [panelRef.current]);
 
   return (
     <div

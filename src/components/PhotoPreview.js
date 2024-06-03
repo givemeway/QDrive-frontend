@@ -60,6 +60,7 @@ const DropDown = ({ path }) => {
           width: "auto",
           fontWeight: 400,
           color: "#938e88",
+          padding: 0,
         }}
       >
         {path.split("/").slice(-1)[0]}
@@ -82,13 +83,17 @@ const DropDown = ({ path }) => {
   );
 };
 
-const PhotoPath = () => {
+const PhotoPath = ({ layout }) => {
   const photo = useSelector((state) => state.photoNav);
 
   return (
     <div className="flex flex-row justify-start items-center gap-1">
-      <DropDown path={photo.path} />
-      <span className="text-[#938e88]">/</span>
+      {layout === "dashboard" && (
+        <div className="justify-start items-center hidden md:flex gap-1">
+          <DropDown path={photo.path} />
+          <span className="text-[#938e88]">/</span>
+        </div>
+      )}
       <span>
         <div className="flex flex-row justify-start items-center gap-2">
           <span className="text-black font-bold">{photo.name}</span>
@@ -113,22 +118,22 @@ const PhotoNavigation = () => {
     }
   };
   return (
-    <div className="flex flex-row justify-start items-center gap-1 border-r border-l pl-5 pr-5">
+    <div className="flex flex-row justify-start items-center gap-1 border-r border-l ">
       <button onClick={handleLeft} className=" hover:bg-[#f5efe5]">
-        <Left fill={"#080341"} height={25} width={25} />
+        <Left fill={"#080341"} height={20} width={20} />
       </button>
       <span className="tracking-tighter text-[#938e88]">
         {photo.pos} of {photo.total}
       </span>
 
       <button onClick={handleRight} className=" hover:bg-[#f5efe5]">
-        <Right fill={"#080341"} height={25} width={25} />
+        <Right fill={"#080341"} height={20} width={20} />
       </button>
     </div>
   );
 };
 
-export default function PhotoPreview({ onClose, photos, initialName }) {
+export default function PhotoPreview({ onClose, photos, initialName, layout }) {
   const dispatch = useDispatch();
   const photo = useSelector((state) => state.photoNav);
   const navigate = useNavigate();
@@ -207,15 +212,15 @@ export default function PhotoPreview({ onClose, photos, initialName }) {
         <div className="flex flex-row justify-start items-center w-full h-20">
           <header
             className="w-full h-full flex flex-row justify-start items-center
-                                 bg-white p-4 border-[#DBDBDB] border-b "
+                                 bg-white p-2 border-[#DBDBDB] border-b "
           >
-            <div className="hover:bg-[#f5efe5]">
-              <CloseIcon onClose={onClose} />
+            <div className="w-10 flex justify-center items-center h-full">
+              <CloseIcon onClose={onClose} style={{ width: 25, height: 25 }} />
             </div>
             <div className="grow">
-              <PhotoPath />
+              <PhotoPath layout={layout} />
             </div>
-            <div className="flex flex-row gap-2 items-center ">
+            <div className="flex flex-row gap-1 items-center ">
               <PhotoNavigation />
 
               <button className="hover:bg-[#f5efe5]" onClick={handleDownload}>

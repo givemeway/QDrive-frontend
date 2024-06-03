@@ -284,6 +284,7 @@ export default React.memo(function MainPanel({ mode }) {
               }}
               photos={photos}
               initialName={photoName}
+              layout={"dashboard"}
             />
           </Modal>
         )}

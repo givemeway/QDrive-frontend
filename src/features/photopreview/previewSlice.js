@@ -15,13 +15,17 @@ export const previewSlice = createSlice({
     error: false,
     photos: [],
     subpath: "",
+    isPhotoPreview: false,
   },
   reducers: {
     setPosition: (state, action) => {
       return { ...state, ...action.payload };
     },
+    setPreview: (state, action) => {
+      state.open = action.payload;
+    },
   },
 });
 
-export const { setPosition } = previewSlice.actions;
+export const { setPosition, setPreview } = previewSlice.actions;
 export default previewSlice.reducer;
