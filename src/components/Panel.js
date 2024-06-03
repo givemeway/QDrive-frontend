@@ -124,15 +124,15 @@ const Panel = () => {
     }
   }, [subpath]);
 
-  useOutSideClick(panelRef, () => {
-    dispatch(setPanel(false));
-  });
+  // useOutSideClick(panelRef, () => {
+  //   dispatch(setPanel(false));
+  // });
 
-  useEffect(() => {
-    if (panelRef.current) {
-      console.log(panelRef.current.getBoundingClientRect());
-    }
-  }, [panelRef.current]);
+  // useEffect(() => {
+  //   if (panelRef.current) {
+  //     console.log(panelRef.current.getBoundingClientRect());
+  //   }
+  // }, [panelRef.current]);
 
   return (
     <div
