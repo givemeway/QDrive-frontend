@@ -293,7 +293,6 @@ export function StatusNotification() {
       setOpen(true);
       switch (operation.type) {
         case COPYSHARE:
-          console.log("copy share initialized");
           init_operation[0]({
             CSRFToken,
             type: operation.data.type,
@@ -301,12 +300,9 @@ export function StatusNotification() {
           });
           break;
         case DELETETRASH:
-          console.log("trash initialilzed");
           init_operation[0]({ items: operation.data, CSRFToken });
           break;
         case RESTORETRASH:
-          console.log("restore trash initialilzed");
-
           init_operation[0]({ items: operation.data, CSRFToken });
           break;
         case MOVE:
@@ -347,7 +343,6 @@ export function StatusNotification() {
           init_operation[0]({ items: operation.data, CSRFToken });
           break;
         case LOGOUT:
-          console.log("logout initialized");
           init_operation[0]({ CSRFToken });
           break;
       }
@@ -370,10 +365,11 @@ export function StatusNotification() {
       if (
         (operation.type === DELETE ||
           operation.type === MOVE ||
-          operation.type === RENAME) &&
+          operation.type === RENAME ||
+          operation.type === DELETETRASH ||
+          operation.type === RESTORETRASH) &&
         operation.type !== ""
       ) {
-        console.log("refreshing the table....");
         refreshTimer.current = setInterval(() => {
           dispath(setRefresh({ toggle: !refresh.toggle, refresh: true }));
         }, 2000);
@@ -383,8 +379,15 @@ export function StatusNotification() {
       if (refreshTimer.current) {
         clearInterval(refreshTimer.current);
       }
-
-      dispath(setRefresh({ toggle: !refresh.toggle, refresh: true }));
+      if (
+        operation.type === DELETE ||
+        operation.type === MOVE ||
+        operation.type === RENAME ||
+        operation.type === DELETETRASH ||
+        operation.type === RESTORETRASH
+      ) {
+        dispath(setRefresh({ toggle: !refresh.toggle, refresh: true }));
+      }
       dispath(
         setOperation({
           type: operation.type,

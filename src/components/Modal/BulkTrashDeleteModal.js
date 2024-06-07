@@ -25,6 +25,7 @@ import { setCSRFToken } from "../../features/csrftoken/csrfTokenSlice";
 import { setOperation } from "../../features/operation/operationSlice";
 import { GreyButton } from "../Buttons/GreyButton";
 import { CustomBlueButton } from "../Buttons/BlueButton";
+import { setTrashBulkBatchDeleteOpen } from "../../features/trash/selectedTrashBatch";
 
 const listItemIconStyle = {
   display: "flex",
@@ -113,8 +114,9 @@ function EllipsisTypoGraphy({ children }) {
 }
 
 export default function BulkTrashDeleteModal() {
-  const { openBulkTrashDelete, setOpenBulkTrashDelete, selectedItems } =
-    React.useContext(TrashContext);
+  const { isTrashBulkBatchDeleteOpen, selectedTrashItems } = useSelector(
+    (state) => state.selectedTrashBatch
+  );
 
   const [allItems, setAllItems] = React.useState([]);
   const dispatch = useDispatch();
@@ -132,10 +134,10 @@ export default function BulkTrashDeleteModal() {
         ...operation,
         type: "DELETETRASH",
         status: "initialized",
-        data: selectedItems,
+        data: selectedTrashItems,
       })
     );
-    setOpenBulkTrashDelete(false);
+    dispatch(setTrashBulkBatchDeleteOpen(false));
     console.log("closed");
   };
 
@@ -153,10 +155,10 @@ export default function BulkTrashDeleteModal() {
   }, [isSuccess]);
 
   React.useEffect(() => {
-    setAllItems(selectedItems);
+    setAllItems(selectedTrashItems);
   }, []);
 
-  const handleClose = () => setOpenBulkTrashDelete(false);
+  const handleClose = () => dispatch(setTrashBulkBatchDeleteOpen(false));
 
   const getCount = (item) => {
     let count = 0;
@@ -165,7 +167,6 @@ export default function BulkTrashDeleteModal() {
     } else {
       count += item.end - item.begin;
     }
-    console.log(count);
     return count;
   };
 
@@ -221,7 +222,7 @@ export default function BulkTrashDeleteModal() {
     <Modal
       aria-labelledby="transition-modal-title"
       aria-describedby="transition-modal-description"
-      open={openBulkTrashDelete}
+      open={isTrashBulkBatchDeleteOpen}
       onClose={handleClose}
       closeAfterTransition
       slots={{ backdrop: Backdrop }}
@@ -231,7 +232,7 @@ export default function BulkTrashDeleteModal() {
         },
       }}
     >
-      <Fade in={openBulkTrashDelete}>
+      <Fade in={isTrashBulkBatchDeleteOpen}>
         <Box sx={mainContainerStyle}>
           {isLoading && <CircularProgress />}
           {isSuccess && (
@@ -267,7 +268,7 @@ export default function BulkTrashDeleteModal() {
                 <GreyButton
                   text={"Cancel"}
                   style={{ width: "150px", height: "40px" }}
-                  onClick={() => setOpenBulkTrashDelete(false)}
+                  onClick={() => dispatch(setTrashBulkBatchDeleteOpen(false))}
                 />
                 <CustomBlueButton
                   text={"Permanently Delete all Items"}

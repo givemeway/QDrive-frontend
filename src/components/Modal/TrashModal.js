@@ -14,7 +14,10 @@ import CollapsibleBreadCrumbs from "../breadCrumbs/CollapsibleBreadCrumbs";
 import { useDispatch, useSelector } from "react-redux";
 import { useGetBatchTrashItemsMutation } from "../../features/api/apiSlice";
 import SpinnerGIF from "../icons/SpinnerGIF";
-import { setSelectedTrashBatch } from "../../features/trash/selectedTrashBatch";
+import {
+  setBatchTrashOpen,
+  setSelectedTrashBatch,
+} from "../../features/trash/selectedTrashBatch";
 import { CustomBlueButton } from "../Buttons/BlueButton";
 import { setOperation } from "../../features/operation/operationSlice";
 import { GreyButton } from "../Buttons/GreyButton";
@@ -120,20 +123,19 @@ function EllipsisTypoGraphy({ children }) {
 }
 
 export default function TrashModal() {
-  const { openTrashItem, setOpenTrashItem } = React.useContext(TrashContext);
+  const { isTrashBatchOpen, name, path, begin, items, end, item, id, limit } =
+    useSelector((state) => state.selectedTrashBatch);
   console.log("trash batch modal rendered");
 
   const [allItems, setAllItems] = React.useState([]);
   const dispatch = useDispatch();
 
   const { CSRFToken } = useSelector((state) => state.csrfToken);
-  const selectedTrashBatch = useSelector((state) => state.selectedTrashBatch);
+  // const selectedTrashBatch = useSelector((state) => state.selectedTrashBatch);
   const operation = useSelector((state) => state.operation);
 
   const [getBatchTrashItems, params] = useGetBatchTrashItemsMutation();
   const { isLoading, isError, isSuccess, data } = params;
-
-  const { name, path, begin, items, end, item, id } = selectedTrashBatch;
 
   const handleRestore = () => {
     dispatch(
@@ -141,10 +143,10 @@ export default function TrashModal() {
         ...operation,
         type: "RESTORETRASH",
         status: "initialized",
-        data: [selectedTrashBatch],
+        data: [{ name, path, begin, items, end, item, id, limit }],
       })
     );
-    setOpenTrashItem(false);
+    dispatch(setBatchTrashOpen(false));
   };
 
   const handleClose = () => {
@@ -160,7 +162,7 @@ export default function TrashModal() {
         limit: { begin: 0, end: 0 },
       })
     );
-    setOpenTrashItem(false);
+    dispatch(setBatchTrashOpen(false));
   };
 
   const fetchTrashBatchItems = (path, name, begin, end) => {
@@ -194,8 +196,8 @@ export default function TrashModal() {
   React.useEffect(() => {
     if (isSuccess && data.length > 0) {
       setAllItems(data);
-      if (selectedTrashBatch?.items) {
-        selectedTrashBatch?.items.forEach((item) => {
+      if (items) {
+        items.forEach((item) => {
           if (!item?.root) {
             setAllItems((prev) => [
               {
@@ -273,7 +275,7 @@ export default function TrashModal() {
     <Modal
       aria-labelledby="transition-modal-title"
       aria-describedby="transition-modal-description"
-      open={openTrashItem}
+      open={isTrashBatchOpen}
       onClose={handleClose}
       closeAfterTransition
       slots={{ backdrop: Backdrop }}
@@ -283,7 +285,7 @@ export default function TrashModal() {
         },
       }}
     >
-      <Fade in={openTrashItem}>
+      <Fade in={isTrashBatchOpen}>
         <Box sx={mainContainerStyle}>
           <Typography sx={headingStyle}>{name}</Typography>
           <Box sx={scrollContainerStyle}>

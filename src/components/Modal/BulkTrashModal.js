@@ -23,6 +23,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCSRFToken } from "../../features/csrftoken/csrfTokenSlice";
 import { setOperation } from "../../features/operation/operationSlice";
 import { useGetCSRFTokenQuery } from "../../features/api/apiSlice";
+import { setTrashBulkBatchRestoreOpen } from "../../features/trash/selectedTrashBatch";
 
 const listItemIconStyle = {
   display: "flex",
@@ -111,8 +112,11 @@ function EllipsisTypoGraphy({ children }) {
 }
 
 export default function BulkTrashModal() {
-  const { openTrashItems, setOpenTrashItems, selectedItems } =
-    React.useContext(TrashContext);
+  // const { openTrashItems, setOpenTrashItems, selectedItems } =
+  //   React.useContext(TrashContext);
+  const { isTrashBulkBatchRestoreOpen, selectedTrashItems } = useSelector(
+    (state) => state.selectedTrashBatch
+  );
   const [loading, setLoading] = React.useState(true);
   const [allItems, setAllItems] = React.useState([]);
 
@@ -128,10 +132,11 @@ export default function BulkTrashModal() {
         ...operation,
         type: "RESTORETRASH",
         status: "initialized",
-        data: selectedItems,
+        data: selectedTrashItems,
       })
     );
-    setOpenTrashItems(false);
+    // setOpenTrashItems(false);
+    dispatch(setTrashBulkBatchRestoreOpen(false));
   };
 
   useEffect(() => {
@@ -148,12 +153,11 @@ export default function BulkTrashModal() {
   }, [CSRFToken, items.isSuccess]);
 
   React.useEffect(() => {
-    setAllItems(selectedItems);
+    setAllItems(selectedTrashItems);
     setLoading(false);
   }, []);
 
-  const handleClose = () => setOpenTrashItems(false);
-
+  const handleClose = () => dispatch(setTrashBulkBatchRestoreOpen(false));
   const getCount = (item) => {
     let count = 0;
     if (item?.items) {
@@ -217,7 +221,7 @@ export default function BulkTrashModal() {
     <Modal
       aria-labelledby="transition-modal-title"
       aria-describedby="transition-modal-description"
-      open={openTrashItems}
+      open={isTrashBulkBatchRestoreOpen}
       onClose={handleClose}
       closeAfterTransition
       slots={{ backdrop: Backdrop }}
@@ -227,7 +231,7 @@ export default function BulkTrashModal() {
         },
       }}
     >
-      <Fade in={openTrashItems}>
+      <Fade in={isTrashBulkBatchRestoreOpen}>
         <Box sx={mainContainerStyle}>
           <Box sx={scrollContainerStyle}>
             {loading && <CircularProgress />}
@@ -261,7 +265,7 @@ export default function BulkTrashModal() {
           <Box sx={buttonContainer}>
             <GreyButton
               text={"Cancel"}
-              onClick={() => setOpenTrashItems(false)}
+              onClick={() => dispatch(setTrashBulkBatchRestoreOpen(false))}
               style={{ width: "150px", height: "40px" }}
             />
             <CustomBlueButton

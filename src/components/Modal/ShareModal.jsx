@@ -55,7 +55,6 @@ export default function ShareModal({ open, onClose }) {
     }
     body.current.files = fileIds;
     body.current.directories = directories;
-    console.log(body.current);
     dispatch(
       setOperation({
         ...operation,

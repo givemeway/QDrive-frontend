@@ -145,7 +145,6 @@ export default React.memo(function DeletedItemsTable({
   };
 
   const updateRow = (prev, row) => {
-    console.log(prev);
     if (Object.keys(prev).length > 0) {
       if (prev.hasOwnProperty(row.id)) {
         const filtered = Object.keys(prev)

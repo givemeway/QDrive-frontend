@@ -467,7 +467,7 @@ const SharedTable = ({
         {(isFetching || isSuccess || reLoad) && items?.length === 0 && (
           <div className="w-full flex justify-center items-center grow">
             <span className="font-sans font-semibold text-[#DBDBDB]">
-              No Items Shared
+              No Items uploaded
             </span>
           </div>
         )}

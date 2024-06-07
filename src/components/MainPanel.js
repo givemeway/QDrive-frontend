@@ -25,9 +25,9 @@ import { setRefresh } from "../features/table/updateTableSlice.js";
 import PhotoPreview from "./PhotoPreview.js";
 import { Modal } from "./Modal/Modal.jsx";
 import isPicture from "./fileFormats/FileFormat.js";
-import DeletedItemsMaterialReactTable from "./DeletedItemsMaterialReactTable.js";
 import { setSession } from "../features/session/sessionSlice.js";
 import Table from "./Table.js";
+import DeletedTable from "./DeletedTable.js";
 
 export default React.memo(function MainPanel({ mode }) {
   const navigate = useNavigate();
@@ -133,6 +133,7 @@ export default React.memo(function MainPanel({ mode }) {
         } else {
           reLoad.current = true;
         }
+
         browseFolderQuery({
           device: device.current,
           curDir: currentDir.current,
@@ -289,12 +290,13 @@ export default React.memo(function MainPanel({ mode }) {
           </Modal>
         )}
       {mode === "DELETED" && (
-        <DeletedItemsMaterialReactTable
-          rows={newRows}
-          isLoading={isLoading}
-          isError={isError}
-          status={status}
-          isFetching={isFetching}
+        <DeletedTable
+          params={{ height: 400, isSuccess, isError, isFetching, isLoading }}
+          layout={"deleted"}
+          items={newRows}
+          hasNextPage={false}
+          loadNextPage={() => {}}
+          isNextPageLoading={false}
         />
       )}
       {mode === "SHARE" && <ShareList />}

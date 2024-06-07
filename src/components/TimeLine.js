@@ -327,7 +327,7 @@ const TimeLineFilter = () => {
       </div>
       <div className="w-full h-full hidden md:grid grid-cols-6 content-center border divide-x gap-2">
         <div className="col-span-2">
-          <div className="flex flex-row w-full justify-center items-center">
+          <div className="flex flex-row w-full justify-start items-center">
             <ItemSelectionComponent
               handleAllItems={handleAllItems}
               handlePhotos={handlePhotos}
@@ -338,7 +338,7 @@ const TimeLineFilter = () => {
         </div>
         <div className="col-span-2 pl-2 content-center">
           <div className="col-span-2">
-            <div className="flex flex-row w-full justify-center items-center">
+            <div className="flex flex-row w-full justify-start items-center">
               <TimeLineSelectionComponent
                 handleDays={handleDays}
                 handleMonths={handleMonths}
@@ -591,6 +591,13 @@ export const TimeLine = () => {
             initialName={initialName}
           />
         </Modal>
+      )}
+      {gallery.length === 0 && (
+        <div className={`w-full h-full flex justify-center items-center`}>
+          <span className="text-lg font-semibold text-[#DBDBDB] w-full">
+            No Photos
+          </span>
+        </div>
       )}
     </div>
   );
