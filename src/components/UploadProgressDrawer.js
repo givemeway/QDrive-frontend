@@ -190,7 +190,7 @@ export default React.memo(function UploadProgressDrawer({
               </span>
             )}
           </div>
-          <div className="flex flex-row justify-left items-center w-[20%] h-full">
+          <div className="flex flex-row justify-end items-center w-[20%] h-full">
             {progressBlock === "block" ? (
               <ExpandMoreIcon color="#363432" sx={{ fontSize: "2rem" }} />
             ) : (
