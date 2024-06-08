@@ -158,13 +158,14 @@ function FolderUpload() {
       };
 
       const onFileUploadDone = ({ payload }) => {
-        const { name, id } = payload;
+        const { name, id, path } = payload;
         const file = {};
         file.name = name;
         file.error = null;
         file.id = id;
         file.folder = id.split("/").slice(0, -1).join("/");
         file.status = "uploaded";
+        file.path = path;
 
         setTrackFilesProgress((prev) => ({
           ...prev,

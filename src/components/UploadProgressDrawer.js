@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, LinearProgress } from "@mui/material";
+import { Stack, LinearProgress } from "@mui/material";
 import CachedIcon from "@mui/icons-material/Cached";
 import ErrorIcon from "@mui/icons-material/Error";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -12,9 +12,11 @@ import { styled } from "@mui/material/styles";
 import React from "react";
 import Draggable from "react-draggable";
 import CircularSpinner from "./icons/circularSpinner.js";
+import { Link } from "react-router-dom";
 
 import { useMemo } from "react";
 import { formatBytes, formatSeconds } from "../util";
+import { get_file_icon } from "./fileFormats/FileFormat.js";
 
 const SlowLinearProgress = styled(LinearProgress)({
   "& .MuiLinearProgress-bar": {
@@ -25,14 +27,14 @@ const SlowLinearProgress = styled(LinearProgress)({
 
 const Row = React.memo(({ index, data, style }) => {
   const timer = useRef(null);
-  const [eta, setETA] = useState("--");
-  const [speed, setSpeed] = useState("0/s");
+  const [eta, setETA] = useState(data[index][1].eta);
+  const [speed, setSpeed] = useState(data[index][1].speed);
+  const [seconds, setSeconds] = useState(0);
 
-  const calculateETA = () => {
-    const timeElapsed = Date.now() - data[index][1].startTime;
-    const uploadSpeed = data[index][1].transferred / (timeElapsed / 1000);
-    const time =
-      (data[index][1].bytes - data[index][1].transferred) / uploadSpeed;
+  const calculateETA = (startTime, total, transferred) => {
+    const timeElapsed = Date.now() - startTime;
+    const uploadSpeed = transferred / (timeElapsed / 1000);
+    const time = (total - transferred) / uploadSpeed;
     const left = formatSeconds(time);
     const rate = formatBytes(uploadSpeed) + "/s";
     setETA(left);
@@ -41,7 +43,7 @@ const Row = React.memo(({ index, data, style }) => {
 
   useEffect(() => {
     if (data[index][1].status === "uploading") {
-      timer.current = setInterval(calculateETA, 1000, data[index][1]);
+      timer.current = setInterval(() => setSeconds((prev) => prev + 1), 1000);
     }
     if (
       (data[index][1].status === "uploaded" ||
@@ -52,26 +54,78 @@ const Row = React.memo(({ index, data, style }) => {
     }
   }, [data[index][1].status]);
 
+  useEffect(() => {
+    return () => {
+      if (timer.current) {
+        clearInterval(timer.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    calculateETA(
+      data[index][1].startTime,
+      data[index][1].bytes,
+      data[index][1].transferred
+    );
+  }, [seconds]);
+
   return (
-    <div style={style} key={data[index][0]}>
-      <Box
-        sx={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-evenly",
-          alignItems: "center",
-          borderBottom: "1px solid #DFDCD8",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "10%",
-          }}
-        >
+    <div
+      style={{ ...style, borderBottom: "1px solid #DFDCD8" }}
+      key={data[index][0]}
+    >
+      <div className="w-full h-full flex flex-row justify-evenly items-center">
+        <div className="flex justify-center items-center w-[15%] h-full">
+          {get_file_icon(data[index][1].name)}
+        </div>
+
+        <div className=" w-[75%] h-full flex flex-col items-center justify-end">
+          <span className="text-sm text-left w-full text-[rgb(71,70,68)] font-semibold">
+            {data[index][1].name}
+          </span>
+          {data[index][1].status === "queued" && (
+            <span className="text-[12px] text-left w-full text-[rgb(71,70,68)]">
+              In Queue
+            </span>
+          )}
+          {data[index][1].status === "preparing" && (
+            <span className="text-[12px] text-left w-full text-[rgb(71,70,68)]">
+              Preparing..
+            </span>
+          )}
+          {data[index][1].status === "finalizing" && (
+            <span className="text-[12px] text-left w-full text-[rgb(71,70,68)]">
+              Finalizing..
+            </span>
+          )}
+          {data[index][1].status === "failed" && (
+            <span className="text-[12px] text-left w-full text-[rgb(71,70,68)]">
+              {data[index][1].error}
+            </span>
+          )}
+          {data[index][1].status === "uploading" && (
+            <span className="text-[12px] text-left w-full text-[rgb(71,70,68)]">
+              Uploading {data[index][1].transferred_b} / {data[index][1].size} -{" "}
+              {eta} left.. Rate: {speed}
+            </span>
+          )}
+          {data[index][1].status === "uploaded" && (
+            <div className="w-full flex justify-start items-center gap-1">
+              <span className="text-[12px] text-left text-[rgb(71,70,68)]">
+                Uploaded To
+              </span>
+              <Link
+                to={"/dashboard/home" + data[index][1].path}
+                onClick={(e) => e.stopPropagation()}
+                className="text-[12px] text-left text-[rgb(71,70,68)] underline hover:text-black"
+              >
+                {data[index][1].folder}
+              </Link>
+            </div>
+          )}
+        </div>
+        <div className="flex justify-center items-center w-[10%] h-full">
           {data[index][1].status === "queued" && <ScheduleIcon />}
           {data[index][1].status === "uploading" && <CircularSpinner />}
           {data[index][1].status === "preparing" && <CachedIcon />}
@@ -82,51 +136,8 @@ const Row = React.memo(({ index, data, style }) => {
           {data[index][1].status === "failed" && (
             <ErrorIcon sx={{ color: "red" }} />
           )}
-        </Box>
-        <Stack
-          sx={{
-            width: "70%",
-            flexGrow: 1,
-          }}
-        >
-          <Typography fontSize={14} align="left">
-            {data[index][1].name}
-          </Typography>
-          {data[index][1].status === "queued" && (
-            <Typography fontSize={10} align="left">
-              In Queue
-            </Typography>
-          )}
-          {data[index][1].status === "preparing" && (
-            <Typography fontSize={10} align="left">
-              Preparing..
-            </Typography>
-          )}
-          {data[index][1].status === "finalizing" && (
-            <Typography fontSize={10} align="left">
-              Finalizing..
-            </Typography>
-          )}
-          {data[index][1].status === "failed" && (
-            <Typography fontSize={10} align="left">
-              {data[index][1].error}
-            </Typography>
-          )}
-          {data[index][1].status === "uploading" && (
-            <Stack>
-              <Typography fontSize={10} align="left">
-                Uploading {data[index][1].transferred_b} / {data[index][1].size}{" "}
-                - {eta} left.. Rate: {speed}
-              </Typography>
-            </Stack>
-          )}
-          {data[index][1].status === "uploaded" && (
-            <Typography fontSize={10} align="left">
-              Uploaded To {data[index][1].folder}
-            </Typography>
-          )}
-        </Stack>
-      </Box>
+        </div>
+      </div>
       {data[index][1].status === "uploading" && (
         <LinearProgress variant="determinate" value={data[index][1].progress} />
       )}
@@ -148,7 +159,8 @@ export default React.memo(function UploadProgressDrawer({
   const [progressBlock, setProgressBlock] = useState("block");
 
   const ref = useRef(null);
-  const close = () => {
+  const toggleProgressBody = (e) => {
+    e.stopPropagation();
     setExpandProgress((prev) => !prev);
   };
 
@@ -173,30 +185,46 @@ export default React.memo(function UploadProgressDrawer({
     <Draggable>
       <div className="flex flex-col z-[300] absolute shadow-md bg-white bottom-2 w-full md:w-[400px]">
         <div
-          onClick={close}
           className="flex flex-nowrap justify-between items-center w-full h-[50px]
-               bg-[#F5EFE5] border border-[#BBB5AE] box-border cursor-pointer p-1"
+               bg-[#F5EFE5] border border-[#BBB5AE] box-border p-1"
         >
-          <div className="w-[80%] flex justify-left items-center h-full">
+          <div
+            className="w-[80%] flex justify-left items-center h-full cursor-pointer"
+            onClick={toggleProgressBody}
+          >
             {!uploadCompleted && (
-              <span className="w-full text-left">
+              <span className="w-full text-left font-semibold text-md">
                 Uploading {filesStatus.processed} of {filesStatus.total} items,{" "}
                 {filesStatus.eta} left
               </span>
             )}
             {uploadCompleted && (
-              <span className="w-full text-left">
+              <span className="w-full text-left font-semibold text-md">
                 {filesStatus.processed} of {filesStatus.total} uploads complete
               </span>
             )}
           </div>
           <div className="flex flex-row justify-end items-center w-[20%] h-full">
             {progressBlock === "block" ? (
-              <ExpandMoreIcon color="#363432" sx={{ fontSize: "2rem" }} />
+              <ExpandMoreIcon
+                color="#363432"
+                sx={{ fontSize: "2rem", cursor: "pointer" }}
+                onClick={toggleProgressBody}
+              />
             ) : (
-              <ExpandLessIcon color="#363432" sx={{ fontSize: "2rem" }} />
+              <ExpandLessIcon
+                color="#363432"
+                sx={{ fontSize: "2rem", cursor: "pointer" }}
+                onClick={toggleProgressBody}
+              />
             )}
-            {uploadCompleted && <CloseIcon color="#363432" onClick={onClose} />}
+            {uploadCompleted && (
+              <CloseIcon
+                color="#363432"
+                sx={{ cursor: "pointer" }}
+                onClick={onClose}
+              />
+            )}
           </div>
         </div>
         {!expandProgress && !uploadCompleted && (
@@ -208,7 +236,7 @@ export default React.memo(function UploadProgressDrawer({
           <List
             height={500}
             itemCount={dataArray.length}
-            itemSize={70}
+            itemSize={60}
             itemData={dataArray}
             ref={ref}
           >
