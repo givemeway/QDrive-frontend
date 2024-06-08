@@ -16,12 +16,9 @@ const getfilesCurDir = async (cwd, device, CSRFToken, backupType) => {
     headers: headers,
   };
 
-  console.log(options);
-
   try {
     const res = await fetch(fetchFilesURL, options);
     const data = await res.json();
-    console.log(data);
     return data;
   } catch (err) {
     console.error(err);

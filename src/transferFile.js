@@ -15,12 +15,14 @@ const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
       mode: "fileUploadInitiated",
       startTime: Date.now(),
       id: file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
+      idx: file.idx,
     });
 
     const postFileStatus = (status, error) => {
       postMessage({
         mode: status,
         name: file.name,
+        idx: file.idx,
         id:
           file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
         error: error,
@@ -67,6 +69,7 @@ const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
         size: file.size,
         socket_main_id,
         name: file.name,
+        idx: file.idx,
         id:
           file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
       };

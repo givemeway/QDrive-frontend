@@ -27,7 +27,7 @@ export const store = configureStore({
     selectedTrashBatch: selectedTrashBatchReducer,
     breadCrumbs: breadcrumbs,
     fileDetails: fileDetails,
-    overAllProgress: uploadState,
+    allFilesStatus: uploadState,
     rowHover: rowHover,
     browseItems: setBrowseReducer,
     timeline: timeline,

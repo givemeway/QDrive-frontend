@@ -2,8 +2,6 @@ import React from "react";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUploadRounded";
 import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useRef } from "react";
-
-import { Button } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { Typography, Box } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
@@ -12,27 +10,7 @@ import { socket } from "./Socket.js";
 import { formatBytes, formatSeconds } from "../util.js";
 import { useDispatch, useSelector } from "react-redux";
 import { setRefresh } from "../features/table/updateTableSlice.js";
-import { CustomBlueButton } from "./Buttons/BlueButton.jsx";
 import "./Buttons/BlueButton.css";
-
-function CustomButton({ children }) {
-  return (
-    <Button
-      variant="outlined"
-      disableRipple
-      sx={{
-        border: "none",
-        boxSizing: "border-box",
-        "&:hover": {
-          backgroundColor: "#EFF3FA",
-          border: "none",
-        },
-      }}
-    >
-      {children}
-    </Button>
-  );
-}
 
 function FolderUpload() {
   const [files, setFiles] = useState([]);
@@ -146,7 +124,6 @@ function FolderUpload() {
         file.bytes = parseInt(total);
         file.id = id;
         const data = trackFilesProgress[id];
-
         if (data) {
           const { transferred, startTime, bytes } = data;
           file.startTime = startTime;
