@@ -291,7 +291,13 @@ export default React.memo(function MainPanel({ mode }) {
         )}
       {mode === "DELETED" && (
         <DeletedTable
-          params={{ height: 400, isSuccess, isError, isFetching, isLoading }}
+          params={{
+            height: height + 100,
+            isSuccess,
+            isError,
+            isFetching,
+            isLoading,
+          }}
           layout={"deleted"}
           items={newRows}
           hasNextPage={false}

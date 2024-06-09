@@ -1,4 +1,4 @@
-import { Stack, LinearProgress } from "@mui/material";
+import { LinearProgress } from "@mui/material";
 import CachedIcon from "@mui/icons-material/Cached";
 import ErrorIcon from "@mui/icons-material/Error";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -81,7 +81,7 @@ const Row = React.memo(({ index, data, style }) => {
         </div>
 
         <div className=" w-[75%] h-full flex flex-col items-center justify-end">
-          <span className="text-sm text-left w-full text-[rgb(71,70,68)] font-semibold">
+          <span className="text-sm text-left w-full text-black font-semibold truncate">
             {data[index][1].name}
           </span>
           {data[index][1].status === "queued" && (
@@ -101,7 +101,7 @@ const Row = React.memo(({ index, data, style }) => {
           )}
           {data[index][1].status === "failed" && (
             <span className="text-[12px] text-left w-full text-[rgb(71,70,68)]">
-              {data[index][1].error}
+              Unknown Error
             </span>
           )}
           {data[index][1].status === "uploading" && (
@@ -111,16 +111,16 @@ const Row = React.memo(({ index, data, style }) => {
             </span>
           )}
           {data[index][1].status === "uploaded" && (
-            <div className="w-full flex justify-start items-center gap-1">
-              <span className="text-[12px] text-left text-[rgb(71,70,68)]">
+            <div className="w-full flex justify-start items-center">
+              <span className="text-[12px] text-left text-[rgb(71,70,68)] w-[25%]">
                 Uploaded To
               </span>
               <Link
                 to={"/dashboard/home" + data[index][1].path}
                 onClick={(e) => e.stopPropagation()}
-                className="text-[12px] text-left text-[rgb(71,70,68)] underline hover:text-black"
+                className="text-[12px] text-left text-[rgb(71,70,68)] underline hover:text-black w-[75%]"
               >
-                {data[index][1].folder}
+                <p className="w-full truncate">{data[index][1].folder}</p>
               </Link>
             </div>
           )}

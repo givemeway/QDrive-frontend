@@ -103,7 +103,6 @@ const uploadFiles = async (
       file.hash = metadata[file.webkitRelativePath]["hash"];
       file.progress = metadata[file.webkitRelativePath]["progress"];
       file.id = metadata[file.webkitRelativePath]["id"];
-      file.idx = metadata[file.webkitRelativePath]["idx"];
       file.uuid = metadata[file.webkitRelativePath]["uuid"];
       file.version = metadata[file.webkitRelativePath]["version"];
       newFiles.push(file);
@@ -117,19 +116,87 @@ const uploadFiles = async (
       total: files.length,
       processed: 0,
     });
-    const results = [];
-    for (let i = 0; i < newFiles.length; i += concurrency) {
-      const batch = newFiles.slice(i, i + concurrency);
-      const batchPromises = batch.map((file) =>
-        uploadFile(socket_main_id, file, cwd, file.modified, device, CSRFToken)
-      );
+    // const results = [];
+    // for (let i = 0; i < newFiles.length; i += concurrency) {
+    //   const batch = newFiles.slice(i, i + concurrency);
+    //   const batchPromises = batch.map((file) =>
+    //     uploadFile(socket_main_id, file, cwd, file.modified, device, CSRFToken)
+    //   );
+    //   try {
+    //     const batchResults = await Promise.all(batchPromises);
+    //     results.push(batchResults);
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // }
+
+    // const tasksInParallel = async (arr, concurrency, fn) => {
+    //   let promises = arr.map(fn);
+    //   console.log(promises);
+    //   let queue = new Set();
+    //   while (promises.length > 0 && queue.length < concurrency) {
+    //     const promise = promises.pop();
+    //     queue.add(promise);
+    //     promise
+    //       .then((result) => {
+    //         console.log(result);
+    //         queue.delete(promise);
+    //       })
+    //       .catch((err) => {
+    //         console.error(err);
+    //         queue.delete(promise);
+    //       });
+    //   }
+    // };
+
+    const tasksInParallel = async (arr, concurrency, fn) => {
+      let index = 0;
+      let activePromises = 0;
+      let results = [];
+
+      return new Promise((resolve, reject) => {
+        const execute = async () => {
+          if (index === arr.length) {
+            if (activePromises === 0) {
+              resolve(results);
+            }
+            return;
+          }
+
+          activePromises++;
+          const currentIndex = index++;
+          try {
+            const result = await fn(arr[currentIndex]);
+            results[currentIndex] = result;
+          } catch (err) {
+            reject(err);
+            return;
+          }
+
+          activePromises--;
+          execute();
+        };
+
+        for (let i = 0; i < concurrency && i < arr.length; i++) {
+          execute();
+        }
+      });
+    };
+
+    await tasksInParallel(newFiles, concurrency, async (file) => {
       try {
-        const batchResults = await Promise.all(batchPromises);
-        results.push(batchResults);
+        await uploadFile(
+          socket_main_id,
+          file,
+          cwd,
+          file.modified,
+          device,
+          CSRFToken
+        );
       } catch (err) {
         console.log(err);
       }
-    }
+    });
 
     // await eachOfLimit(newFiles, concurrency, async (file) => {
     //   try {
