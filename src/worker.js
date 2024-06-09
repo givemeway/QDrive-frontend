@@ -129,26 +129,6 @@ const uploadFiles = async (
     //     console.log(err);
     //   }
     // }
-
-    // const tasksInParallel = async (arr, concurrency, fn) => {
-    //   let promises = arr.map(fn);
-    //   console.log(promises);
-    //   let queue = new Set();
-    //   while (promises.length > 0 && queue.length < concurrency) {
-    //     const promise = promises.pop();
-    //     queue.add(promise);
-    //     promise
-    //       .then((result) => {
-    //         console.log(result);
-    //         queue.delete(promise);
-    //       })
-    //       .catch((err) => {
-    //         console.error(err);
-    //         queue.delete(promise);
-    //       });
-    //   }
-    // };
-
     const tasksInParallel = async (arr, concurrency, fn) => {
       let index = 0;
       let activePromises = 0;

@@ -15,6 +15,7 @@ import {
 import { Header } from "./Header.jsx";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const label =
   "I agree to the terms of the QDrive service and acknowledge that I can receive emails on product updates from QDrive.";
@@ -314,9 +315,19 @@ const validateEmail = (email, setFormInput) => {
 
 export default function Signup() {
   const [validForm, setValidForm] = useState(false);
+  const { signupEmail } = useSelector((state) => state.signup);
   const [formInput, setFormInput] = useState({
-    email: { value: "", error: undefined, helperText: "" },
-    username: { value: "", error: undefined, exist: undefined, helperText: "" },
+    email: {
+      value: signupEmail ? signupEmail : "",
+      error: undefined,
+      helperText: "",
+    },
+    username: {
+      value: signupEmail ? signupEmail : "",
+      error: undefined,
+      exist: undefined,
+      helperText: "",
+    },
     firstname: {
       value: "",
       error: undefined,
