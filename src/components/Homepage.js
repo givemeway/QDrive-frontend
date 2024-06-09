@@ -137,8 +137,8 @@ const SignupBody = () => {
     <div className="flex flex-col sm:flex-row gap-2 w-full justify-center items-center">
       <div
         className={`w-full md:w-[200px] h-[40px] ${
-          invalid ? "h-[60px]" : "h-[40px]"
-        } flex flex-col justify-start items-center`}
+          invalid ? "h-[70px]" : "h-[40px]"
+        } flex flex-col justify-start items-start`}
       >
         <input
           placeholder="Enter your email address"
@@ -148,19 +148,21 @@ const SignupBody = () => {
           value={email}
         />
         {invalid && (
-          <div className="w-full flex justify-start items-center">
-            <span className="w-full text-sm text-[#EC3C1A] text-left">
+          <div className="w-full flex justify-start items-center h-[30px]">
+            <span className="w-full text-xs text-[#EC3C1A] text-left">
               An email address must contain a single @
             </span>
           </div>
         )}
       </div>
-      <button
-        className="text-[white] border-2 rounded-md w-full md:w-[200px] h-[40px] hover:bg-[#423E3E] duration-100"
-        onClick={handleSignup}
-      >
-        Signup for free
-      </button>
+      <div className="flex flex-row justify-start items-start w-full md:w-[200px] h-full">
+        <button
+          className="text-[white] border-2 rounded-md w-full md:w-[200px] h-[40px] hover:bg-[#423E3E] duration-100"
+          onClick={handleSignup}
+        >
+          Signup for free
+        </button>
+      </div>
     </div>
   );
 };
