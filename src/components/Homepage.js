@@ -188,9 +188,9 @@ const VideoBody = () => {
       <video
         aria-hidden="false"
         aria-label=""
-        autoplay=""
+        autoplay={true}
         playsinline=""
-        loop=""
+        loop={true}
         muted=""
       >
         <source src="" type="video/quicktime; codecs=hvc1" />

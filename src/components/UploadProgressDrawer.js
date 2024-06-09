@@ -232,7 +232,7 @@ export default React.memo(function UploadProgressDrawer({
             <SlowLinearProgress />
           </div>
         )}
-        <div className={`max-h-[500px] overflow-auto ${progressBlock}`}>
+        <div className={`h-[500px] overflow-auto ${progressBlock}`}>
           <List
             height={500}
             itemCount={dataArray.length}

@@ -42,7 +42,6 @@ export default React.memo(function MainPanel({ mode }) {
   const currentDir = useRef(null);
   const navigatedToNewDir = useRef(true);
   const page = useRef(1);
-  const [newRows, setNewRows] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [height, setHeight] = useState(0);
@@ -129,7 +128,7 @@ export default React.memo(function MainPanel({ mode }) {
           navigatedToNewDir.current = true;
           reLoad.current = false;
           setIsFetching(false);
-          setNewRows([]);
+          setState((prev) => ({ ...prev, items: [] }));
         } else {
           reLoad.current = true;
         }
@@ -161,7 +160,6 @@ export default React.memo(function MainPanel({ mode }) {
       const fileRows = data.files.map((file) => buildCellValueForFile(file));
       const folderRows = data.folders.map((fo) => buildCellValueForFolder(fo));
       if (navigatedToNewDir.current || reLoad.current) {
-        setNewRows([...fileRows, ...folderRows]);
         setState({
           hasNextPage: true,
           isNextPageLoading: false,
@@ -169,9 +167,6 @@ export default React.memo(function MainPanel({ mode }) {
           total: data.total,
         });
       } else {
-        setNewRows((prev) => {
-          return [...prev, ...fileRows, ...folderRows];
-        });
         setState((prev) => ({
           ...prev,
           items: [...prev.items, ...fileRows, ...folderRows],
@@ -181,11 +176,7 @@ export default React.memo(function MainPanel({ mode }) {
       dispatch(
         setBrowseItems({
           ...dashboard,
-          page: page.current,
-          query: false,
           reLoad: reLoad.current,
-          total: data.total,
-          rowSelection: {},
         })
       );
       setIsFetching(false);
@@ -207,7 +198,10 @@ export default React.memo(function MainPanel({ mode }) {
         buildCellValueForFolder_trash(folder)
       );
 
-      setNewRows([...files, ...singleFile, ...folders]);
+      setState((prev) => ({
+        ...prev,
+        items: [...files, ...singleFile, ...folders],
+      }));
     }
   }, [data.files?.length, data.folders?.length, isSuccess, data.file?.length]);
 
@@ -299,7 +293,7 @@ export default React.memo(function MainPanel({ mode }) {
             isLoading,
           }}
           layout={"deleted"}
-          items={newRows}
+          items={state.items}
           hasNextPage={false}
           loadNextPage={() => {}}
           isNextPageLoading={false}
