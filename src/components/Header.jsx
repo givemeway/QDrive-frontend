@@ -1,6 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { CustomBlueButton } from "./Buttons/BlueButton";
 import { GreyButton } from "./Buttons/GreyButton";
+import { useEffect, useState } from "react";
+const thumbnail_server_url =
+  "https://thumbnail-dist-server.onrender.com/api/v1/wakeupserver";
+const image_server_url =
+  "https://imageprocessing-xd2d.onrender.com/api/v1/wakeupserver";
 
 const DropBoxIcon = () => {
   return (
@@ -31,7 +36,41 @@ const DropBoxIcon = () => {
   );
 };
 
+const AlertGif = () => {
+  return (
+    <svg height={25} width={25}>
+      <circle fill="#ff0000" stroke="none" cx="12" cy="12" r="12">
+        <animate
+          attributeName="opacity"
+          dur="1s"
+          values="0;1;0"
+          repeatCount="indefinite"
+          begin="0.1"
+        />
+      </circle>
+    </svg>
+  );
+};
+
 export const Header = () => {
+  const [wakeupThumbnailServer, setwakeupThumbnailServer] = useState(false);
+  const [wakeupImageServer, setwakeupImageServer] = useState(false);
+  useEffect(() => {
+    fetch(thumbnail_server_url)
+      .then((res) => res.json())
+      .then((result) => {
+        console.log(result);
+        setwakeupThumbnailServer(true);
+      })
+      .catch((err) => console.log(err));
+    fetch(image_server_url)
+      .then((res) => res.json())
+      .then((result) => {
+        console.log(result);
+        setwakeupImageServer(true);
+      })
+      .catch((err) => console.log(err));
+  }, []);
   const navigate = useNavigate();
   return (
     <div className="w-full h-[60px] flex flex-row justify-start items-center  border-b border-[#EBE9E6">
@@ -50,6 +89,14 @@ export const Header = () => {
         </h2>
       </div>
       <div className="grow"></div>
+      {!wakeupImageServer && !wakeupThumbnailServer && (
+        <div className="h-full flex justify-center items-center gap-1">
+          <span className="text-xs font-sans text-[#808080] font-semibold">
+            waking up server
+          </span>
+          <AlertGif />
+        </div>
+      )}
       <div className="flex gap-2 h-full items-center pl-2 pr-2">
         <CustomBlueButton
           text={"Login"}
