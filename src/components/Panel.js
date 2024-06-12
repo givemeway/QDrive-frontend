@@ -124,15 +124,17 @@ const Panel = () => {
     }
   }, [subpath]);
 
-  // useOutSideClick(panelRef, () => {
-  //   dispatch(setPanel(false));
-  // });
-
-  // useEffect(() => {
-  //   if (panelRef.current) {
-  //     console.log(panelRef.current.getBoundingClientRect());
-  //   }
-  // }, [panelRef.current]);
+  useEffect(() => {
+    document.addEventListener("click", (e) => {
+      if (panelRef.current && !panelRef?.current?.contains(e.target)) {
+        dispatch(setPanel(false));
+      }
+    });
+    return () =>
+      document.removeEventListener("click", (e) =>
+        console.log("removed click handled")
+      );
+  }, []);
 
   return (
     <div
@@ -140,6 +142,7 @@ const Panel = () => {
           h-full bg-[#F7F5F2] border-r border-[#D4D2D0] 
           box-border "
       ref={panelRef}
+      onClick={(e) => e.stopPropagation()}
     >
       <h3
         className="cursor-pointer mt-5 mb-8 ml-2 text-5xl font-semibold"

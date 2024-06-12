@@ -319,14 +319,14 @@ function FilesUpload() {
             multiple={true}
             onChange={handleFileSelection}
           />
-          <div className="flex flex-col justify-start items-center w-full ">
+          <div className="flex flex-col justify-start items-center w-full">
             <div className="w-full flex justify-start items-center">
               <UploadFileIcon
                 color="black"
-                sx={{ cursor: "pointer", fontSize: 25, padding: 0 }}
+                sx={{ cursor: "pointer", fontSize: 25 }}
               />
             </div>
-            <span className="text-left w-full">File</span>
+            <span className="text-left w-full"> File</span>
           </div>
         </label>
       </button>

@@ -39,7 +39,6 @@ const Dashboard = () => {
   const { isLoading, isSuccess, isError, data } = CSRFTokenStatus;
   const searchRef = useRef();
   const containerRef = useRef();
-  const [contextHeight, setContextHeight] = useState(0);
 
   console.log("Dashboard rendered");
 
