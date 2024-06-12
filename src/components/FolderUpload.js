@@ -331,7 +331,7 @@ function FolderUpload() {
                 sx={{ cursor: "pointer", fontSize: 25 }}
               />
             </div>
-            <span className="w-full text-left">Upload Folder</span>
+            <span className="w-full text-left">Folder</span>
           </div>
         </label>
       </button>
