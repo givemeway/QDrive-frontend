@@ -147,7 +147,7 @@ const SharedTable = ({
   const { reLoad } = useSelector((state) => state.browseItems);
 
   const dispatch = useDispatch();
-  console.log("table rendered");
+  console.log("share table rendered");
   const getBoundingClientRect = useCallback(() => {
     const { bottom, right, left, top } = ref.current.getBoundingClientRect();
     dispatch(setDims({ bottom, right, left, top }));

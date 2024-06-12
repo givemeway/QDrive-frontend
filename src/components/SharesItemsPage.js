@@ -28,6 +28,7 @@ import isPicture from "./fileFormats/FileFormat.js";
 
 export default function Shared() {
   const location = useLocation();
+  const previousState = useRef({});
   const [isShareURLInvalid, setIsShareURLInvalid] = useState(false);
   const [sharedby, setSharedBy] = useState({ owner: "", name: "" });
   const [breadCrumbMap, setBreadCrumbMap] = useState(
@@ -105,6 +106,7 @@ export default function Shared() {
         start: pagination.current.start,
         page: pageSize,
       };
+      previousState.current = { ...body };
       browseShareQuery(body);
     }
   };
@@ -143,6 +145,7 @@ export default function Shared() {
         dl: share.current.dl,
         nav: nav,
       };
+      previousState.current = { ...body };
       validateShareQuery(body);
     }
   }, []);
@@ -172,24 +175,35 @@ export default function Shared() {
   useEffect(() => {
     if (!isShareURLInvalid && isShareValid) {
       const queryParams = new URLSearchParams(location.search);
-      const itemID = queryParams.get("k");
-      const dl = queryParams.get("dl");
-      share.current.itemID = itemID;
-      share.current.dl = dl;
-      page.current = 1;
-      const body = {
-        id: shareId,
-        k: share.current.itemID,
-        t: type,
-        dl: share.current.dl,
-        nav: nav,
-        start: (page.current - 1) * pageSize,
-        page: pageSize,
-      };
-      navigatedToNewDir.current = true;
-      reLoad.current = false;
-      setIsFetching(false);
-      browseShareQuery(body);
+      const filename = queryParams.get("preview");
+      if (filename !== null) {
+        setPhotoName(filename);
+        setIsPreview(true);
+        setState((prev) => ({
+          ...prev,
+          items: prev.items.filter((file) => isPicture(file.name)),
+        }));
+      } else {
+        const itemID = queryParams.get("k");
+        const dl = queryParams.get("dl");
+        share.current.itemID = itemID;
+        share.current.dl = dl;
+        page.current = 1;
+        const body = {
+          id: shareId,
+          k: share.current.itemID,
+          t: type,
+          dl: share.current.dl,
+          nav: nav,
+          start: (page.current - 1) * pageSize,
+          page: pageSize,
+        };
+        previousState.current = { ...body };
+        navigatedToNewDir.current = true;
+        reLoad.current = false;
+        setIsFetching(false);
+        browseShareQuery(body);
+      }
     }
   }, [
     location.pathname,
@@ -202,24 +216,9 @@ export default function Shared() {
   ]);
 
   useEffect(() => {
-    if (!isShareURLInvalid && isShareValid) {
-      const urlParams = new URLSearchParams(location.search);
-      const filename = urlParams.get("preview");
-      if (filename !== null) {
-        setPhotoName(filename);
-        setIsPreview(true);
-        setState((prev) => ({
-          ...prev,
-          items: prev.items.filter((file) => isPicture(file.name)),
-        }));
-      }
-    }
-  }, [location.search]);
-
-  useEffect(() => {
     if (browseShare.data?.success) {
       const { files, directories, home, path, total } = browseShare.data;
-      console.log(files, directories, total);
+      console.log(total);
       const subTotal = files.length + directories.length + state.items.length;
       const subTotal_newDir = files.length + directories.length;
       if (!navigatedToNewDir.current && subTotal < total) {
@@ -303,6 +302,8 @@ export default function Shared() {
     setIsPreview(false);
     const params = new URLSearchParams(location.search);
     params.delete("preview");
+    params.delete("k");
+    params.append("k", previousState.current.k);
     navigate(`${location.pathname}?${params.toString()}`);
   };
   return (

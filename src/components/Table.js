@@ -237,7 +237,7 @@ const Row = React.memo(({ index, data, style }) => {
                     width: 150,
                     top: cords.top,
                     left: cords.left,
-                    height: 250,
+                    minHeight: 200,
                   }}
                   open={showContext}
                   onClose={() => setShowContext(false)}
@@ -524,10 +524,10 @@ const SharedTable = ({
                       open={showContextHeader}
                       onClose={() => setShowContext(false)}
                       style={{
-                        width: 125,
+                        width: 150,
                         top: cords.top,
                         left: cords.left,
-                        height: 200,
+                        minHeight: 200,
                       }}
                       buttonRef={contextButtonRef}
                     ></TableContext>
@@ -606,9 +606,10 @@ const SharedTable = ({
       {showContext && (
         <TableContext
           style={{
+            width: 150,
             top: cord.top,
             left: cord.left,
-            height: 250,
+            minHeight: 200,
             overflow: "auto",
           }}
           open={showContext}
