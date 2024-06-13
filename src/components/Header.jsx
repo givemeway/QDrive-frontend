@@ -7,7 +7,7 @@ const thumbnail_server_url =
 const image_server_url =
   "https://imageprocessing-xd2d.onrender.com/api/v1/wakeupserver";
 
-const backendServerURL = "https://api/qdrive.space/app/csrftoken";
+const backendServerURL = "https://api.qdrive.space/app/csrftoken";
 
 const DropBoxIcon = () => {
   return (
