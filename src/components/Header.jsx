@@ -7,6 +7,8 @@ const thumbnail_server_url =
 const image_server_url =
   "https://imageprocessing-xd2d.onrender.com/api/v1/wakeupserver";
 
+const backendServerURL = "https://api/qdrive.space/app/csrftoken";
+
 const DropBoxIcon = () => {
   return (
     <div className="bg-[#1F74FE] w-[40px] h-[40px] flex justify-center items-center">
@@ -55,24 +57,59 @@ const AlertGif = () => {
 };
 
 export const Header = () => {
-  const [wakeupThumbnailServer, setwakeupThumbnailServer] = useState(false);
-  const [wakeupImageServer, setwakeupImageServer] = useState(false);
+  const [wakeupThumbnailServer, setwakeupThumbnailServer] = useState(undefined);
+  const [wakeupImageServer, setwakeupImageServer] = useState(undefined);
+  const [wakeupBackendServer, setWakeUpBackendServer] = useState(undefined);
+  const [wakeupServers, setWakeupServers] = useState(undefined);
   useEffect(() => {
     fetch(thumbnail_server_url)
       .then((res) => res.json())
       .then((result) => {
         console.log(result);
-        setwakeupThumbnailServer(true);
+        setwakeupThumbnailServer("success");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        setwakeupThumbnailServer("fail");
+      });
     fetch(image_server_url)
       .then((res) => res.json())
       .then((result) => {
         console.log(result);
-        setwakeupImageServer(true);
+        setwakeupImageServer("success");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        setwakeupImageServer("fail");
+      });
+
+    fetch(backendServerURL)
+      .then((res) => res.json())
+      .then((result) => {
+        console.log(result);
+        setWakeUpBackendServer("success");
+      })
+      .catch((err) => {
+        console.error(err);
+        setWakeUpBackendServer("fail");
+      });
   }, []);
+
+  useEffect(() => {
+    if (
+      wakeupBackendServer === "success" &&
+      wakeupImageServer === "success" &&
+      wakeupThumbnailServer === "success"
+    ) {
+      setWakeupServers("success");
+    } else if (
+      wakeupBackendServer === "fail" ||
+      wakeupThumbnailServer === "fail" ||
+      wakeupImageServer === "fail"
+    ) {
+      setWakeupServers("fail");
+    }
+  }, [wakeupBackendServer, wakeupImageServer, wakeupThumbnailServer]);
   const navigate = useNavigate();
   return (
     <div className="w-full h-[60px] flex flex-row justify-start items-center  border-b border-[#EBE9E6">
@@ -91,12 +128,19 @@ export const Header = () => {
         </h2>
       </div>
       <div className="grow"></div>
-      {!wakeupImageServer && !wakeupThumbnailServer && (
+      {!wakeupServers && (
         <div className="h-full flex justify-center items-center gap-1">
           <span className="text-xs font-sans text-[#808080] font-semibold">
             waking up server
           </span>
           <AlertGif />
+        </div>
+      )}
+      {wakeupServers === "fail" && (
+        <div className="h-full flex justify-center items-center gap-1">
+          <span className="text-xs font-sans text-[#EC3C1A] font-semibold">
+            one / more servers failed
+          </span>
         </div>
       )}
       <div className="flex gap-2 h-full items-center pl-2 pr-2">
