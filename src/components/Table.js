@@ -98,7 +98,13 @@ const Row = React.memo(({ index, data, style }) => {
   const handleClick = (e) => {
     e.stopPropagation();
     setShowContext((prev) => !prev);
-    dispatch(setRowSelected({ ...rowSelection, [data[index].id]: true }));
+    const rowArr = Object.entries(rowSelection);
+    const selectedArr = rowArr.map(([k, v]) => {
+      if (k !== data[index].id) return [k, false];
+      else return [k, true];
+    });
+    const rows = Object.fromEntries(selectedArr);
+    dispatch(setRowSelected({ ...rows }));
     dispatch(setShowAllCheckBoxes(true));
     const topOffset = e.currentTarget.offsetHeight + e.currentTarget.offsetTop;
     const leftOffset = e.currentTarget.offsetLeft;
