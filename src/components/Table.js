@@ -98,6 +98,8 @@ const Row = React.memo(({ index, data, style }) => {
   const handleClick = (e) => {
     e.stopPropagation();
     setShowContext((prev) => !prev);
+    dispatch(setRowSelected({ ...rowSelection, [data[index].id]: true }));
+    dispatch(setShowAllCheckBoxes(true));
     const topOffset = e.currentTarget.offsetHeight + e.currentTarget.offsetTop;
     const leftOffset = e.currentTarget.offsetLeft;
     const height = e.clientY + 250;
