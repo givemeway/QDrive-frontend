@@ -5,14 +5,13 @@ import { Box, IconButton, Typography, Badge, Divider } from "@mui/material";
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import { styled } from "@mui/material/styles";
-import { downloadURL, server, timeOpts } from "../config";
+import { PRODUCTION, downloadURL, server, timeOpts } from "../config";
 import { formatBytes } from "../util";
 import CloseIcon from "./icons/CloseIcon";
 import { setFileDetails } from "../features/itemdetails/fileDetails.Slice";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { get_file_icon } from "./fileFormats/FileFormat";
 import "./ItemDetails.css";
-import { borderRight } from "@mui/system";
 
 const styleVersions = {
   display: "flex",
@@ -46,7 +45,13 @@ function CustomizedBadges({ version }) {
 }
 
 const generateDownloadURL = (file, version) => {
-  let url = `${server}${downloadURL}?file=${encodeURIComponent(
+  let baseURL = "";
+  if (process.env.REACT_APP_ENV === PRODUCTION) {
+    baseURL = downloadURL;
+  } else {
+    baseURL = `${server}${downloadURL}`;
+  }
+  let url = `${baseURL}?file=${encodeURIComponent(
     file.filename
   )}&uuid=${encodeURIComponent(file.uuid)}&db=${version}&dir=${
     file.directory
