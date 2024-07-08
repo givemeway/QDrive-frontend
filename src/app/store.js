@@ -18,6 +18,7 @@ import navigatePanel from "../features/navigation/navigationPanelSlice.js";
 import sharedTable from "../features/sharedTable/sharedTableSlice.js";
 import checkbox from "../features/table/checkboxSlice.js";
 import signup from "../features/signup/signupSlice.js";
+import avatar from "../features/avatar/avatarSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -40,6 +41,7 @@ export const store = configureStore({
     sharedTable: sharedTable,
     checkbox: checkbox,
     signup: signup,
+    avatar: avatar,
   },
   middleware: (getDefaultMiddleWare) =>
     getDefaultMiddleWare().concat(apiSlice.middleware),

@@ -7,8 +7,17 @@ import { useVerifySessionMutation } from "../features/api/apiSlice";
 import { setOperation } from "../features/operation/operationSlice";
 import { LOGOUT } from "../config";
 import { useNavigate } from "react-router-dom";
+import {
+  setEmail,
+  setFirstName,
+  setFirstNameInitial,
+  setFullName,
+  setInitial,
+  setLastName,
+  setLastNameInitial,
+} from "../features/avatar/avatarSlice";
 
-const Avatar = ({ initial }) => {
+export const Avatar = ({ initial }) => {
   return (
     <div className="rounded-full bg-[#FFAFA5] w-[40px] h-[40px] flex justify-center items-center">
       <span className="text-[#982062] font-semibold">{initial}</span>
@@ -25,7 +34,8 @@ export default function AvatarMenu() {
   const [session, sessionStatus] = useVerifySessionMutation();
   let { isLoading, isSuccess, isError, data } = sessionStatus;
   data = data ? data : { first: "", last: "" };
-  const [initial, setInitial] = useState("");
+  // const [initial, setInitial] = useState("");
+  const { initial } = useSelector((state) => state.avatar);
   const dispatch = useDispatch();
 
   const handleClick = (e) => {
@@ -55,7 +65,11 @@ export default function AvatarMenu() {
       const firstNameInitial = data?.first.split("")[0].toUpperCase();
       const lastNameInitial = data?.last.split("")[0].toUpperCase();
       const initial = firstNameInitial + lastNameInitial;
-      setInitial(initial);
+      dispatch(setFirstName(data?.first));
+      dispatch(setLastName(data?.last));
+      dispatch(setFullName(data?.first + " " + data?.last));
+      dispatch(setInitial(initial));
+      dispatch(setEmail(data?.email));
     }
   }, [isLoading, isSuccess, isError, data]);
 
