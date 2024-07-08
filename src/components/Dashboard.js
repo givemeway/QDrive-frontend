@@ -1,6 +1,5 @@
 import Search from "./SearchFilesFolders";
 import SnackBar from "./Snackbar/SnackBar.js";
-import { HamburgerIcon } from "./icons/HamburgerIcon";
 
 import NavigatePanel from "./Panel";
 import Header from "./Header";
@@ -9,6 +8,7 @@ import Menu from "./UploadMenu";
 
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
+import AccountPage from "./AccountPage.js";
 
 import { useRecoilState } from "recoil";
 import { snackBarAtom } from "../Recoil/Store/atoms.js";
@@ -81,8 +81,12 @@ const Dashboard = () => {
       setMode("PHOTOS");
     } else if (path[0] === "share") {
       setMode("SHARE");
+    } else if (path[0] === "account") {
+      setMode("ACCOUNT");
     }
   }, [subpath]);
+
+  console.log(subpath);
 
   useEffect(() => {
     if (isSuccess) {
@@ -116,6 +120,11 @@ const Dashboard = () => {
                 <Menu />
               </div>
             )}
+            {mode === "ACCOUNT" && (
+              <div className="w-full h-full">
+                <AccountPage />
+              </div>
+            )}
             {(mode === "BROWSE" || mode === "SEARCH") && (
               <div className="w-full h-[50px]">
                 <Header search={isSearch} />
@@ -126,7 +135,11 @@ const Dashboard = () => {
                 <SpinnerGIF style={{ width: 50, height: 50 }} />
               </div>
             )}
-            {isSuccess && mode !== "" && <MainPanel mode={mode} />}
+            {isSuccess &&
+              (mode === "BROWSE" ||
+                mode === "PHOTOS" ||
+                mode === "SHARE" ||
+                mode === "DELETED") && <MainPanel mode={mode} />}
             {isError && <div className="w-full">Something Went Wrong</div>}
           </div>
           {open && (

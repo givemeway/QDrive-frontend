@@ -216,7 +216,7 @@ export const ShareList = () => {
         className="w-full h-full flex flex-col justify-start items-center"
         ref={shareListRef}
       >
-        <SharedTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+        <SharedTabs tabs={activeTab} setActiveTab={setActiveTab} />
         <SharedTable
           params={{
             ref: elementRef,

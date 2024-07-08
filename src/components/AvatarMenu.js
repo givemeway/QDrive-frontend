@@ -6,6 +6,7 @@ import { useVerifySessionMutation } from "../features/api/apiSlice";
 
 import { setOperation } from "../features/operation/operationSlice";
 import { LOGOUT } from "../config";
+import { useNavigate } from "react-router-dom";
 
 const Avatar = ({ initial }) => {
   return (
@@ -17,6 +18,7 @@ const Avatar = ({ initial }) => {
 
 export default function AvatarMenu() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const buttonRef = useRef();
   const [cord, setCord] = useState({ top: 0, left: 0 });
   const { CSRFToken } = useSelector((state) => state.csrfToken);
@@ -93,9 +95,33 @@ export default function AvatarMenu() {
           </div>
           <div className="w-full border-b border-[#DBDBDB]"></div>
           <div className="flex flex-col w-full">
-            <ContextButton style={{ height: "30px" }}>Account</ContextButton>
-            <ContextButton style={{ height: "30px" }}> Profile</ContextButton>
-            <ContextButton style={{ height: "30px" }}>Settings</ContextButton>
+            <ContextButton
+              style={{ height: "30px" }}
+              onClick={() => {
+                setOpen(false);
+                navigate("/dashboard/account");
+              }}
+            >
+              Account
+            </ContextButton>
+            <ContextButton
+              style={{ height: "30px" }}
+              onClick={() => {
+                setOpen(false);
+                navigate("/dashboard/account/profile");
+              }}
+            >
+              Profile
+            </ContextButton>
+            <ContextButton
+              style={{ height: "30px" }}
+              onClick={() => {
+                setOpen(false);
+                navigate("/dashboard/account/settings");
+              }}
+            >
+              Settings
+            </ContextButton>
             <ContextButton style={{ height: "30px" }} onClick={handleLogout}>
               Log Out
             </ContextButton>

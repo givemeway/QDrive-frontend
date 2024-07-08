@@ -7,6 +7,7 @@ import Dashboard from "./components/Dashboard";
 import Shared from "./components/SharesItemsPage.js";
 import Transfer from "./components/TransferItemsPage.js";
 import Signup from "./components/SignupForm.js";
+import AccountPage from "./components/AccountPage.js";
 
 enableMapSet();
 function App() {
@@ -16,7 +17,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
-        <Route path="/dashboard/" element={<Dashboard />} />
+        {/* <Route path="/dashboard/" element={<Dashboard />} /> */}
         <Route path="/sh/:type/:shareId/*" element={<Shared />} />
         <Route path="/sh/t/:shareId/*" element={<Transfer />} />
         <Route path="/signup" element={<Signup />} />
