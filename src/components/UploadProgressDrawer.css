@@ -15,13 +15,12 @@
   background: none;
 }
 
-.icon-expandmore {
-  transform: rotate(0deg);
-  transition: transform 500ms ease-in-out;
+.expand-more {
+  animation: rotateUp 500ms forwards;
 }
 
-.icon-expandless {
-  transform: rotate(-180deg);
+.expand-less {
+  animation: rotateDown 500ms forwards;
 }
 
 .drawer-container {
@@ -155,5 +154,23 @@
 @media screen and (max-width: 767px) {
   .drawer-container {
     width: 100%;
+  }
+}
+
+@keyframes rotateDown {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-180deg);
+  }
+}
+
+@keyframes rotateUp {
+  from {
+    transform: rotate(-180deg);
+  }
+  to {
+    transform: rotate(0deg);
   }
 }

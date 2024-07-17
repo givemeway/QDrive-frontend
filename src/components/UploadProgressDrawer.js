@@ -194,16 +194,15 @@ export default React.memo(function UploadProgressDrawer({
             )}
           </div>
           <div className="drawer-top-icons">
-            {
-              <ExpandMoreIcon
-                color="#363432"
-                sx={{ fontSize: "2rem", cursor: "pointer" }}
-                className={`icon-expandmore ${
-                  progressBlock === "block" ? "icon-expandless" : ""
-                }`}
-                onClick={toggleProgressBody}
-              />
-            }
+            <ExpandMoreIcon
+              color="#363432"
+              sx={{ fontSize: "2rem", cursor: "pointer" }}
+              className={`expand-more ${
+                progressBlock === "block" ? "expand-less" : ""
+              }`}
+              onClick={toggleProgressBody}
+            />
+
             {uploadCompleted && (
               <CloseIcon
                 color="#363432"
