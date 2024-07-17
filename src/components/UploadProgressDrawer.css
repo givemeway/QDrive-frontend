@@ -1,0 +1,159 @@
+.progress-body {
+  overflow-y: hidden;
+  height: 0px;
+  transition: height 250ms ease-in-out;
+  background: white;
+  width: 100%;
+}
+
+.active {
+  height: 500px;
+  background: white;
+}
+
+.progress-body.active:hover {
+  background: none;
+}
+
+.icon-expandmore {
+  transform: rotate(0deg);
+  transition: transform 500ms ease-in-out;
+}
+
+.icon-expandless {
+  transform: rotate(-180deg);
+}
+
+.drawer-container {
+  display: flex;
+  flex-direction: column;
+  z-index: 300;
+  position: absolute;
+  box-shadow: 1px 1px 4px #bbb5ae;
+  background: white;
+  width: 400px;
+  bottom: 8px;
+  height: auto;
+  overflow: hidden;
+}
+
+.drawer-top {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  background: #f5efe5;
+  border: 1px solid #bbb5ae;
+  padding: 0.5rem;
+}
+
+.drawer-top-text-container {
+  width: 80%;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  height: 100%;
+  cursor: pointer;
+}
+
+.drawer-top-text {
+  width: 100%;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.drawer-top-icons {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  align-items: center;
+  width: 20%;
+  height: 100%;
+}
+
+.row-file-status-text {
+  font-size: 12px;
+  text-align: left;
+  width: 100%;
+  color: rgb(71, 70, 68);
+}
+
+.row-file-uploaded-status {
+  width: 25%;
+}
+
+.row-file-uploaded-container {
+  display: flex;
+  width: 100%;
+  justify-content: start;
+  align-items: center;
+}
+
+.row-file-uploaded-to-link {
+  width: 75%;
+  text-decoration: underline;
+}
+
+.row-file-uploaded-to-link-p {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-file-uploaded-to-link:hover {
+  color: black;
+}
+
+.row-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.row-file-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 15%;
+  height: 100%;
+}
+
+.row-file-status {
+  height: 100%;
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
+}
+
+.row-file-heading {
+  font-size: 0.9rem;
+  text-align: left;
+  width: 100%;
+  color: black;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.row-file-uploading-status {
+  width: 10%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media screen and (max-width: 767px) {
+  .drawer-container {
+    width: 100%;
+  }
+}

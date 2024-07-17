@@ -20,3 +20,24 @@
   color: black;
   position: relative;
 }
+
+.modal {
+  position: absolute;
+  inset: 0;
+  background: black;
+  opacity: 0.3;
+}
+
+.change-your-name-box {
+  position: absolute;
+  width: 500px;
+  height: 200px;
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 2rem;
+}
+
+.inputbox {
+  position: relative;
+  z-index: 1000000;
+}
