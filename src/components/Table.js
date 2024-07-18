@@ -239,19 +239,19 @@ const Row = React.memo(({ index, data, style }) => {
               >
                 <ContextIcon style={{ width: 24, height: 24 }} />
               </button>
-              {showContext && (
-                <TableContext
-                  style={{
-                    width: 150,
-                    top: cords.top,
-                    left: cords.left,
-                    minHeight: 200,
-                  }}
-                  open={showContext}
-                  onClose={() => setShowContext(false)}
-                  buttonRef={buttonRef}
-                ></TableContext>
-              )}
+
+              <TableContext
+                style={{
+                  width: 150,
+                  top: cords.top,
+                  left: cords.left,
+                  minHeight: 200,
+                  transformOrigin: "top right",
+                }}
+                open={showContext}
+                onClose={() => setShowContext(false)}
+                buttonRef={buttonRef}
+              ></TableContext>
             </div>
           )}
         </div>
@@ -536,6 +536,7 @@ const SharedTable = ({
                         top: cords.top,
                         left: cords.left,
                         minHeight: 200,
+                        transformOrigin: "top left",
                       }}
                       buttonRef={contextButtonRef}
                     ></TableContext>
@@ -611,19 +612,20 @@ const SharedTable = ({
           </div>
         )}
       </div>
-      {showContext && (
-        <TableContext
-          style={{
-            width: 150,
-            top: cord.top,
-            left: cord.left,
-            minHeight: 200,
-            overflow: "auto",
-          }}
-          open={showContext}
-          onClose={() => dispatch(setShowContextMenu(false))}
-        />
-      )}
+
+      <TableContext
+        style={{
+          width: 150,
+          top: cord.top,
+          left: cord.left,
+          minHeight: 200,
+          overflow: "auto",
+          transformOrigin: "top left",
+        }}
+        open={showContext}
+        onClose={() => dispatch(setShowContextMenu(false))}
+      />
+
       {operation.type === COPY && (
         <Modal
           mode={COPY}

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import useOutSideClick from "../hooks/useOutsideClick";
+import "./ContextMenuModal.css";
 
 const ContextMenuContainer = ({
   children,
@@ -15,19 +16,13 @@ const ContextMenuContainer = ({
   useOutSideClick(contextRef, handleClose, buttonRef);
   return (
     <>
-      {open && (
-        <div
-          style={{ position: "absolute", ...style }}
-          className="flex flex-col
-                 bg-white border border-solid
-                 border-context-border shadow-md
-                  box-border z-[1000] 
-                  w-[150px]"
-          ref={contextRef}
-        >
-          {children}
-        </div>
-      )}
+      <div
+        style={{ position: "absolute", ...style }}
+        className={`menu-container ${open ? "open" : ""}`}
+        ref={contextRef}
+      >
+        {children}
+      </div>
     </>
   );
 };

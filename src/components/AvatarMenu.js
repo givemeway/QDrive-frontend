@@ -83,7 +83,9 @@ export default function AvatarMenu() {
     <>
       <button
         onClick={handleClick}
-        className="w-[45px] h-[45px] hover:bg-[#F5EFE5] flex justify-center items-center"
+        className={`w-[45px] h-[45px] hover:bg-[#F5EFE5] flex justify-center items-center ${
+          open ? "bg-[#F5EFE5]" : ""
+        }`}
         ref={buttonRef}
       >
         <Avatar initial={initial} />
