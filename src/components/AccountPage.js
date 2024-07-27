@@ -2,7 +2,38 @@ import { useState } from "react";
 import Tabs from "./SharedTab";
 import { useSelector } from "react-redux";
 import { Avatar } from "./AvatarMenu";
+import CloseIcon from "@mui/icons-material/Close";
 import "./AccountPage.css";
+
+const ChangeName = ({ firstName, lastName, onClose }) => {
+  return (
+    <div className="modal">
+      <div className="change-your-name-box">
+        <div className="modal-heading">
+          <h2 className="accountpage-heading">Change your name</h2>
+          <CloseIcon className="button-close" onClick={onClose} />
+        </div>
+        <input
+          placeholder="First Name"
+          value={firstName}
+          className="inputbox"
+        ></input>
+        <input
+          placeholder="Last Name"
+          value={lastName}
+          className="inputbox"
+        ></input>
+        <div className="button-container">
+          <button className="button-cancel" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="button-save">Save</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AccountPage = () => {
   const [tabs, setActiveTabs] = useState({
     General: true,
@@ -13,56 +44,60 @@ const AccountPage = () => {
   const { fullName, email, initial, firstName, lastName } = useSelector(
     (state) => state.avatar
   );
+
+  const handleName = () => {
+    setEdit({ type: "NAME", isEdit: true });
+  };
+  const handleAvatar = () => {
+    setEdit({ type: "EMAIL", isEdit: true });
+  };
+  const handleEmail = () => {
+    setEdit({ type: "AVATAR", isEdit: true });
+  };
+
+  const [edit, setEdit] = useState({ type: undefined, isEdit: false });
+
   return (
-    <div className="w-full h-full flex flex-col justify-start">
-      <h2 className="w-full font-semibold font-sans text-xl text-left h-[60px] flex items-center">
-        Personal Account
-      </h2>
+    <div className="accountpage-container">
+      <h2 className="accountpage-heading">Personal Account</h2>
       <Tabs tabs={tabs} setActiveTab={setActiveTabs} />
-      <div className="w-full flex flex-col">
-        <h2 className="w-full h-[50px] flex items-center text-left text-lg font-semibold">
-          Basics
-        </h2>
-        <div className="w-full border-t flex flex-row items-center h-[75px] justify-between pl-2">
-          <span className="text-[#1A1918] text-md">Photo</span>
-          <div className="flex gap-2 h-full items-center">
+      <div className="accountpage-profile-container">
+        <h2 className="accountpage-profile-heading ">Basics</h2>
+        <div className="accountpage-profile-row">
+          <span className="accountpage-profile-row-label">Photo</span>
+          <div className="accountpage-profile-edit-container">
             <Avatar initial={initial} />
-            <button className="buttonUnderLine font-semibold">Edit</button>
+            <button className="button-underLine" onClick={handleAvatar}>
+              Edit
+            </button>
           </div>
         </div>
-        <div className="w-full border-t flex flex-row items-center h-[75px] justify-between pl-2">
-          <span className="text-[#1A1918] text-md">Name</span>
-          <div className="flex gap-2 h-full items-center">
-            <span className="text-[#1A1918] capitalize text-md">
-              {fullName}
-            </span>
-            <button className="buttonUnderLine font-semibold">Edit</button>
+        <div className="accountpage-profile-row">
+          <span className="accountpage-profile-row-label">Name</span>
+          <div className="accountpage-profile-edit-container">
+            <span className="accountpage-profile-row-fullname">{fullName}</span>
+            <button className="button-underLine " onClick={handleName}>
+              Edit
+            </button>
           </div>
         </div>
-        <div className="w-full border-t border-b flex flex-row items-center h-[75px] justify-between pl-2">
-          <span className="text-[#1A1918] text-md">Email</span>
-          <div className="flex gap-2 h-full items-center">
-            <span className="text-[#1A1918] text-md">{email}</span>
-            <button className="buttonUnderLine font-semibold">Edit</button>
-          </div>
-        </div>
-      </div>
-      <div className="modal flex justify-center items-center">
-        <div className="change-your-name-box">
-          <div className="inputbox">
-            <input
-              placeholder="First Name"
-              value={firstName}
-              className="w-full h-[50px]"
-            ></input>
-            <input
-              placeholder="Last Name"
-              value={lastName}
-              className="w-full h-[50px]"
-            ></input>
+        <div className="accountpage-profile-row">
+          <span className="accountpage-profile-row-label">Email</span>
+          <div className="accountpage-profile-edit-container">
+            <span className="accountpage-profile-row-label">{email}</span>
+            <button className="button-underLine" onClick={handleEmail}>
+              Edit
+            </button>
           </div>
         </div>
       </div>
+      {edit?.type === "NAME" && edit.isEdit && (
+        <ChangeName
+          onClose={() => setEdit({ type: undefined, isEdit: false })}
+          firstName={firstName}
+          lastName={lastName}
+        />
+      )}
     </div>
   );
 };

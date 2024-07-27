@@ -1,6 +1,7 @@
-.buttonUnderLine::after {
+.button-underLine::after {
   content: "";
   position: absolute;
+  font-weight: 600;
   left: 0;
   right: 0;
   bottom: 0;
@@ -8,36 +9,214 @@
   background: rgb(187, 181, 174);
 }
 
-.buttonUnderLine:hover::after {
+.button-underLine:hover::after {
   background: black;
 }
 
-.buttonUnderLine:hover {
+.button-underLine:hover {
   background: transparent;
 }
 
-.buttonUnderLine {
+.button-underLine {
   color: black;
   position: relative;
+  font-weight: 600;
 }
 
 .modal {
   position: absolute;
   inset: 0;
-  background: black;
-  opacity: 0.3;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-heading {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .change-your-name-box {
-  position: absolute;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
   width: 500px;
-  height: 200px;
+  height: auto;
   background: #ffffff;
-  border-radius: 1rem;
-  padding: 2rem;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  padding-top: 0;
+  gap: 8px;
 }
 
 .inputbox {
+  padding-left: 5px;
+  width: 100%;
+  height: 40px;
+  outline: 1px solid var(--border-grey);
+  border-radius: 0.75rem;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  text-transform: capitalize;
+  color: var(--font-color-primary);
+}
+.inputbox:focus {
+  border: 1px solid black;
+  border-radius: 10px;
+  outline: 3px solid var(--border-blue);
+}
+.inputbox:not(:focus):hover {
+  outline-color: black;
+}
+
+.button-save {
   position: relative;
-  z-index: 1000000;
+  width: 100px;
+  height: 100%;
+  background: var(--color-blue);
+  color: whitesmoke;
+  z-index: 1;
+  overflow: hidden;
+  font-weight: 600;
+  border-radius: 0.75rem;
+}
+
+.button-save:before {
+  content: "";
+  position: absolute;
+  background: var(--color-blue-secondary);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: -1;
+  transition: top 100ms ease-in-out;
+}
+
+.button-save:hover:before {
+  top: 0;
+}
+
+.button-cancel {
+  position: relative;
+  font-weight: 600;
+  z-index: 1;
+  overflow: hidden;
+  width: 100px;
+  height: 100%;
+  background: var(--color-brown);
+  color: var(--color-grey);
+  border-radius: 0.75rem;
+}
+
+.button-cancel:before {
+  content: "";
+  position: absolute;
+  background: var(--color-brown-secondary);
+  top: 100%;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: -1;
+  transition: top 100ms ease-in-out;
+}
+
+.button-cancel:hover:before {
+  top: 0;
+}
+
+.button-close {
+  color: var(--font-color-primary);
+  cursor: pointer;
+  height: 50px;
+  width: 50px;
+  border-radius: 0.5rem;
+  transform: translateX(10px);
+}
+
+.button-close:hover {
+  background: var(--color-brown-secondary);
+}
+
+.button-container {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  height: 40px;
+  flex-direction: row;
+  justify-content: end;
+  align-items: center;
+}
+
+.accountpage-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
+.accountpage-heading {
+  width: 100%;
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.75rem; /* 28px */
+  text-align: left;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.accountpage-profile-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.accountpage-profile-heading {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.75rem; /* 28px */
+  font-weight: 600;
+}
+
+.accountpage-profile-row {
+  width: 100%;
+  border-top: 1px solid var(--border-grey);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 75px;
+  justify-content: space-between;
+  padding-left: 0.5rem;
+}
+
+.accountpage-profile-row-label {
+  color: var(--font-color-primary);
+  font-size: 1rem;
+}
+
+.accountpage-profile-row-fullname {
+  color: var(--font-color-primary);
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+.accountpage-profile-edit-container {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 8px;
 }
