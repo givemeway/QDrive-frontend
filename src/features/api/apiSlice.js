@@ -306,6 +306,21 @@ export const apiSlice = createApi({
         credentials: "include",
       }),
     }),
+    updateName: builder.mutation({
+      query: (data) => ({
+        url: `/user/editName?first_name=${data.firstname}&last_name=${data.lastname}`,
+        method: "PUT",
+        credentials: "include",
+        // headers: { "X-CSRF-Token": data.CSRFToken },
+      }),
+    }),
+    updatePassword: builder.mutation({
+      query: (data) => ({
+        url: `/user/updatePassword?old_password=${data.old_password}&new_password=${data.new_password}`,
+        credentials: "include",
+        method: "PUT",
+      }),
+    }),
   }),
 });
 
@@ -338,4 +353,6 @@ export const {
   useDeleteShareMutation,
   useCreateFolderMutation,
   useCopyShareMutation,
+  useUpdateNameMutation,
+  useUpdatePasswordMutation,
 } = apiSlice;

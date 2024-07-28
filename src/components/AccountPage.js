@@ -1,35 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Tabs from "./SharedTab";
-import { useSelector } from "react-redux";
-import { Avatar } from "./AvatarMenu";
-import CloseIcon from "@mui/icons-material/Close";
+import { useDispatch } from "react-redux";
+import { AccountGeneral } from "./AccountGeneral.js";
+import { AccountSecurity } from "./AccountSecurity.js";
 import "./AccountPage.css";
+import {
+  useUpdateNameMutation,
+  useUpdatePasswordMutation,
+} from "../features/api/apiSlice";
+import { ChangeName } from "./ChangeName.js";
+import SnackBar from "./Snackbar/SnackBar.js";
+import SpinnerGIF from "./icons/SpinnerGIF";
+import {
+  setEmail,
+  setFirstName,
+  setFullName,
+  setInitial,
+  setLastName,
+} from "../features/avatar/avatarSlice";
+import { ChangePassword } from "./ChangePassword.js";
 
-const ChangeName = ({ firstName, lastName, onClose }) => {
+const Loading = () => {
   return (
-    <div className="modal">
-      <div className="change-your-name-box">
-        <div className="modal-heading">
-          <h2 className="accountpage-heading">Change your name</h2>
-          <CloseIcon className="button-close" onClick={onClose} />
-        </div>
-        <input
-          placeholder="First Name"
-          value={firstName}
-          className="inputbox"
-        ></input>
-        <input
-          placeholder="Last Name"
-          value={lastName}
-          className="inputbox"
-        ></input>
-        <div className="button-container">
-          <button className="button-cancel" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="button-save">Save</button>
-        </div>
-      </div>
+    <div className="loading-container">
+      <SpinnerGIF style={{ width: 50, height: 50 }} />
     </div>
   );
 };
@@ -40,11 +34,11 @@ const AccountPage = () => {
     Security: false,
     Privacy: false,
   });
-  console.log("account page rendered");
-  const { fullName, email, initial, firstName, lastName } = useSelector(
-    (state) => state.avatar
-  );
+  const dispatch = useDispatch();
+  const [nameChangeQuery, nameChangeStatus] = useUpdateNameMutation();
+  const [updatePasswordQuery, updatePassword] = useUpdatePasswordMutation();
 
+  const { error, isSuccess, isLoading, isError, data } = nameChangeStatus;
   const handleName = () => {
     setEdit({ type: "NAME", isEdit: true });
   };
@@ -55,47 +49,100 @@ const AccountPage = () => {
     setEdit({ type: "AVATAR", isEdit: true });
   };
 
+  const handlePassword = () => {
+    setEdit({ type: "PASSWORD", isEdit: true });
+  };
+
   const [edit, setEdit] = useState({ type: undefined, isEdit: false });
+  const [notify, setNotify] = useState({
+    show: false,
+    msg: "",
+    severity: null,
+  });
+
+  useEffect(() => {
+    if (isSuccess && data) {
+      const { updated } = data;
+      const { first_name, last_name, email } = updated;
+      const firstNameInitial = first_name.split("")[0].toUpperCase();
+      const lastNameInitial = last_name.split("")[0].toUpperCase();
+      const initial = firstNameInitial + lastNameInitial;
+      dispatch(setFirstName(first_name));
+      dispatch(setLastName(last_name));
+      dispatch(setFullName(first_name + " " + last_name));
+      dispatch(setInitial(initial));
+      dispatch(setEmail(email));
+      setNotify({ show: true, severity: "success", msg: data?.msg });
+    }
+    if (error && error?.status === 404) {
+      setNotify({ show: true, severity: "warning", msg: error.data?.msg });
+    }
+    if (error && error?.originalStatus === 500) {
+      setNotify({ show: true, severity: "error", msg: "Something Went Wrong" });
+    }
+  }, [isLoading, isSuccess, isError, data, dispatch, error]);
+  useEffect(() => {
+    if (updatePassword.data && updatePassword.isSuccess) {
+      setNotify({
+        show: true,
+        severity: "success",
+        msg: updatePassword.data?.msg,
+      });
+    }
+    if (updatePassword.error && updatePassword.error?.status === 404) {
+      setNotify({
+        show: true,
+        severity: "warning",
+        msg: updatePassword.error.data?.msg,
+      });
+    }
+    if (updatePassword.error && updatePassword.error?.originalStatus === 500) {
+      setNotify({
+        show: true,
+        severity: "error",
+        msg: "something went wrong",
+      });
+    }
+  }, [
+    updatePassword.isLoading,
+    updatePassword.isError,
+    updatePassword.error,
+    updatePassword.data,
+    updatePassword.isSuccess,
+  ]);
 
   return (
     <div className="accountpage-container">
       <h2 className="accountpage-heading">Personal Account</h2>
       <Tabs tabs={tabs} setActiveTab={setActiveTabs} />
-      <div className="accountpage-profile-container">
-        <h2 className="accountpage-profile-heading ">Basics</h2>
-        <div className="accountpage-profile-row">
-          <span className="accountpage-profile-row-label">Photo</span>
-          <div className="accountpage-profile-edit-container">
-            <Avatar initial={initial} />
-            <button className="button-underLine" onClick={handleAvatar}>
-              Edit
-            </button>
-          </div>
-        </div>
-        <div className="accountpage-profile-row">
-          <span className="accountpage-profile-row-label">Name</span>
-          <div className="accountpage-profile-edit-container">
-            <span className="accountpage-profile-row-fullname">{fullName}</span>
-            <button className="button-underLine " onClick={handleName}>
-              Edit
-            </button>
-          </div>
-        </div>
-        <div className="accountpage-profile-row">
-          <span className="accountpage-profile-row-label">Email</span>
-          <div className="accountpage-profile-edit-container">
-            <span className="accountpage-profile-row-label">{email}</span>
-            <button className="button-underLine" onClick={handleEmail}>
-              Edit
-            </button>
-          </div>
-        </div>
-      </div>
+      {(isLoading || updatePassword.isLoading) && <Loading />}
+      {!isLoading && tabs.General && (
+        <AccountGeneral
+          handleAvatar={handleAvatar}
+          handleEmail={handleEmail}
+          handleName={handleName}
+        />
+      )}
+      {!updatePassword.isLoading && tabs.Security && (
+        <AccountSecurity handlePassword={handlePassword} />
+      )}
       {edit?.type === "NAME" && edit.isEdit && (
         <ChangeName
           onClose={() => setEdit({ type: undefined, isEdit: false })}
-          firstName={firstName}
-          lastName={lastName}
+          query={nameChangeQuery}
+        />
+      )}
+      {edit?.type === "PASSWORD" && edit.isEdit && (
+        <ChangePassword
+          onClose={() => setEdit({ type: undefined, isEdit: false })}
+          query={updatePasswordQuery}
+        />
+      )}
+      {notify.show && (
+        <SnackBar
+          msg={notify.msg}
+          severity={notify.severity}
+          setMessage={setNotify}
         />
       )}
     </div>

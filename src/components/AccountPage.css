@@ -77,7 +77,7 @@
 
 .button-save {
   position: relative;
-  width: 100px;
+  width: 150px;
   height: 100%;
   background: var(--color-blue);
   color: whitesmoke;
@@ -87,7 +87,12 @@
   border-radius: 0.75rem;
 }
 
-.button-save:before {
+.disabled {
+  background: var(--color-grey);
+  cursor: not-allowed;
+}
+
+.button-save:not(:disabled):before {
   content: "";
   position: absolute;
   background: var(--color-blue-secondary);
@@ -134,8 +139,8 @@
 .button-close {
   color: var(--font-color-primary);
   cursor: pointer;
-  height: 50px;
-  width: 50px;
+  height: 25px;
+  width: 25px;
   border-radius: 0.5rem;
   transform: translateX(10px);
 }
@@ -190,11 +195,12 @@
   font-size: 1.125rem; /* 18px */
   line-height: 1.75rem; /* 28px */
   font-weight: 600;
+  border-bottom: 1px solid var(--border-grey);
 }
 
 .accountpage-profile-row {
   width: 100%;
-  border-top: 1px solid var(--border-grey);
+  border-bottom: 1px solid var(--border-grey);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -206,6 +212,9 @@
 .accountpage-profile-row-label {
   color: var(--font-color-primary);
   font-size: 1rem;
+  width: auto;
+  font-weight: 400;
+  text-align: left;
 }
 
 .accountpage-profile-row-fullname {
@@ -219,4 +228,29 @@
   height: 100%;
   align-items: center;
   gap: 8px;
+}
+
+.loading-container {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.accountpage-security-row-label-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 100%;
+}
+
+.accountpage-security-row-p {
+  width: 100%;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-grey-secondary);
 }

@@ -20,15 +20,24 @@ const avatarSlice = createSlice({
       state.fullName = actions.payload;
     },
     setInitial: (state, actions) => {
-      state.initial = actions.payload;
+      state.initials = actions.payload;
     },
     setEmail: (state, actions) => {
       state.email = actions.payload;
     },
+    setUserData: (state, actions) => {
+      return { ...state, ...actions.payload };
+    },
   },
 });
 
-export const { setFirstName, setLastName, setInitial, setFullName, setEmail } =
-  avatarSlice.actions;
+export const {
+  setFirstName,
+  setLastName,
+  setInitial,
+  setFullName,
+  setEmail,
+  setUserData,
+} = avatarSlice.actions;
 
 export default avatarSlice.reducer;
