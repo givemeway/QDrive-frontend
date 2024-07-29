@@ -9,9 +9,9 @@ import PictureIcon from "./icons/PictureIcon";
 import { SharedIcon } from "./icons/SharedIcon";
 import { DeletedIcon } from "./icons/DeletedIcon";
 import { ChevronDown } from "./icons/ChevronDown";
-import useOutSideClick from "./hooks/useOutsideClick";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setPanel } from "../features/navigation/navigationPanelSlice";
+import "./Panel.css";
 
 const style = {
   display: "flex",
@@ -42,7 +42,8 @@ const TabButton = ({ active, children, onClick }) => {
 };
 
 const Panel = () => {
-  const [open, setOpen] = useState(false);
+  const [openExplorer, setOpenExplorer] = useState(false);
+  const { open } = useSelector((state) => state.navigatePanel);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const params = useParams();
@@ -56,7 +57,7 @@ const Panel = () => {
     deleted: false,
   });
   const handleClick = () => {
-    setOpen((prev) => !prev);
+    setOpenExplorer((prev) => !prev);
   };
   const handleAllFiles = () => {
     navigate("/dashboard/home");
@@ -138,9 +139,7 @@ const Panel = () => {
 
   return (
     <div
-      className="flex flex-col items-start gap-0 w-[190px] md:w-[240px] 
-          h-full bg-[#F7F5F2] border-r border-[#D4D2D0] 
-          box-border "
+      className={`panel`}
       ref={panelRef}
       onClick={(e) => e.stopPropagation()}
     >
@@ -171,13 +170,13 @@ const Panel = () => {
       </TabButton>
       <div className="border-b border-[#D4D2D0] w-full"></div>
       <TabButton>
-        {!open && (
+        {!openExplorer && (
           <ChevronRightIcon
             style={{ width: 20, height: 20 }}
             onClick={handleClick}
           />
         )}
-        {open && (
+        {openExplorer && (
           <ChevronDown
             style={{ width: 20, height: 20 }}
             onClick={handleClick}
@@ -186,7 +185,7 @@ const Panel = () => {
         Folders
       </TabButton>
 
-      {open && (
+      {openExplorer && (
         <div
           sx={style}
           className="flex flex-col justify-between w-full h-[250px] border-0 box-border"

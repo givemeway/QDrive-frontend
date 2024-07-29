@@ -22,6 +22,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
 import { setSession } from "../features/session/sessionSlice.js";
+import "./Dashboard.css";
 
 const Dashboard = () => {
   const [searchValue, setSearchValue] = useState("");
@@ -106,7 +107,7 @@ const Dashboard = () => {
           className="w-screen h-screen flex flex-row gap-0"
           ref={containerRef}
         >
-          <div className="w-[240px] hidden h-screen md:block">
+          <div className="panel-container">
             <NavigatePanel />
           </div>
 
@@ -142,16 +143,9 @@ const Dashboard = () => {
                 mode === "DELETED") && <MainPanel mode={mode} />}
             {isError && <div className="w-full">Something Went Wrong</div>}
           </div>
-          {open && (
-            <div
-              className={`absolute z-[1000]  inset-y-[60px]
-                    flex justify-start items-center 
-                    w-screen h-screen
-                    bg-black bg-opacity-50 md:hidden`}
-            >
-              <NavigatePanel />
-            </div>
-          )}
+          <div className={`panel-container-mobile ${open ? "open" : ""}`}>
+            <NavigatePanel />
+          </div>
         </div>
       )}
 
