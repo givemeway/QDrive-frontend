@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Header from "./HomePageHeader";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MessageSnackBar from "./Snackbar/SnackBar";
 import { CustomBlueButton } from "./Buttons/BlueButton";
 import { GreyButton } from "./Buttons/GreyButton";
@@ -13,6 +13,7 @@ import {
 } from "../features/api/apiSlice";
 import { setSession } from "../features/session/sessionSlice";
 import { HorizontalLineDividedByText } from "./HorizontalLine";
+import "./Login.css";
 
 const validateLoginForm = (loginform) => {
   if (loginform.username.length > 0 && loginform.password.length > 0) {
@@ -108,14 +109,14 @@ const Login = () => {
       )}
       {CSRF.isSuccess && verifySessionStatus.isError && CSRF.data && (
         <div className="w-full grow flex flex-row justify-center items-center">
-          <div className=" flex flex-col gap-2 p-2 shadow-md w-full md:w-[300px] sm:w-[300px]">
+          <div className=" flex flex-col gap-2 pr-7 pl-7 pt-5 pb-5 w-full md:w-[480px] sm:w-[480px] custom-shadow h-auto">
             <div className="w-full">
               <h3 className="text-center font-semibold text-md text-[#716B61]">
                 Sign In to QDrive
               </h3>
             </div>
             <div className="flex flex-col justify-start items-center">
-              <label className="text-[#716B61] text-xs w-full text-left pb-1">
+              <label className="text-[#716B61] text-sm w-full text-left pb-1">
                 Email
               </label>
               <input
@@ -128,8 +129,9 @@ const Login = () => {
                  hover:border-black outline-[#428BFF] outline-offset-2 "
               />
             </div>
+
             <div className="flex flex-col justify-center items-center ">
-              <label className="text-[#716B61] text-xs w-full text-left  pb-1">
+              <label className="text-[#716B61] text-sm w-full text-left  pb-1">
                 Password
               </label>
               <input
@@ -141,6 +143,15 @@ const Login = () => {
                 className="w-full h-[50px]  border border-[#C9C5BD] focus:border-black
                  hover:border-black outline-[#428BFF] outline-4 outline-offset-2"
               />
+            </div>
+            <div className="w-full h-[20px] flex justify-between items-center">
+              <div className="w-auto h-full flex justify-start items-center gap-2">
+                <input type="checkbox" />
+                <span className="text-[#716B61] text-sm">Remember me</span>
+              </div>
+              <Link className="text-[#1F74FE] text-sm" to={"/forgot"}>
+                Forgot password?
+              </Link>
             </div>
             {isLoading && (
               <GreyButton
