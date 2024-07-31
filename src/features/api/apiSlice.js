@@ -321,6 +321,12 @@ export const apiSlice = createApi({
         method: "PUT",
       }),
     }),
+    passReset: builder.mutation({
+      query: (data) => ({
+        url: `forgotPassword/passwordReset?username=${data.username}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -355,4 +361,5 @@ export const {
   useCopyShareMutation,
   useUpdateNameMutation,
   useUpdatePasswordMutation,
+  usePassResetMutation,
 } = apiSlice;

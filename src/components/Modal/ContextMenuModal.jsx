@@ -17,8 +17,8 @@ const ContextMenuContainer = ({
   return (
     <>
       <div
-        style={{ position: "absolute", ...style }}
-        className={`menu-container ${open ? "open" : ""}`}
+        style={{ ...style }}
+        className={`menu-container ${open ? "openMenu" : ""}`}
         ref={contextRef}
       >
         {children}
