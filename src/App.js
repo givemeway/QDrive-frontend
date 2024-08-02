@@ -8,6 +8,7 @@ import Shared from "./components/SharesItemsPage.js";
 import Transfer from "./components/TransferItemsPage.js";
 import Signup from "./components/SignupForm.js";
 import { ForgotPassword } from "./components/ForgotPassword.js";
+import { PasswordReset } from "./components/PasswordReset.js";
 
 enableMapSet();
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/sh/t/:shareId/*" element={<Transfer />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot/*" element={<ForgotPassword />} />
+        <Route path="/forgot_finish/*" element={<PasswordReset />} />
       </Routes>
     </div>
   );

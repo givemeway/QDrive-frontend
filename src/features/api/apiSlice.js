@@ -323,7 +323,19 @@ export const apiSlice = createApi({
     }),
     passReset: builder.mutation({
       query: (data) => ({
-        url: `forgotPassword/passwordReset?username=${data.username}`,
+        url: `/forgotPassword/passwordReset?username=${data.username}`,
+        method: "GET",
+      }),
+    }),
+    forgotPass: builder.mutation({
+      query: (data) => ({
+        url: `/forgotPassword/updatePassword?token=${data.token}&password=${data.password}`,
+        method: "PUT",
+      }),
+    }),
+    verifyPassToken: builder.mutation({
+      query: (data) => ({
+        url: `/forgotPassword/validatePassLink?token=${data.token}`,
         method: "GET",
       }),
     }),
@@ -362,4 +374,6 @@ export const {
   useUpdateNameMutation,
   useUpdatePasswordMutation,
   usePassResetMutation,
+  useForgotPassMutation,
+  useVerifyPassTokenMutation,
 } = apiSlice;

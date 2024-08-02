@@ -13,6 +13,9 @@
   --color-grey: #808080;
   --color-grey-secondary: #736c64;
   --color-smoke-white: #f7f5f2;
+  --color-green: #267b5e;
+  --color-greyed: #bbb5ae;
+  --color-red: #b50032;
 }
 
 body {

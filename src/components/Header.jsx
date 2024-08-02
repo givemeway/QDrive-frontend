@@ -112,7 +112,7 @@ export const Header = () => {
   }, [wakeupBackendServer, wakeupImageServer, wakeupThumbnailServer]);
   const navigate = useNavigate();
   return (
-    <div className="w-full h-[60px] flex flex-row justify-start items-center  border-b border-[#EBE9E6">
+    <div className="w-full h-[60px] flex flex-row justify-start items-center bg-white border-b border-[#EBE9E6] fixed top-0">
       <div className="flex justify-center items-center h-full">
         <div
           className="w-[50px] h-full flex justify-center items-center cursor-pointer"
