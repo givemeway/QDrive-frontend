@@ -16,7 +16,7 @@ import { Plus } from "./icons/PlusIcon";
 import { Image } from "./Image";
 import { Skeleton } from "@mui/material";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { buildCellValueForFile, generateLink } from "../util";
+import { buildCellValueForFile } from "../util";
 import PhotoPreview from "./PhotoPreview";
 import { Modal } from "./Modal/Modal.jsx";
 import ContextModal from "./Modal/ContextMenuModal";
@@ -89,7 +89,7 @@ const ItemSelectionComponent = ({
     <>
       <button
         className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-          active.allItems ? "active" : ""
+          active.allItems ? "btn-active" : ""
         }`}
         onClick={handleAllItems}
       >
@@ -97,7 +97,7 @@ const ItemSelectionComponent = ({
       </button>
       <button
         className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-          active.photos ? "active" : ""
+          active.photos ? "btn-active" : ""
         }`}
         onClick={handlePhotos}
       >
@@ -105,7 +105,7 @@ const ItemSelectionComponent = ({
       </button>
       <button
         className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-          active.videos ? "active" : ""
+          active.videos ? "btn-active" : ""
         }`}
         onClick={handleVideos}
       >
@@ -125,7 +125,7 @@ const TimeLineSelectionComponent = ({
     <>
       <button
         className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-          active.years ? "active" : ""
+          active.years ? "btn-active" : ""
         }`}
         onClick={handleYears}
       >
@@ -133,7 +133,7 @@ const TimeLineSelectionComponent = ({
       </button>
       <button
         className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-          active.months ? "active" : ""
+          active.months ? "btn-active" : ""
         }`}
         onClick={handleMonths}
       >
@@ -141,7 +141,7 @@ const TimeLineSelectionComponent = ({
       </button>
       <button
         className={`w-full md:w-20 font-semibold font-sans h-10 hover:bg-[#fbf4ea] ${
-          active.days ? "active" : ""
+          active.days ? "btn-active" : ""
         }`}
         onClick={handleDays}
       >

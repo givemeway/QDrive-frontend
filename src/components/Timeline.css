@@ -6,12 +6,12 @@
   border: 1px solid #e5e7eb;
 }
 
-.active {
-  background: #ebe0cc;
+.btn-active {
+  background: var(--color-brown);
 }
 
-.active:hover {
-  background: #e3d3b7;
+.btn-active:hover {
+  background: var(--color-brown-secondary);
 }
 
 .round-button {

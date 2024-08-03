@@ -8,14 +8,15 @@
   --border-blue: #428bff;
   --color-blue: #0061fee0;
   --color-blue-secondary: #004dc7;
-  --color-brown: #f5efe5;
-  --color-brown-secondary: #ece1ce;
+  --color-brown: #ebe0cc;
+  --color-brown-secondary: #e3d3b7;
   --color-grey: #808080;
   --color-grey-secondary: #736c64;
   --color-smoke-white: #f7f5f2;
   --color-green: #267b5e;
   --color-greyed: #bbb5ae;
   --color-red: #b50032;
+  --color-brown-dark: #fbf4ea;
 }
 
 body {
