@@ -36,6 +36,13 @@ const PassNotificationOne = ({ passNotify }) => {
   if (passNotify.isFormSubmitted && passNotify.isFirstFieldEmpty) {
     return <span className="password-dont-match">Please enter a password</span>;
   }
+  if (
+    !passNotify.isFirstFieldEditing &&
+    passNotify.isSecondFieldEditing &&
+    passNotify.isFirstFieldEmpty
+  ) {
+    return <span className="password-dont-match">Please enter a password</span>;
+  }
   if (passNotify.isFormSubmitted && !passNotify.isPasswordValid) {
     return (
       <span className="password-dont-match">
@@ -43,6 +50,18 @@ const PassNotificationOne = ({ passNotify }) => {
       </span>
     );
   }
+  if (
+    !passNotify.isFirstFieldEditing &&
+    passNotify.isSecondFieldEditing &&
+    !passNotify.isPasswordValid
+  ) {
+    return (
+      <span className="password-dont-match">
+        Please meet all password requirements below
+      </span>
+    );
+  }
+
   if (passNotify.isFirstFieldEditing) {
     return;
   }
@@ -53,7 +72,7 @@ const PassNotificationOne = ({ passNotify }) => {
 
 const PassNotificationTwo = ({ passNotify }) => {
   if (
-    passNotify.isSecondFieldSubmitted &&
+    passNotify.isFormSubmitted &&
     !passNotify.isFirstFieldEmpty &&
     passNotify.isSecondFieldEmpty
   ) {
@@ -64,13 +83,39 @@ const PassNotificationTwo = ({ passNotify }) => {
     );
   }
   if (
-    passNotify.isSecondFieldSubmitted &&
+    passNotify.isFirstFieldEditing &&
+    !passNotify.isSecondFieldEditing &&
+    !passNotify.isFirstFieldEmpty &&
+    passNotify.isSecondFieldEmpty
+  ) {
+    return (
+      <span className="password-dont-match">
+        Please retype your new password
+      </span>
+    );
+  }
+  if (
+    passNotify.isFormSubmitted &&
+    passNotify.isFirstFieldEmpty &&
+    passNotify.isSecondFieldEmpty
+  ) {
+    return <span className="password-dont-match">Please enter a password</span>;
+  }
+  if (
+    passNotify.isFirstFieldEditing &&
+    !passNotify.isSecondFieldEditing &&
     passNotify.isFirstFieldEmpty &&
     passNotify.isSecondFieldEmpty
   ) {
     return <span className="password-dont-match">Please enter a password</span>;
   }
   if (passNotify.isSecondFieldEditing && !passNotify.isPasswordMatch) {
+    return <span className="password-dont-match">Passwords don‘t match</span>;
+  }
+  if (passNotify.isFirstFieldEditing && !passNotify.isPasswordMatch) {
+    return <span className="password-dont-match">Passwords don‘t match</span>;
+  }
+  if (passNotify.isFormSubmitted && !passNotify.isPasswordMatch) {
     return <span className="password-dont-match">Passwords don‘t match</span>;
   }
   if (passNotify.isSecondFieldEditing && passNotify.isPasswordMatch) {
@@ -143,10 +188,7 @@ export const PasswordReset = () => {
 
   const [isPassLinkValid, setIsPassLinkValid] = useState(false);
   const [passNotify, setPassNotify] = useState({
-    isBothFieldsEmpty: true,
     isFormSubmitted: false,
-    isFirstFieldSubmitted: false,
-    isSecondFieldSubmitted: false,
     isFirstFieldEmpty: true,
     isSecondFieldEmpty: true,
     isFirstFieldEditing: false,
@@ -167,7 +209,7 @@ export const PasswordReset = () => {
       ...prev,
       isFirstFieldEmpty: false,
       isFirstFieldEditing: true,
-      isFirstFieldSubmitted: false,
+      isFormSubmitted: false,
     }));
 
     if (pass.length === 0) {
@@ -179,7 +221,6 @@ export const PasswordReset = () => {
       setPassNotify((prev) => ({
         ...prev,
         isFirstFieldEmpty: false,
-        isBothFieldsEmpty: false,
       }));
     }
     if (pass.length !== 0 && password.length !== 0 && pass === password) {
@@ -187,7 +228,6 @@ export const PasswordReset = () => {
         ...prev,
         isFirstFieldEmpty: false,
         isSecondFieldEmpty: false,
-        isBothFieldsEmpty: false,
         isPasswordMatch: true,
       }));
     } else {
@@ -208,6 +248,7 @@ export const PasswordReset = () => {
       ...prev,
       isSecondFieldEmpty: false,
       isSecondFieldEditing: true,
+      isFormSubmitted: false,
     }));
 
     if (pass.length === 0) {
@@ -215,13 +256,11 @@ export const PasswordReset = () => {
         ...prev,
         isSecondFieldEmpty: true,
         isSecondFieldEditing: false,
-        isSecondFieldSubmitted: false,
       }));
     } else {
       setPassNotify((prev) => ({
         ...prev,
         isSecondFieldEmpty: false,
-        isBothFieldsEmpty: false,
       }));
     }
     if (pass.length !== 0 && password.length !== 0 && pass === password) {
@@ -229,7 +268,6 @@ export const PasswordReset = () => {
         ...prev,
         isPasswordMatch: true,
         isFirstFieldEmpty: false,
-        isBothFieldsEmpty: false,
         isSecondFieldEmpty: false,
       }));
     } else {
@@ -240,7 +278,8 @@ export const PasswordReset = () => {
     setPassNotify((prev) => ({
       ...prev,
       isFormSubmitted: true,
-      isSecondFieldSubmitted: true,
+      isFirstFieldEditing: false,
+      isSecondFieldEditing: false,
     }));
 
     if (passNotify.isPasswordMatch && passNotify.isPasswordValid) {
