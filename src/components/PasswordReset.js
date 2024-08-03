@@ -85,8 +85,7 @@ const PassNotificationTwo = ({ passNotify }) => {
   if (
     passNotify.isFirstFieldEditing &&
     !passNotify.isSecondFieldEditing &&
-    !passNotify.isFirstFieldEmpty &&
-    passNotify.isSecondFieldEmpty
+    !passNotify.isFirstFieldEmpty
   ) {
     return (
       <span className="password-dont-match">
@@ -109,17 +108,32 @@ const PassNotificationTwo = ({ passNotify }) => {
   ) {
     return <span className="password-dont-match">Please enter a password</span>;
   }
-  if (passNotify.isSecondFieldEditing && !passNotify.isPasswordMatch) {
+  if (
+    passNotify.isSecondFieldEditing &&
+    !passNotify.isSecondFieldEmpty &&
+    !passNotify.isPasswordMatch
+  ) {
     return <span className="password-dont-match">Passwords don‘t match</span>;
   }
-  if (passNotify.isFirstFieldEditing && !passNotify.isPasswordMatch) {
-    return <span className="password-dont-match">Passwords don‘t match</span>;
+  if (
+    passNotify.isFirstFieldEditing &&
+    !passNotify.isSecondFieldEmpty &&
+    !passNotify.isPasswordMatch
+  ) {
+    return <span className="password-dont-match">Passwords don‘t match </span>;
   }
-  if (passNotify.isFormSubmitted && !passNotify.isPasswordMatch) {
+  if (
+    passNotify.isFormSubmitted &&
+    !passNotify.isSecondFieldEmpty &&
+    !passNotify.isPasswordMatch
+  ) {
     return <span className="password-dont-match">Passwords don‘t match</span>;
   }
   if (passNotify.isSecondFieldEditing && passNotify.isPasswordMatch) {
     return <span className="password-match">Passwords match</span>;
+  }
+  if (passNotify.isSecondFieldEmpty) {
+    return;
   }
 };
 
@@ -255,7 +269,6 @@ export const PasswordReset = () => {
       setPassNotify((prev) => ({
         ...prev,
         isSecondFieldEmpty: true,
-        isSecondFieldEditing: false,
       }));
     } else {
       setPassNotify((prev) => ({
@@ -399,12 +412,6 @@ export const PasswordReset = () => {
                 onFocus={() => {
                   setIsPassFocus(true);
                 }}
-                onBlur={() =>
-                  setPassNotify((prev) => ({
-                    ...prev,
-                    isFirstFieldEditing: false,
-                  }))
-                }
               />
               <PassNotificationOne passNotify={passNotify} />
               <PasswordValidator
@@ -425,12 +432,6 @@ export const PasswordReset = () => {
                     ? "not-valid"
                     : ""
                 }`}
-                onBlur={() =>
-                  setPassNotify((prev) => ({
-                    ...prev,
-                    isSecondFieldEditing: false,
-                  }))
-                }
               />
               <PassNotificationTwo passNotify={passNotify} />
             </div>
