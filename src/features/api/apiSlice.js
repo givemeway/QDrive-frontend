@@ -311,12 +311,11 @@ export const apiSlice = createApi({
         url: `/user/editName?first_name=${data.firstname}&last_name=${data.lastname}`,
         method: "PUT",
         credentials: "include",
-        // headers: { "X-CSRF-Token": data.CSRFToken },
       }),
     }),
     updatePassword: builder.mutation({
       query: (data) => ({
-        url: `/user/updatePassword?old_password=${data.old_password}&new_password=${data.new_password}`,
+        url: `/forgotPassword/profile/updatePassword?old_password=${data.old_password}&new_password=${data.new_password}`,
         credentials: "include",
         method: "PUT",
       }),
@@ -324,7 +323,7 @@ export const apiSlice = createApi({
     passReset: builder.mutation({
       query: (data) => ({
         url: `/forgotPassword/passwordReset?username=${data.username}`,
-        method: "GET",
+        method: "POST",
       }),
     }),
     forgotPass: builder.mutation({

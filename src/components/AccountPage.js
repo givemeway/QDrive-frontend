@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Tabs from "./SharedTab";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AccountGeneral } from "./AccountGeneral.js";
 import { AccountSecurity } from "./AccountSecurity.js";
 import "./AccountPage.css";
@@ -19,6 +19,7 @@ import {
   setLastName,
 } from "../features/avatar/avatarSlice";
 import { ChangePassword } from "./ChangePassword.js";
+import { setNotify } from "../features/notification/notifySlice.js";
 
 const Loading = () => {
   return (
@@ -54,11 +55,7 @@ const AccountPage = () => {
   };
 
   const [edit, setEdit] = useState({ type: undefined, isEdit: false });
-  const [notify, setNotify] = useState({
-    show: false,
-    msg: "",
-    severity: null,
-  });
+  const notify = useSelector((state) => state.notification);
 
   useEffect(() => {
     if (isSuccess && data) {
@@ -72,36 +69,61 @@ const AccountPage = () => {
       dispatch(setFullName(first_name + " " + last_name));
       dispatch(setInitial(initial));
       dispatch(setEmail(email));
-      setNotify({ show: true, severity: "success", msg: data?.msg });
+      dispatch(setNotify({ show: true, severity: "success", msg: data?.msg }));
     }
     if (error && error?.status === 404) {
-      setNotify({ show: true, severity: "warning", msg: error.data?.msg });
+      dispatch(
+        setNotify({ show: true, severity: "warning", msg: error.data?.msg })
+      );
     }
-    if (error && error?.originalStatus === 500) {
-      setNotify({ show: true, severity: "error", msg: "Something Went Wrong" });
+    if (
+      error &&
+      (error?.originalStatus === 500 ||
+        error?.originalStatus === 404 ||
+        error?.status === 500)
+    ) {
+      dispatch(
+        setNotify({
+          show: true,
+          severity: "error",
+          msg: "Something Went Wrong",
+        })
+      );
     }
   }, [isLoading, isSuccess, isError, data, dispatch, error]);
+
   useEffect(() => {
     if (updatePassword.data && updatePassword.isSuccess) {
-      setNotify({
-        show: true,
-        severity: "success",
-        msg: updatePassword.data?.msg,
-      });
+      dispatch(
+        setNotify({
+          show: true,
+          severity: "success",
+          msg: updatePassword.data?.msg,
+        })
+      );
     }
     if (updatePassword.error && updatePassword.error?.status === 404) {
-      setNotify({
-        show: true,
-        severity: "warning",
-        msg: updatePassword.error.data?.msg,
-      });
+      dispatch(
+        setNotify({
+          show: true,
+          severity: "warning",
+          msg: updatePassword.error.data?.msg,
+        })
+      );
     }
-    if (updatePassword.error && updatePassword.error?.originalStatus === 500) {
-      setNotify({
-        show: true,
-        severity: "error",
-        msg: "something went wrong",
-      });
+    if (
+      updatePassword.error &&
+      (updatePassword.error?.originalStatus === 500 ||
+        updatePassword.error?.originalStatus === 404 ||
+        updatePassword.error?.status === 500)
+    ) {
+      dispatch(
+        setNotify({
+          show: true,
+          severity: "error",
+          msg: "something went wrong",
+        })
+      );
     }
   }, [
     updatePassword.isLoading,
@@ -138,13 +160,7 @@ const AccountPage = () => {
           query={updatePasswordQuery}
         />
       )}
-      {notify.show && (
-        <SnackBar
-          msg={notify.msg}
-          severity={notify.severity}
-          setMessage={setNotify}
-        />
-      )}
+      {notify.show && <SnackBar msg={notify.msg} severity={notify.severity} />}
     </div>
   );
 };
