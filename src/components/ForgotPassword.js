@@ -36,7 +36,8 @@ export const ForgotPassword = () => {
   }, [location.search]);
 
   useEffect(() => {
-    if (error && error.originalStatus === 500) {
+    console.log(error, data);
+    if (error && (error?.originalStatus === 500 || error.status === 500)) {
       dispatch(
         setNotify({
           show: true,
