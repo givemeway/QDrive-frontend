@@ -14,13 +14,12 @@ import FolderIcon from "../icons/FolderIcon";
 import { svgIconStyle } from "../fileFormats/FileFormat";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router";
-import { useSetRecoilState } from "recoil";
-import { snackBarAtom } from "../../Recoil/Store/atoms";
 import { GreyButton } from "../Buttons/GreyButton";
 import { CustomBlueButton } from "../Buttons/BlueButton";
 import { useParams } from "react-router-dom";
 import { useCreateFolderMutation } from "../../features/api/apiSlice";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setNotify } from "../../features/notification/notifySlice";
 
 const mainContainerStyle = {
   position: "absolute",
@@ -34,7 +33,6 @@ const mainContainerStyle = {
   height: 250,
   bgcolor: "background.paper",
   border: "2px solid #737373",
-  //   boxShadow: 10,
   margin: 0,
   padding: 0,
   p: 4,
@@ -61,12 +59,11 @@ export default function CreateFolderModal({ open, setOpen }) {
   const params = useParams();
   const subpath = params["*"];
   const navigate = useNavigate();
-
-  const NotifyStatus = useSetRecoilState(snackBarAtom);
+  const dispatch = useDispatch();
 
   const [createFolderQuery, createFolderStatus] = useCreateFolderMutation();
   const { CSRFToken } = useSelector((state) => state.csrfToken);
-  const { isLoading, isSuccess, isError, error, data } = createFolderStatus;
+  const { isLoading, isSuccess, isError, error } = createFolderStatus;
 
   const handleChange = (e) => {
     setText(() => e.target.value);
@@ -85,36 +82,47 @@ export default function CreateFolderModal({ open, setOpen }) {
 
   useEffect(() => {
     if (isSuccess) {
-      NotifyStatus(() => ({
-        show: true,
-        msg: "Folder Created",
-        severity: "success",
-      }));
+      dispatch(
+        setNotify({
+          show: true,
+          msg: "Folder Created",
+          severity: "success",
+        })
+      );
       navigate(subpath + `/${text}`);
       setOpen(false);
     }
     if (isError && error?.status === 409) {
-      NotifyStatus(() => ({
-        show: true,
-        msg: `Folder ${text} exists!`,
-        severity: "warning",
-      }));
+      dispatch(
+        setNotify({
+          show: true,
+          msg: `Folder ${text} exists!`,
+          severity: "warning",
+        })
+      );
+
       setOpen(false);
     }
     if (isError && (error?.status === 401 || error?.status === 403)) {
-      NotifyStatus(() => ({
-        show: true,
-        msg: error?.data?.msg,
-        severity: "error",
-      }));
+      dispatch(
+        setNotify({
+          show: true,
+          msg: error?.data?.msg,
+          severity: "error",
+        })
+      );
+
       setOpen(false);
     }
     if (isError && error?.originalStatus === 500) {
-      NotifyStatus(() => ({
-        show: true,
-        msg: "Something Went wrong try again",
-        severity: "error",
-      }));
+      dispatch(
+        setNotify({
+          show: true,
+          msg: "Something Went wrong try again",
+          severity: "error",
+        })
+      );
+
       setOpen(false);
     }
   }, [isError, isSuccess, error, isLoading]);
@@ -148,7 +156,6 @@ export default function CreateFolderModal({ open, setOpen }) {
                   <FolderIcon
                     style={{
                       ...svgIconStyle,
-                      margin: 0,
                       backgroundColor: "transparent",
                       boxShadow: 0,
                       fontSize: 24,

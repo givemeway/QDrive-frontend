@@ -1,16 +1,18 @@
 import Header from "./HomePageHeader";
 import "./ForgotPassword.css";
 import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   useForgotPassMutation,
-  usePassResetMutation,
   useVerifyPassTokenMutation,
 } from "../features/api/apiSlice";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import SnackBar from "./Snackbar/SnackBar.js";
 import { CrossIcon } from "./icons/crossIcon.js";
 import { CorrectIcon } from "./icons/correctIcon.js";
+import { setNotify } from "../features/notification/notifySlice.js";
 
 const verifyPassLen = (pass) => {
   if (pass.length >= 8) return true;
@@ -182,15 +184,11 @@ const PasswordValidator = ({ isPassFocus, validator }) => {
 
 export const PasswordReset = () => {
   const [email, setEmail] = useState("");
-  const [notify, setNotify] = useState({
-    show: false,
-    msg: "",
-    severity: null,
-  });
-
+  const dispatch = useDispatch();
   const location = useLocation();
   const token = useRef(null);
   const [isPassFocus, setIsPassFocus] = useState(false);
+  const notify = useSelector((state) => state.notification);
   const [password, setPassword] = useState("");
   const [reTypePassword, setReTypePassword] = useState("");
   const [validator, setValidator] = useState({
@@ -329,16 +327,25 @@ export const PasswordReset = () => {
 
   useEffect(() => {
     if (error && error.originalStatus === 500) {
-      setNotify({ show: true, msg: "Something Went Wrong", severity: "error" });
+      dispatch(
+        setNotify({
+          show: true,
+          msg: "Something Went Wrong",
+          severity: "error",
+        })
+      );
     }
     if (error && error.status === 404) {
-      setNotify({ show: true, msg: error.data.msg, severity: "error" });
+      navigate(`/forgot?email=${email}`);
+      dispatch(
+        setNotify({ show: true, msg: error.data.msg, severity: "error" })
+      );
     }
     if (isSuccess && data) {
-      setNotify({ show: true, msg: data.msg, severity: "success" });
+      dispatch(setNotify({ show: true, msg: data.msg, severity: "success" }));
       navigate("/login");
     }
-  }, [isSuccess, isError, error, data, isLoading]);
+  }, [isSuccess, isError, error, data, isLoading, dispatch, navigate]);
 
   useEffect(() => {
     if (location.search.length > 0) {
@@ -356,18 +363,27 @@ export const PasswordReset = () => {
       verifyPassTokenStatus.error &&
       verifyPassTokenStatus.error.originalStatus === 500
     ) {
-      setNotify({ show: true, msg: "Something Went Wrong", severity: "error" });
+      dispatch(
+        setNotify({
+          show: true,
+          msg: "Something Went Wrong",
+          severity: "error",
+        })
+      );
     }
 
     if (
       verifyPassTokenStatus.error &&
       verifyPassTokenStatus.error.status === 404
     ) {
-      setNotify({
-        show: true,
-        msg: verifyPassTokenStatus.error?.data?.msg,
-        severity: "error",
-      });
+      navigate(`/forgot?email=${email}`);
+      dispatch(
+        setNotify({
+          show: true,
+          msg: verifyPassTokenStatus.error?.data?.msg,
+          severity: "error",
+        })
+      );
     }
     if (verifyPassTokenStatus.data && verifyPassTokenStatus.isSuccess) {
       setIsPassLinkValid(true);
@@ -379,6 +395,7 @@ export const PasswordReset = () => {
     verifyPassTokenStatus.isSuccess,
     verifyPassTokenStatus.isLoading,
     verifyPassTokenStatus.data,
+    dispatch,
   ]);
 
   console.log(passNotify);
@@ -462,13 +479,7 @@ export const PasswordReset = () => {
           </div>
         )}
       </div>
-      {notify.show && (
-        <SnackBar
-          msg={notify.msg}
-          severity={notify.severity}
-          setMessage={setNotify}
-        />
-      )}
+      {notify.show && <SnackBar msg={notify.msg} severity={notify.severity} />}
     </div>
   );
 };

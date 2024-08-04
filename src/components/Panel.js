@@ -43,7 +43,6 @@ const TabButton = ({ active, children, onClick }) => {
 
 const Panel = () => {
   const [openExplorer, setOpenExplorer] = useState(false);
-  const { open } = useSelector((state) => state.navigatePanel);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const params = useParams();

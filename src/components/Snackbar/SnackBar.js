@@ -1,16 +1,19 @@
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { setNotify } from "../../features/notification/notifySlice";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const MessageSnackBar = ({ msg, severity, setMessage, anchor }) => {
+const MessageSnackBar = ({ severity, msg, anchor }) => {
   const [open, setOpen] = useState(true);
+  const dispatch = useDispatch();
   const handleClose = () => {
     setOpen(false);
-    setMessage(() => ({ show: false, msg: "", severity: null }));
+    dispatch(setNotify({ show: false, msg: "", severity: "" }));
   };
   return (
     <Snackbar

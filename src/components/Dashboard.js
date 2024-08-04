@@ -10,8 +10,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import AccountPage from "./AccountPage.js";
 
-import { useRecoilState } from "recoil";
-import { snackBarAtom } from "../Recoil/Store/atoms.js";
 import { StatusNotification } from "./StatusNotification.js";
 import SpinnerGIF from "./icons/SpinnerGIF.js";
 import {
@@ -27,7 +25,7 @@ import "./Dashboard.css";
 const Dashboard = () => {
   const [searchValue, setSearchValue] = useState("");
   const [isSearch, setIsSearch] = useState(false);
-  const [notify, setNotify] = useRecoilState(snackBarAtom);
+  const notify = useSelector((state) => state.notification);
   const params = useParams();
   const subpath = params["*"];
   const [mode, setMode] = useState("");
@@ -87,18 +85,11 @@ const Dashboard = () => {
     }
   }, [subpath]);
 
-  console.log(subpath);
-
   useEffect(() => {
     if (isSuccess) {
       dispatch(setCSRFToken(data.CSRFToken));
     }
   }, [isSuccess, data]);
-
-  useEffect(() => {
-    console.log(containerRef.current?.getBoundingClientRect());
-    console.log(searchRef.current?.getBoundingClientRect());
-  }, []);
 
   return (
     <>
@@ -149,13 +140,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {notify.show && (
-        <SnackBar
-          msg={notify.msg}
-          severity={notify.severity}
-          setMessage={setNotify}
-        />
-      )}
+      {notify.show && <SnackBar msg={notify.msg} severity={notify.severity} />}
       <StatusNotification timeout={5000} />
     </>
   );

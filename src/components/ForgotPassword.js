@@ -5,15 +5,13 @@ import { useLocation } from "react-router-dom";
 import { usePassResetMutation } from "../features/api/apiSlice";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import SnackBar from "./Snackbar/SnackBar.js";
+import { useDispatch, useSelector } from "react-redux";
+import { setNotify } from "../features/notification/notifySlice.js";
 
 export const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [notify, setNotify] = useState({
-    show: false,
-    msg: "",
-    severity: null,
-  });
-
+  const dispatch = useDispatch();
+  const notify = useSelector((state) => state.notification);
   const location = useLocation();
   const [passResetQuery, passResetStatus] = usePassResetMutation();
   const { isLoading, isError, error, isSuccess, data } = passResetStatus;
@@ -39,15 +37,24 @@ export const ForgotPassword = () => {
 
   useEffect(() => {
     if (error && error.originalStatus === 500) {
-      setNotify({ show: true, msg: "Something Went Wrong", severity: "error" });
+      dispatch(
+        setNotify({
+          show: true,
+          msg: "Something Went Wrong",
+          severity: "error",
+        })
+      );
     }
     if (error && error.status === 404) {
-      setNotify({ show: true, msg: error.data.msg, severity: "error" });
+      dispatch(
+        setNotify({ show: true, msg: error.data.msg, severity: "error" })
+      );
     }
     if (isSuccess && data) {
-      setNotify({ show: true, msg: data.msg, severity: "success" });
+      dispatch(setNotify({ show: true, msg: data.msg, severity: "success" }));
     }
-  }, [isSuccess, isError, error, data, isLoading]);
+  }, [isSuccess, isError, error, data, isLoading, dispatch]);
+  console.log(notify);
   return (
     <div className="forgot">
       <Header />
@@ -82,13 +89,7 @@ export const ForgotPassword = () => {
           </button>
         </div>
       </div>
-      {notify.show && (
-        <SnackBar
-          msg={notify.msg}
-          severity={notify.severity}
-          setMessage={setNotify}
-        />
-      )}
+      {notify.show && <SnackBar msg={notify.msg} severity={notify.severity} />}
     </div>
   );
 };

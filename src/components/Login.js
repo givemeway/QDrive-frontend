@@ -14,6 +14,7 @@ import {
 import { setSession } from "../features/session/sessionSlice";
 import { HorizontalLineDividedByText } from "./HorizontalLine";
 import "./Login.css";
+import { setNotify } from "../features/notification/notifySlice";
 
 const validateLoginForm = (loginform) => {
   if (loginform.username.length > 0 && loginform.password.length > 0) {
@@ -26,14 +27,12 @@ const validateLoginForm = (loginform) => {
 
 const Login = () => {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
-  const [warning, setWarning] = useState(false);
-  const [error, setError] = useState(false);
-  const [success, setSuccess] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const CSRF = useGetCSRFTokenQuery();
   const [verifySessionQuery, verifySessionStatus] = useVerifySessionMutation();
   const session = useSelector((state) => state.session);
+  const notify = useSelector((state) => state.notification);
 
   const [loginQuery, loginStatus] = useLoginMutation();
 
@@ -45,9 +44,6 @@ const Login = () => {
     });
   };
   const handleClick = (e) => {
-    setWarning(false);
-    setError(false);
-    setSuccess(false);
     const { valid, encodedData } = validateLoginForm(loginForm);
     if (valid && CSRF.data?.CSRFToken) {
       loginQuery({ CSRFToken: CSRF.data?.CSRFToken, encodedData });
@@ -55,7 +51,6 @@ const Login = () => {
   };
 
   useEffect(() => {
-    console.log(CSRF);
     if (
       CSRF.data?.CSRFToken &&
       CSRF.isSuccess &&
@@ -65,21 +60,55 @@ const Login = () => {
     ) {
       verifySessionQuery({ CSRFToken: CSRF.data?.CSRFToken });
     }
-  }, [CSRF?.data, CSRF.isSuccess]);
+  }, [
+    CSRF.data,
+    CSRF.isSuccess,
+    session.isLoggedIn,
+    session.isLoggedOut,
+    verifySessionQuery,
+  ]);
 
   useEffect(() => {
     if (data?.success) {
       dispatch(setSession({ isLoggedIn: true, isLoggedOut: false }));
+      dispatch(
+        setNotify({
+          show: true,
+          msg: "Logged in!",
+          severity: "success",
+        })
+      );
       navigate("/dashboard/home");
     } else if (
       loginStatus?.error?.status === 401 ||
       loginStatus?.error?.status === 403
     ) {
-      setWarning(true);
+      dispatch(
+        setNotify({
+          show: true,
+          msg: "Username or password incorrect!",
+          severity: "warning",
+        })
+      );
     } else if (loginStatus?.error?.originalStatus === 500) {
-      setError(true);
+      dispatch(
+        setNotify({
+          show: true,
+          msg: "Something Went wrong. Try again!",
+          severity: "error",
+        })
+      );
     }
-  }, [isLoading, isError, isSuccess, data]);
+  }, [
+    isLoading,
+    isError,
+    isSuccess,
+    data,
+    loginStatus?.error?.status,
+    loginStatus?.error?.originalStatus,
+    dispatch,
+    navigate,
+  ]);
 
   useEffect(() => {
     if (verifySessionStatus.isSuccess && verifySessionStatus.data?.success) {
@@ -170,26 +199,8 @@ const Login = () => {
                 style={{ width: "100%", height: 50 }}
               />
             )}
-            {warning && (
-              <MessageSnackBar
-                severity={"warning"}
-                msg={"Username or password incorrect!"}
-                setMessage={setWarning}
-              />
-            )}
-            {success && (
-              <MessageSnackBar
-                severity={"success"}
-                msg={"Login Successful!"}
-                setMessage={setSuccess}
-              />
-            )}
-            {error && (
-              <MessageSnackBar
-                severity={"error"}
-                msg={"Something Went wrong. Try again!"}
-                setMessage={setError}
-              />
+            {notify.show && (
+              <MessageSnackBar severity={notify.severity} msg={notify.msg} />
             )}
 
             <HorizontalLineDividedByText text={"Or"} />
