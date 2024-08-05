@@ -16,6 +16,9 @@ import { Header } from "./Header.jsx";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import "./Login.css";
+import "./PasswordValidator.css";
+import { PasswordValidator } from "./PasswordValidator.js";
 
 const label =
   "I agree to the terms of the QDrive service and acknowledge that I can receive emails on product updates from QDrive.";
@@ -75,13 +78,10 @@ const TextField = ({
         onBlur={onBlur}
         type={type}
         name={name}
-        className={`w-full h-[40px] rounded-none border 
-                    ${error ? "border-[red]" : "border-[#C9C5BD]"}
-                    focus:border-black hover:border-black 
-                    outline-[#428BFF] outline-offset-2`}
+        className={`password-input ${error ? "error" : ""}`}
       />
       {error && (
-        <span className="text-left text-[red] font-thin font-sans text-xs w-full h-[20px]">
+        <span className="text-left text-[#b50032] font-thin font-sans text-[10px] w-full h-[20px]">
           {errorText}
         </span>
       )}
@@ -518,7 +518,7 @@ export default function Signup() {
       {CSRFToken.isSuccess && CSRFToken.data && (
         <div className="flex justify-center items-center grow">
           <form onSubmit={handleSubmit}>
-            <div className="w-full sm:w-[400px] h-[406px] flex flex-col p-2 shadow-md">
+            <div className="w-full sm:w-[400px] h-auto flex flex-col p-2 shadow-md custom-shadow">
               <div className="w-full h-[50px] flex justify-center items-center">
                 <span className="text-center font-sans font-semibold text-md text-[#716B61]">
                   Join QDrive Today!
@@ -569,7 +569,7 @@ export default function Signup() {
                   errorText={formInput.username.helperText}
                 />
               </div>
-              <div className="flex  justify-start items-center gap-2">
+              <div className="flex justify-start items-center gap-2">
                 <TextField
                   label={"Phone"}
                   value={formInput.phone.value}
@@ -580,16 +580,12 @@ export default function Signup() {
                   error={formInput.phone.error}
                   errorText={formInput.phone.helperText}
                 />
-                <TextField
-                  label={"Password"}
-                  value={formInput.password.value}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  type={"password"}
-                  name={"password"}
-                  error={formInput.password.error}
-                  errorText={formInput.password.helperText}
-                />
+              </div>
+              <div className="w-full flex flex-col justify-start items-center">
+                <span className="text-[#716B61] text-sm w-full text-left font-thin h-[20px]">
+                  Password
+                </span>
+                <PasswordValidator setFormInput={setFormInput} />
               </div>
               <div className="col-span-2 flex justify-start items-center h-[75px] gap-1">
                 <input

@@ -410,7 +410,6 @@ export const PasswordReset = () => {
             <p className="forgot-p">
               Enter a new password for <strong>{email}</strong>
             </p>
-            <span>{}</span>
             <div className="forgot-input-container">
               <span className="forgot-label">New Password</span>
               <input
