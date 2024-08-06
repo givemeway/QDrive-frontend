@@ -3,8 +3,7 @@ import "./ForgotPassword.css";
 import { CorrectIcon } from "./icons/correctIcon.js";
 import { CrossIcon } from "./icons/crossIcon.js";
 import { useState } from "react";
-import { EyeIcon } from "./icons/Eye.js";
-import { EyeCrossIcon } from "./icons/EyeCross.js";
+import { PasswordFieldWithMask } from "./PasswordFieldWithMask.js";
 
 const verifyPassLen = (pass) => {
   if (pass.length >= 8) return true;
@@ -103,8 +102,6 @@ export const PasswordValidator = ({ setFormInput }) => {
     isPasswordValid: undefined,
   });
 
-  const [showPass, setShowPass] = useState(false);
-
   const handleChange = (e) => {
     const pass = e.currentTarget.value;
     setPassword(pass);
@@ -148,42 +145,14 @@ export const PasswordValidator = ({ setFormInput }) => {
     }));
   };
 
-  const showPassword = () => {
-    setShowPass((prev) => !prev);
-  };
   return (
     <div className="password-container">
-      <div className="w-full flex justify-start items-center flex-row relative">
-        <input
-          type={`${!showPass ? "password" : "text"}`}
-          onChange={handleChange}
-          value={password}
-          className="password-input"
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          name="password"
-        />
-        {!showPass && (
-          <EyeIcon
-            style={{
-              style: {
-                position: "absolute",
-                right: "10px",
-                cursor: "pointer",
-              },
-            }}
-            onClick={showPassword}
-          />
-        )}
-        {showPass && (
-          <EyeCrossIcon
-            style={{
-              style: { position: "absolute", right: "10px", cursor: "pointer" },
-            }}
-            onClick={showPassword}
-          />
-        )}
-      </div>
+      <PasswordFieldWithMask
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onFocus={handleFocus}
+        value={password}
+      />
       <PassErrorNotification passNotify={passNotify} />
       <PassValidNotification isPassFocus={isFocus} validator={validator} />
     </div>

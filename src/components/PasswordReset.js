@@ -13,6 +13,7 @@ import SnackBar from "./Snackbar/SnackBar.js";
 import { CrossIcon } from "./icons/crossIcon.js";
 import { CorrectIcon } from "./icons/correctIcon.js";
 import { setNotify } from "../features/notification/notifySlice.js";
+import { PasswordFieldWithMask } from "./PasswordFieldWithMask.js";
 
 const verifyPassLen = (pass) => {
   if (pass.length >= 8) return true;
@@ -308,46 +309,40 @@ export const PasswordField = ({
   }, [validator]);
 
   return (
-    <>
-      <div className="forgot-input-container">
-        <span className="forgot-label">New Password</span>
-        <input
-          type="password"
-          name="password"
-          value={password}
-          onChange={handlePassChange}
-          className={`forgot-input ${
+    <div className="forgot-input-container">
+      <span className="forgot-label">New Password</span>
+      <PasswordFieldWithMask
+        value={password}
+        onChange={handlePassChange}
+        onFocus={() => setIsPassFocus(true)}
+        style={{
+          style: { marginBottom: "0.5rem" },
+          class: `forgot-input ${
             passNotify.isFormSubmitted && !passNotify.isPasswordValid
               ? "not-valid"
               : ""
-          }`}
-          style={{
-            marginBottom: "0.5rem",
-          }}
-          onFocus={() => {
-            setIsPassFocus(true);
-          }}
-        />
-        <PassNotificationOne passNotify={passNotify} />
-        <PasswordValidator isPassFocus={isPassFocus} validator={validator} />
+          }`,
+        }}
+      />
+      <PassNotificationOne passNotify={passNotify} />
+      <PasswordValidator isPassFocus={isPassFocus} validator={validator} />
 
-        <span className="forgot-label">Retype Password</span>
-        <input
-          type="password"
-          name="confirmPassword"
-          value={reTypePassword}
-          onChange={handleReTypePassChange}
-          className={`forgot-input ${
-            !passNotify.isPasswordMatch &&
-            !passNotify.isSecondFieldEmpty &&
-            passNotify.isFormSubmitted
+      <span className="forgot-label">Retype Password</span>
+      <PasswordFieldWithMask
+        value={reTypePassword}
+        name={"confirmPassword"}
+        onChange={handleReTypePassChange}
+        style={{
+          class: `forgot-input ${
+            passNotify.isFormSubmitted &&
+            (!passNotify.isPasswordMatch || passNotify.isSecondFieldEmpty)
               ? "not-valid"
               : ""
-          }`}
-        />
-        <PassNotificationTwo passNotify={passNotify} />
-      </div>
-    </>
+          }`,
+        }}
+      />
+      <PassNotificationTwo passNotify={passNotify} />
+    </div>
   );
 };
 
@@ -413,7 +408,6 @@ export const PasswordReset = () => {
       token.current = param.get("token");
     }
     if (token.current) {
-      console.log(token.current, ": token");
       verifyPassToken({ token: token.current });
     }
   }, []);
@@ -490,59 +484,6 @@ export const PasswordReset = () => {
               )}
               {!isLoading && <>Submit</>}
             </button>
-            {/* <div className="forgot-input-container">
-              <span className="forgot-label">New Password</span>
-              <input
-                type="password"
-                name="password"
-                value={password}
-                onChange={handlePassChange}
-                className={`forgot-input ${
-                  passNotify.isFormSubmitted && !passNotify.isPasswordValid
-                    ? "not-valid"
-                    : ""
-                }`}
-                style={{
-                  marginBottom: "0.5rem",
-                }}
-                onFocus={() => {
-                  setIsPassFocus(true);
-                }}
-              />
-              <PassNotificationOne passNotify={passNotify} />
-              <PasswordValidator
-                isPassFocus={isPassFocus}
-                validator={validator}
-              />
-
-              <span className="forgot-label">Retype Password</span>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={reTypePassword}
-                onChange={handleReTypePassChange}
-                className={`forgot-input ${
-                  !passNotify.isPasswordMatch &&
-                  !passNotify.isSecondFieldEmpty &&
-                  passNotify.isFormSubmitted
-                    ? "not-valid"
-                    : ""
-                }`}
-              />
-              <PassNotificationTwo passNotify={passNotify} />
-            </div>
-            <button
-              className={`forgot-btn ${isLoading ? "loading" : ""}`}
-              onClick={submitPass}
-              disabled={isLoading ? true : false}
-            >
-              {isLoading && (
-                <div className="gif-container">
-                  <SpinnerGIF style={{ width: 30, height: 30 }} />
-                </div>
-              )}
-              {!isLoading && <>Submit</>}
-            </button> */}
           </div>
         )}
         {verifyPassTokenStatus.isError && (

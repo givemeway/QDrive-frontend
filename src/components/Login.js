@@ -15,6 +15,7 @@ import { setSession } from "../features/session/sessionSlice";
 import { HorizontalLineDividedByText } from "./HorizontalLine";
 import "./Login.css";
 import { setNotify } from "../features/notification/notifySlice";
+import { PasswordFieldWithMask } from "./PasswordFieldWithMask";
 
 const validateLoginForm = (loginform) => {
   if (loginform.username.length > 0 && loginform.password.length > 0) {
@@ -163,14 +164,10 @@ const Login = () => {
               <label className="text-[#716B61] text-sm w-full text-left  pb-1">
                 Password
               </label>
-              <input
-                placeholder=" password"
+
+              <PasswordFieldWithMask
                 value={loginForm.password}
                 onChange={handleChange}
-                type="password"
-                name="password"
-                className="w-full h-[50px]  border border-[#C9C5BD] focus:border-black
-                 hover:border-black outline-[#428BFF] outline-4 outline-offset-2"
               />
             </div>
             <div className="w-full h-[20px] flex justify-between items-center">

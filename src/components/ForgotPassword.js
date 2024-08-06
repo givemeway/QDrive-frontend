@@ -55,7 +55,6 @@ export const ForgotPassword = () => {
       dispatch(setNotify({ show: true, msg: data.msg, severity: "success" }));
     }
   }, [isSuccess, isError, error, data, isLoading, dispatch]);
-  console.log(notify);
   return (
     <div className="forgot">
       <Header />
