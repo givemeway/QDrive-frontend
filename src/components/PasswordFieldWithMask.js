@@ -10,6 +10,7 @@ export const PasswordFieldWithMask = ({
   value,
   style,
   name,
+  placeholder,
 }) => {
   const [showPass, setShowPass] = useState(false);
   const showPassword = () => {
@@ -27,6 +28,7 @@ export const PasswordFieldWithMask = ({
         onBlur={onBlur}
         name={name ? name : "password"}
         {...style}
+        placeholder={placeholder ? placeholder : ""}
       />
       {!showPass && (
         <EyeIcon

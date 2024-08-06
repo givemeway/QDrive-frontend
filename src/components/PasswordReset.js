@@ -183,13 +183,14 @@ const PasswordValidator = ({ isPassFocus, validator }) => {
   );
 };
 
-export const PasswordField = ({
+export const PasswordsValidation = ({
   isFormSubmitted,
   setIsFormSubmitted,
   setIsPassValid,
   setPassword,
   setIsPassMatch,
   password,
+  style,
 }) => {
   const [reTypePassword, setReTypePassword] = useState("");
   const [isPassFocus, setIsPassFocus] = useState(false);
@@ -323,6 +324,7 @@ export const PasswordField = ({
               : ""
           }`,
         }}
+        {...style}
       />
       <PassNotificationOne passNotify={passNotify} />
       <PasswordValidator isPassFocus={isPassFocus} validator={validator} />
@@ -340,6 +342,7 @@ export const PasswordField = ({
               : ""
           }`,
         }}
+        {...style}
       />
       <PassNotificationTwo passNotify={passNotify} />
     </div>
@@ -464,7 +467,7 @@ export const PasswordReset = () => {
             <p className="forgot-p">
               Enter a new password for <strong>{email}</strong>
             </p>
-            <PasswordField
+            <PasswordsValidation
               password={password}
               setPassword={setPassword}
               isFormSubmitted={isFormSubmitted}
