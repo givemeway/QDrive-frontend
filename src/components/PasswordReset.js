@@ -182,23 +182,16 @@ const PasswordValidator = ({ isPassFocus, validator }) => {
   );
 };
 
-export const PasswordReset = () => {
-  const [email, setEmail] = useState("");
-  const dispatch = useDispatch();
-  const location = useLocation();
-  const token = useRef(null);
-  const [isPassFocus, setIsPassFocus] = useState(false);
-  const notify = useSelector((state) => state.notification);
-  const [password, setPassword] = useState("");
+export const PasswordField = ({
+  isFormSubmitted,
+  setIsFormSubmitted,
+  setIsPassValid,
+  setPassword,
+  setIsPassMatch,
+  password,
+}) => {
   const [reTypePassword, setReTypePassword] = useState("");
-  const [validator, setValidator] = useState({
-    isLenValid: false,
-    isAlpha: false,
-    isSpecial: false,
-    isNumber: false,
-  });
-
-  const [isPassLinkValid, setIsPassLinkValid] = useState(false);
+  const [isPassFocus, setIsPassFocus] = useState(false);
   const [passNotify, setPassNotify] = useState({
     isFormSubmitted: false,
     isFirstFieldEmpty: true,
@@ -208,20 +201,21 @@ export const PasswordReset = () => {
     isPasswordValid: undefined,
     isPasswordMatch: undefined,
   });
-
-  const [passResetQuery, passResetStatus] = useForgotPassMutation();
-  const [verifyPassToken, verifyPassTokenStatus] = useVerifyPassTokenMutation();
-  const { isLoading, isError, error, isSuccess, data } = passResetStatus;
-  const navigate = useNavigate();
+  const [validator, setValidator] = useState({
+    isLenValid: false,
+    isAlpha: false,
+    isSpecial: false,
+    isNumber: false,
+  });
 
   const handlePassChange = (e) => {
     const pass = e.target.value;
     setPassword(e.target.value);
+    setIsFormSubmitted(false);
     setPassNotify((prev) => ({
       ...prev,
       isFirstFieldEmpty: false,
       isFirstFieldEditing: true,
-      isFormSubmitted: false,
     }));
 
     if (pass.length === 0) {
@@ -242,8 +236,10 @@ export const PasswordReset = () => {
         isSecondFieldEmpty: false,
         isPasswordMatch: true,
       }));
+      setIsPassMatch(true);
     } else {
       setPassNotify((prev) => ({ ...prev, isPasswordMatch: false }));
+      setIsPassMatch(false);
     }
 
     setValidator({
@@ -256,11 +252,11 @@ export const PasswordReset = () => {
   const handleReTypePassChange = (e) => {
     const pass = e.target.value;
     setReTypePassword(e.target.value);
+    setIsFormSubmitted(false);
     setPassNotify((prev) => ({
       ...prev,
       isSecondFieldEmpty: false,
       isSecondFieldEditing: true,
-      isFormSubmitted: false,
     }));
 
     if (pass.length === 0) {
@@ -281,19 +277,100 @@ export const PasswordReset = () => {
         isFirstFieldEmpty: false,
         isSecondFieldEmpty: false,
       }));
+      setIsPassMatch(true);
     } else {
       setPassNotify((prev) => ({ ...prev, isPasswordMatch: false }));
+      setIsPassMatch(false);
     }
   };
-  const submitPass = () => {
-    setPassNotify((prev) => ({
-      ...prev,
-      isFormSubmitted: true,
-      isFirstFieldEditing: false,
-      isSecondFieldEditing: false,
-    }));
 
-    if (passNotify.isPasswordMatch && passNotify.isPasswordValid) {
+  useEffect(() => {
+    setPassNotify((prev) => ({ ...prev, isFormSubmitted: isFormSubmitted }));
+  }, [isFormSubmitted]);
+
+  useEffect(() => {
+    if (
+      validator.isAlpha &&
+      validator.isLenValid &&
+      validator.isNumber &&
+      validator.isSpecial
+    ) {
+      setIsPassValid(true);
+      setPassNotify((prev) => ({
+        ...prev,
+        isFirstFieldEmpty: false,
+        isPasswordValid: true,
+      }));
+    } else {
+      setPassNotify((prev) => ({ ...prev, isPasswordValid: false }));
+      setIsPassValid(false);
+    }
+  }, [validator]);
+
+  return (
+    <>
+      <div className="forgot-input-container">
+        <span className="forgot-label">New Password</span>
+        <input
+          type="password"
+          name="password"
+          value={password}
+          onChange={handlePassChange}
+          className={`forgot-input ${
+            passNotify.isFormSubmitted && !passNotify.isPasswordValid
+              ? "not-valid"
+              : ""
+          }`}
+          style={{
+            marginBottom: "0.5rem",
+          }}
+          onFocus={() => {
+            setIsPassFocus(true);
+          }}
+        />
+        <PassNotificationOne passNotify={passNotify} />
+        <PasswordValidator isPassFocus={isPassFocus} validator={validator} />
+
+        <span className="forgot-label">Retype Password</span>
+        <input
+          type="password"
+          name="confirmPassword"
+          value={reTypePassword}
+          onChange={handleReTypePassChange}
+          className={`forgot-input ${
+            !passNotify.isPasswordMatch &&
+            !passNotify.isSecondFieldEmpty &&
+            passNotify.isFormSubmitted
+              ? "not-valid"
+              : ""
+          }`}
+        />
+        <PassNotificationTwo passNotify={passNotify} />
+      </div>
+    </>
+  );
+};
+
+export const PasswordReset = () => {
+  const [email, setEmail] = useState("");
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const token = useRef(null);
+  const notify = useSelector((state) => state.notification);
+  const [isPassLinkValid, setIsPassLinkValid] = useState(false);
+  const [isPassValid, setIsPassValid] = useState(false);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [isPassMatch, setIsPassMatch] = useState(false);
+  const [password, setPassword] = useState("");
+
+  const [passResetQuery, passResetStatus] = useForgotPassMutation();
+  const [verifyPassToken, verifyPassTokenStatus] = useVerifyPassTokenMutation();
+  const { isLoading, isError, error, isSuccess, data } = passResetStatus;
+  const navigate = useNavigate();
+
+  const submitPass = () => {
+    setIsFormSubmitted(true);
+    if (isPassValid && isPassMatch) {
       passResetQuery({ token: token.current, password });
     }
   };
@@ -307,23 +384,6 @@ export const PasswordReset = () => {
       }
     }
   }, [location.search]);
-
-  useEffect(() => {
-    if (
-      validator.isAlpha &&
-      validator.isLenValid &&
-      validator.isNumber &&
-      validator.isSpecial
-    ) {
-      setPassNotify((prev) => ({
-        ...prev,
-        isFirstFieldEmpty: false,
-        isPasswordValid: true,
-      }));
-    } else {
-      setPassNotify((prev) => ({ ...prev, isPasswordValid: false }));
-    }
-  }, [validator]);
 
   useEffect(() => {
     if (error && error.originalStatus === 500) {
@@ -345,7 +405,7 @@ export const PasswordReset = () => {
       dispatch(setNotify({ show: true, msg: data.msg, severity: "success" }));
       navigate("/login");
     }
-  }, [isSuccess, isError, error, data, isLoading, dispatch, navigate]);
+  }, [isSuccess, isError, error, data, isLoading, dispatch, navigate, email]);
 
   useEffect(() => {
     if (location.search.length > 0) {
@@ -396,9 +456,9 @@ export const PasswordReset = () => {
     verifyPassTokenStatus.isLoading,
     verifyPassTokenStatus.data,
     dispatch,
+    navigate,
+    email,
   ]);
-
-  console.log(passNotify);
 
   return (
     <div className="forgot">
@@ -410,7 +470,27 @@ export const PasswordReset = () => {
             <p className="forgot-p">
               Enter a new password for <strong>{email}</strong>
             </p>
-            <div className="forgot-input-container">
+            <PasswordField
+              password={password}
+              setPassword={setPassword}
+              isFormSubmitted={isFormSubmitted}
+              setIsFormSubmitted={setIsFormSubmitted}
+              setIsPassValid={setIsPassValid}
+              setIsPassMatch={setIsPassMatch}
+            />
+            <button
+              className={`forgot-btn ${isLoading ? "loading" : ""}`}
+              onClick={submitPass}
+              disabled={isLoading ? true : false}
+            >
+              {isLoading && (
+                <div className="gif-container">
+                  <SpinnerGIF style={{ width: 30, height: 30 }} />
+                </div>
+              )}
+              {!isLoading && <>Submit</>}
+            </button>
+            {/* <div className="forgot-input-container">
               <span className="forgot-label">New Password</span>
               <input
                 type="password"
@@ -462,7 +542,7 @@ export const PasswordReset = () => {
                 </div>
               )}
               {!isLoading && <>Submit</>}
-            </button>
+            </button> */}
           </div>
         )}
         {verifyPassTokenStatus.isError && (
