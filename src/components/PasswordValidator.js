@@ -152,6 +152,7 @@ export const PasswordValidator = ({ setFormInput }) => {
         onBlur={handleBlur}
         onFocus={handleFocus}
         value={password}
+        className={`${!passNotify.isPasswordValid ? "error" : " "}`}
       />
       <PassErrorNotification passNotify={passNotify} />
       <PassValidNotification isPassFocus={isFocus} validator={validator} />

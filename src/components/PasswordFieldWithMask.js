@@ -11,6 +11,7 @@ export const PasswordFieldWithMask = ({
   style,
   name,
   placeholder,
+  className,
 }) => {
   const [showPass, setShowPass] = useState(false);
   const showPassword = () => {
@@ -23,11 +24,11 @@ export const PasswordFieldWithMask = ({
         type={`${!showPass ? "password" : "text"}`}
         onChange={onChange}
         value={value}
-        className="password-input"
+        className={`password-input ${className ? className : ""}`}
         onFocus={onFocus}
         onBlur={onBlur}
         name={name ? name : "password"}
-        {...style}
+        style={{ ...style }}
         placeholder={placeholder ? placeholder : ""}
       />
       {!showPass && (

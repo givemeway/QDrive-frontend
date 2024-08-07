@@ -191,6 +191,7 @@ export const PasswordsValidation = ({
   setIsPassMatch,
   password,
   style,
+  className,
 }) => {
   const [reTypePassword, setReTypePassword] = useState("");
   const [isPassFocus, setIsPassFocus] = useState(false);
@@ -316,15 +317,12 @@ export const PasswordsValidation = ({
         value={password}
         onChange={handlePassChange}
         onFocus={() => setIsPassFocus(true)}
-        style={{
-          style: { marginBottom: "0.5rem" },
-          class: `forgot-input ${
-            passNotify.isFormSubmitted && !passNotify.isPasswordValid
-              ? "not-valid"
-              : ""
-          }`,
-        }}
-        {...style}
+        className={`${
+          passNotify.isFormSubmitted && !passNotify.isPasswordValid
+            ? "not-valid"
+            : ""
+        } ${className ? className : ""}`}
+        style={{ ...style }}
       />
       <PassNotificationOne passNotify={passNotify} />
       <PasswordValidator isPassFocus={isPassFocus} validator={validator} />
@@ -334,15 +332,13 @@ export const PasswordsValidation = ({
         value={reTypePassword}
         name={"confirmPassword"}
         onChange={handleReTypePassChange}
-        style={{
-          class: `forgot-input ${
-            passNotify.isFormSubmitted &&
-            (!passNotify.isPasswordMatch || passNotify.isSecondFieldEmpty)
-              ? "not-valid"
-              : ""
-          }`,
-        }}
-        {...style}
+        className={`${
+          passNotify.isFormSubmitted &&
+          (!passNotify.isPasswordMatch || passNotify.isSecondFieldEmpty)
+            ? "not-valid"
+            : ""
+        } ${className ? className : ""}`}
+        style={{ ...style }}
       />
       <PassNotificationTwo passNotify={passNotify} />
     </div>

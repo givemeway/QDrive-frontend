@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import useOutSideClick from "./hooks/useOutsideClick";
 import CloseIcon from "@mui/icons-material/Close";
 import { PasswordFieldWithMask } from "./PasswordFieldWithMask";
@@ -48,7 +48,7 @@ export const ChangePassword = ({ onClose, query }) => {
           value={password.oldPassword}
           onChange={handleChange}
           name={"oldPassword"}
-          style={{ class: "inputbox" }}
+          style={{ borderRadius: "0.75rem" }}
         />
 
         <PasswordsValidation
@@ -58,9 +58,7 @@ export const ChangePassword = ({ onClose, query }) => {
           setIsFormSubmitted={setIsFormSubmitted}
           setIsPassValid={setIsPassValid}
           setIsPassMatch={setIsPassMatch}
-          style={{
-            style: { class: "inputbox", style: { marginTop: "0.5rem" } },
-          }}
+          style={{ borderRadius: "0.75rem" }}
         />
         <div className="button-container">
           <button className="button-cancel" onClick={onClose}>
