@@ -1,4 +1,4 @@
-export const CrossIcon = ({ style }) => {
+export const CrossIcon = ({ style, className }) => {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -7,6 +7,7 @@ export const CrossIcon = ({ style }) => {
       height="24"
       role="presentation"
       focusable="false"
+      className={`${className ? className : ""}`}
       {...style}
     >
       <path

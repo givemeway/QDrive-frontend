@@ -114,7 +114,7 @@ const Dashboard = () => {
                 <AccountPage />
               </div>
             )}
-            {(mode === "BROWSE" || mode === "SEARCH") && (
+            {mode === "BROWSE" && (
               <div className="w-full h-[50px]">
                 <Header search={isSearch} />
               </div>

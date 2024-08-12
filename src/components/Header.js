@@ -19,30 +19,7 @@ const Header = ({ search }) => {
   }, [search]);
   return (
     <div className="h-[50px] w-full flex flex-row">
-      {showBreadCrumb ? (
-        <BreadCrumb
-          queue={queue}
-          layout={"dashboard"}
-          link={"/dashboard/home"}
-        />
-      ) : (
-        <div className="flex flex-row justify-start items-center">
-          <IconButton
-            aria-label="delete"
-            sx={{
-              border: "1px solid primary",
-              borderRadius: "0px",
-              marginLeft: 1.5,
-              padding: 0,
-            }}
-            onClick={() => {
-              navigate("/dashboard/home");
-            }}
-          >
-            <KeyboardBackspaceIcon color="light" fontSize="large" />
-          </IconButton>
-        </div>
-      )}
+      <BreadCrumb queue={queue} layout={"dashboard"} link={"/dashboard/home"} />
     </div>
   );
 };

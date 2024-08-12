@@ -40,12 +40,15 @@
   padding: 4px;
   padding-left: 40px;
   border: 1px solid var(--border-grey);
+  border-radius: 0.75rem;
   color: var(--color-grey);
   outline: none;
   flex-grow: 1;
   height: 100%;
   width: 100%;
+  color: var(--font-color-primary);
 }
+
 .search-input:focus {
   box-shadow: 0px 1px 4px 0px rgba(99, 114, 130, 0.5);
   border: none;
@@ -53,10 +56,24 @@
 
 .search-icon {
   position: absolute;
-  color: var(--color-grey);
+  color: var(--font-color-primary);
   left: 15px;
   z-index: 2;
   cursor: pointer;
+}
+
+.search-close-icon {
+  position: absolute;
+  color: var(--color-grey);
+  right: 15px;
+  z-index: 2;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+}
+.search-close-icon:hover {
+  background: var(--color-brown);
+  border-radius: 4px;
 }
 
 @media screen and (max-width: 767px) {

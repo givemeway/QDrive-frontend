@@ -5,16 +5,29 @@ import { SearchIcon } from "./icons/SearchIcon";
 import AvatarMenu from "./AvatarMenu";
 import { useDispatch } from "react-redux";
 import { setPanel } from "../features/navigation/navigationPanelSlice";
+import { CloseIconSmall as CloseIcon } from "./icons/CloseIconSmall";
 import "./SearchFilesFolders.css";
 
 export default function Search({ searchValue }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState(searchValue);
+  const [isSearchFocus, setIsSearchFocus] = useState(false);
   const [context, setContext] = useState(false);
   const dispatch = useDispatch();
   const handleContext = (e) => {
     e.stopPropagation();
     setContext((prev) => !prev);
+  };
+
+  const handleSearchFocus = () => {
+    setIsSearchFocus(true);
+    navigate(`/dashboard/search`);
+  };
+
+  const handleSearchClose = () => {
+    setIsSearchFocus(false);
+    setQuery("");
+    navigate(`/dashboard/home`);
   };
 
   const handleChange = (e) => {
@@ -45,13 +58,18 @@ export default function Search({ searchValue }) {
           className="search-icon"
           onClick={() => navigate(`/dashboard/search/${query}`)}
         />
-
+        {isSearchFocus && (
+          <CloseIcon
+            className="search-close-icon"
+            onClick={handleSearchClose}
+          />
+        )}
         <input
           placeholder=" Search"
           value={query}
           onChange={handleChange}
           className="search-input"
-          onFocus={() => navigate(`/dashboard/search`)}
+          onFocus={handleSearchFocus}
         />
       </div>
       <div className="avatar-container">
