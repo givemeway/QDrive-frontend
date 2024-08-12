@@ -141,9 +141,11 @@ export default React.memo(function MainPanel({ mode }) {
           end: pageSize,
         });
       } else if (path[0] === "search") {
-        searchQuery({
-          param: path[1],
-        });
+        if (path[1]) {
+          searchQuery({
+            param: path[1],
+          });
+        }
       } else if (path[0] === "deleted") {
         getTrashQuery({ CSRFToken });
       }

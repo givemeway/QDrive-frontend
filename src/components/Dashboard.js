@@ -94,16 +94,13 @@ const Dashboard = () => {
   return (
     <>
       {session.isLoggedIn && (
-        <div
-          className="w-screen h-screen flex flex-row gap-0"
-          ref={containerRef}
-        >
+        <div className="dashboard-container" ref={containerRef}>
           <div className="panel-container">
             <NavigatePanel />
           </div>
 
-          <div className="h-screen w-full md:grow flex flex-col pl-4 pr-4">
-            <div className="w-full h-[60px] pt-4 mb-2" ref={searchRef}>
+          <div className="dashboard-body-container">
+            <div className="dashboard-search-container" ref={searchRef}>
               <Search searchValue={searchValue} />
             </div>
 
@@ -131,6 +128,7 @@ const Dashboard = () => {
               (mode === "BROWSE" ||
                 mode === "PHOTOS" ||
                 mode === "SHARE" ||
+                mode === "SEARCH" ||
                 mode === "DELETED") && <MainPanel mode={mode} />}
             {isError && <div className="w-full">Something Went Wrong</div>}
           </div>

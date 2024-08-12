@@ -206,7 +206,7 @@ const VideoBody = () => {
 const HomePage = () => {
   return (
     <>
-      <div className="w-screen h-screen flex flex-col justify-start items-center">
+      <div className="w-screen h-screen flex flex-col justify-start items-center absolute">
         <Header />
         <div className="flex flex-col justify-start items-center bg-black w-full h-full pl-4 pr-4 overflow-auto">
           <MainBody />

@@ -13,6 +13,30 @@
   transition: transform 300ms ease-in-out;
 }
 
+.dashboard-container {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.dashboard-body-container {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.dashboard-search-container {
+  width: 100%;
+  height: 60px;
+  padding-top: 16px;
+  margin-bottom: 8px;
+}
+
 .panel-container {
   width: 240px;
   height: 100vh;
@@ -27,6 +51,9 @@
 @media screen and (max-width: 767px) {
   .panel-container {
     display: none;
+  }
+  .dashboard-body-container {
+    flex-grow: 1;
   }
 }
 

@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { HamburgerIcon } from "./icons/HamburgerIcon";
 import { useState, useEffect } from "react";
-import { CustomBlueButton } from "./Buttons/BlueButton";
+import { SearchIcon } from "./icons/SearchIcon";
 import AvatarMenu from "./AvatarMenu";
 import { useDispatch } from "react-redux";
 import { setPanel } from "../features/navigation/navigationPanelSlice";
+import "./SearchFilesFolders.css";
 
 export default function Search({ searchValue }) {
   const navigate = useNavigate();
@@ -28,12 +29,9 @@ export default function Search({ searchValue }) {
   }, [context]);
 
   return (
-    <div
-      className="flex flex-row justify-start items-center w-full h-full"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="header-container" onClick={(e) => e.stopPropagation()}>
       <div
-        className="flex flex-col justify-start items-start md:hidden"
+        className="search-hamburgericon-container"
         onClick={(e) => e.stopPropagation()}
       >
         <HamburgerIcon
@@ -42,21 +40,21 @@ export default function Search({ searchValue }) {
         />
       </div>
 
-      <div className="flex justify-start items-center h-full grow">
+      <div className="search-container">
+        <SearchIcon
+          className="search-icon"
+          onClick={() => navigate(`/dashboard/search/${query}`)}
+        />
+
         <input
           placeholder=" Search"
           value={query}
           onChange={handleChange}
-          className="outline-none border border-[#DBDBDB] focus:border-0 focus:shadow-md  grow h-full"
-        />
-
-        <CustomBlueButton
-          text={"Search"}
-          style={{ width: "70px", height: "100%" }}
-          onClick={() => navigate(`/dashboard/search/${query}`)}
+          className="search-input"
+          onFocus={() => navigate(`/dashboard/search`)}
         />
       </div>
-      <div className="flex grow items-center h-full justify-end">
+      <div className="avatar-container">
         <AvatarMenu />
       </div>
     </div>
