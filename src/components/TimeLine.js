@@ -516,21 +516,28 @@ export const TimeLine = () => {
     return (
       <div
         key={index}
-        style={style}
+        style={{ ...style }}
         className="flex flex-row items-center justify-start gap-1"
       >
         {Array.isArray(data[index]?.value) ? (
           data[index].value.map((photo) => {
             return (
               <>
-                <Link to={`/dashboard/photos?preview=${photo.filename}`}>
+                <Link
+                  to={`/dashboard/photos?preview=${photo.filename}`}
+                  style={{
+                    height: state.renderSize - 4,
+                    width: state.renderSize,
+                  }}
+                >
                   <Image
                     src={photo.value}
                     style={{
                       width: state.renderSize,
                       height: state.renderSize,
-                      className: "gallery-image",
+                      // className: "gallery-image",
                     }}
+                    className={"gallery-image"}
                     ShowLoading={() => (
                       <Skeleton
                         height={state.renderSize}

@@ -2,8 +2,10 @@
   /* width: 82px;
   height: 82px; */
   height: 100%;
-  object-fit: cover;
-  border: 1px solid #e5e7eb;
+  width: 100%;
+  object-fit: contain;
+  /* border: 1px solid #e5e7eb; */
+  border: 1px solid var(--border-grey);
 }
 
 .btn-active {

@@ -252,6 +252,7 @@ export default function PhotoPreview({ onClose, photos, initialName, layout }) {
                 <Skeleton width={600} height={480} animation="wave" />
               )}
               ErrorIcon={() => <ErrorIcon style={{ width: 25, height: 25 }} />}
+              className={"img-preview"}
             />
           )}
           {isLoading && <Skeleton width={600} height={480} animation="wave" />}

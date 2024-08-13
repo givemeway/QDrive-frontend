@@ -1,5 +1,4 @@
 import { useState } from "react";
-import "./Image.css";
 export const Image = ({
   src,
   srcSet,
