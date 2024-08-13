@@ -30,6 +30,7 @@ import Table from "./Table.js";
 import DeletedTable from "./DeletedTable.js";
 
 export default React.memo(function MainPanel({ mode }) {
+  const [sort, setSort] = useState("ASC");
   const navigate = useNavigate();
   const location = useLocation();
   const { search } = location;
@@ -213,6 +214,28 @@ export default React.memo(function MainPanel({ mode }) {
   }, []);
 
   useEffect(() => {
+    if (sort === "ASC") {
+      setState((prev) => ({
+        ...prev,
+        items: [
+          ...prev.items.sort((a, b) => {
+            return a.name.localeCompare(b.name);
+          }),
+        ],
+      }));
+    } else if (sort === "DSC") {
+      setState((prev) => ({
+        ...prev,
+        items: [
+          ...prev.items.sort((a, b) => {
+            return b.name.localeCompare(a.name);
+          }),
+        ],
+      }));
+    }
+  }, [sort]);
+
+  useEffect(() => {
     if (state.items.length > 0) {
       const pictures = state.items.filter((row) => isPicture(row.name));
       setPhotos(pictures);
@@ -262,11 +285,13 @@ export default React.memo(function MainPanel({ mode }) {
               isFetching,
               reLoad: reLoad.current,
               newDir: navigatedToNewDir.current,
+              sort: sort,
             }}
             hasNextPage={state.hasNextPage}
             isNextPageLoading={state.isNextPageLoading}
             items={state.items}
             loadNextPage={_loadNextPage}
+            setSort={setSort}
           />
         </div>
       )}

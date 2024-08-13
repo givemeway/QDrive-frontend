@@ -1,0 +1,10 @@
+.uparrow-icon {
+  height: 22px;
+  width: 22px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.clicked {
+  color: var(--color-grey);
+}

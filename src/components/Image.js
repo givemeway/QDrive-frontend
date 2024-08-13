@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./Image.css";
 export const Image = ({
   src,
   srcSet,
@@ -7,6 +8,7 @@ export const Image = ({
   ErrorIcon,
   sizes,
   style,
+  className,
 }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -27,6 +29,7 @@ export const Image = ({
           }}
           sizes={sizes}
           {...style}
+          className={`${className ? className : ""}`}
         />
       }
       {error && <ErrorIcon />}

@@ -30,6 +30,16 @@ export default function Search({ searchValue }) {
     navigate(`/dashboard/home`);
   };
 
+  const handleEnter = (e) => {
+    if (e.key === "Enter") {
+      navigate(`/dashboard/search/${query}`);
+    }
+  };
+
+  const handleSearch = () => {
+    navigate(`/dashboard/search/${query}`);
+  };
+
   const handleChange = (e) => {
     setQuery(e.target.value);
   };
@@ -54,10 +64,7 @@ export default function Search({ searchValue }) {
       </div>
 
       <div className="search-container">
-        <SearchIcon
-          className="search-icon"
-          onClick={() => navigate(`/dashboard/search/${query}`)}
-        />
+        <SearchIcon className="search-icon" onClick={handleSearch} />
         {isSearchFocus && (
           <CloseIcon
             className="search-close-icon"
@@ -70,6 +77,7 @@ export default function Search({ searchValue }) {
           onChange={handleChange}
           className="search-input"
           onFocus={handleSearchFocus}
+          onKeyDown={handleEnter}
         />
       </div>
       <div className="avatar-container">

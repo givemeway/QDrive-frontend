@@ -8,6 +8,9 @@ import { useRecoilState } from "recoil";
 import { itemsSelectedAtom } from "../Recoil/Store/atoms";
 import { useDispatch, useSelector } from "react-redux";
 import { COPY, MOVE, pageSize, SHARE, DELETE, DOWNLOAD } from "../config.js";
+import { UpArrowIcon } from "./icons/UpArrow.js";
+import { DownArrowIcon } from "./icons/DownArrow.js";
+import "./Table.css";
 import CellEdit from "./TableCellEdit.jsx";
 
 import { setOperation } from "../features/operation/operationSlice.jsx";
@@ -56,6 +59,7 @@ const deselectAllSelectClickedRow = (rows, id) => {
 
 const Row = React.memo(({ index, data, style }) => {
   const [isHovered, setIsHovered] = useState(false);
+
   const [cords, setCords] = useState({ top: 0, left: 0 });
   const [showContext, setShowContext] = useState(false);
   const { rowSelection, cellEdit, layout, urlPath } = useSelector(
@@ -268,9 +272,12 @@ const SharedTable = ({
   loadNextPage,
   layout,
   urlPath,
+  setSort,
 }) => {
-  const { height, isSuccess, newDir, isLoading, isError, isFetching } = params;
+  const { height, sort, isSuccess, newDir, isLoading, isError, isFetching } =
+    params;
   const ref = useRef(null);
+  const [keyDown, setKeyDown] = useState(false);
   const resizeObserver = useRef(null);
   const [selected, setItemsSelection] = useRecoilState(itemsSelectedAtom);
   const { fileIds, directories } = selected;
@@ -563,6 +570,27 @@ const SharedTable = ({
                 <div className="col-span-2 flex justify-start items-center">
                   <div className="w-[50px] h-full flex justify-center items-center"></div>
                   <h4 className="text-left pl-2 font-bold">Name</h4>
+                  {sort === "ASC" && (
+                    <UpArrowIcon
+                      className={`uparrow-icon ${keyDown ? "clicked" : ""}`}
+                      onMouseUp={() => {
+                        console.log("key released.");
+                        setKeyDown(false);
+                        setSort("DSC");
+                      }}
+                      onMouseDown={() => setKeyDown(true)}
+                    />
+                  )}
+                  {sort === "DSC" && (
+                    <DownArrowIcon
+                      className={`uparrow-icon ${keyDown ? "clicked" : ""}`}
+                      onMouseUp={() => {
+                        setKeyDown(false);
+                        setSort("ASC");
+                      }}
+                      onMouseDown={() => setKeyDown(true)}
+                    />
+                  )}
                 </div>
                 <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
                   Size

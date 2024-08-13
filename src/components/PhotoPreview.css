@@ -13,3 +13,11 @@ select:hover {
 option {
   border: 1px solid #d1d1d1;
 }
+
+.photo-container {
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

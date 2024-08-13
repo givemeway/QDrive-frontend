@@ -241,7 +241,7 @@ export default function PhotoPreview({ onClose, photos, initialName, layout }) {
             </div>
           </header>
         </div>
-        <div className="flex justify-center items-center grow ">
+        <div className="photo-container">
           {isSuccess && (
             <Image
               alt={photos[photo.pos - 1]?.name}
