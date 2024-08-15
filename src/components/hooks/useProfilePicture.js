@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { PRODUCTION } from "../../config";
+
+const getURL = () =>
+  process.env.REACT_APP_ENV !== PRODUCTION
+    ? "/app/user/updateAvatar"
+    : "https://api.qdrive.space/app/user/updateAvatar";
 
 export const useProfilePicture = () => {
   const [mutation, setMutation] = useState({
@@ -21,7 +27,7 @@ export const useProfilePicture = () => {
       status: "initialized",
       isLoading: true,
     }));
-    fetch("/app/user/updateAvatar", options)
+    fetch(getURL(), options)
       .then((res) => res.json())
       .then((data) => {
         setMutation({
