@@ -338,6 +338,17 @@ export const apiSlice = createApi({
         method: "GET",
       }),
     }),
+    uploadPicture: builder.mutation({
+      query: (data) => ({
+        url: "/user/updateAvatar",
+        method: "POST",
+        credentials: "include",
+        // headers: {
+        //   "Content-Type": "multipart/form-data",
+        // },
+        body: data.formData,
+      }),
+    }),
   }),
 });
 
@@ -375,4 +386,5 @@ export const {
   usePassResetMutation,
   useForgotPassMutation,
   useVerifyPassTokenMutation,
+  useUploadPictureMutation,
 } = apiSlice;

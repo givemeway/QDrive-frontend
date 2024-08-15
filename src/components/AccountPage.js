@@ -7,6 +7,7 @@ import "./AccountPage.css";
 import {
   useUpdateNameMutation,
   useUpdatePasswordMutation,
+  useUploadPictureMutation,
 } from "../features/api/apiSlice";
 import { ChangeName } from "./ChangeName.js";
 import SnackBar from "./Snackbar/SnackBar.js";
@@ -20,6 +21,7 @@ import {
 } from "../features/avatar/avatarSlice";
 import { ChangePassword } from "./ChangePassword.js";
 import { setNotify } from "../features/notification/notifySlice.js";
+import { ChangeAvatar } from "./ChangeAvatar.js";
 
 const Loading = () => {
   return (
@@ -38,16 +40,17 @@ const AccountPage = () => {
   const dispatch = useDispatch();
   const [nameChangeQuery, nameChangeStatus] = useUpdateNameMutation();
   const [updatePasswordQuery, updatePassword] = useUpdatePasswordMutation();
+  const [uploadPictureQuery, uploadPictureStatus] = useUploadPictureMutation();
 
   const { error, isSuccess, isLoading, isError, data } = nameChangeStatus;
   const handleName = () => {
     setEdit({ type: "NAME", isEdit: true });
   };
   const handleAvatar = () => {
-    setEdit({ type: "EMAIL", isEdit: true });
+    setEdit({ type: "AVATAR", isEdit: true });
   };
   const handleEmail = () => {
-    setEdit({ type: "AVATAR", isEdit: true });
+    setEdit({ type: "EMAIL", isEdit: true });
   };
 
   const handlePassword = () => {
@@ -158,6 +161,13 @@ const AccountPage = () => {
         <ChangePassword
           onClose={() => setEdit({ type: undefined, isEdit: false })}
           query={updatePasswordQuery}
+        />
+      )}
+      {edit?.type === "AVATAR" && edit.isEdit && (
+        <ChangeAvatar
+          onClose={() => setEdit({ type: undefined, isEdit: false })}
+          query={uploadPictureQuery}
+          params={{ ...uploadPictureStatus }}
         />
       )}
       {notify.show && <SnackBar msg={notify.msg} severity={notify.severity} />}
