@@ -9,6 +9,11 @@ export const DeleteAvatar = ({ onClose, query }) => {
 
   useOutSideClick(ref, onClose);
 
+  const handleDelete = () => {
+    query();
+    onClose();
+  };
+
   return (
     <div className="modal">
       <div className="change-your-name-box" ref={ref}>
@@ -20,7 +25,7 @@ export const DeleteAvatar = ({ onClose, query }) => {
           className="avatar-preview-editor"
           style={{ justifyContent: "end" }}
         >
-          <button className="photo-done" onClick={query}>
+          <button className="photo-done" onClick={handleDelete}>
             Delete photo
           </button>
           <button

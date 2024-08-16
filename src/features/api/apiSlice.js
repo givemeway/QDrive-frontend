@@ -243,9 +243,9 @@ export const apiSlice = createApi({
         url: "/user/verifySession",
         method: "GET",
         credentials: "include",
-        headers: {
-          "X-CSRF-Token": data.CSRFToken,
-        },
+        // headers: {
+        //   "X-CSRF-Token": data.CSRFToken,
+        // },
       }),
     }),
     logout: builder.mutation({
@@ -338,15 +338,11 @@ export const apiSlice = createApi({
         method: "GET",
       }),
     }),
-    uploadPicture: builder.mutation({
+    deleteAvatar: builder.mutation({
       query: (data) => ({
-        url: "/user/updateAvatar",
-        method: "POST",
+        url: "/user/deleteAvatar",
+        method: "DELETE",
         credentials: "include",
-        // headers: {
-        //   "Content-Type": "multipart/form-data",
-        // },
-        body: data.formData,
       }),
     }),
   }),
@@ -386,5 +382,5 @@ export const {
   usePassResetMutation,
   useForgotPassMutation,
   useVerifyPassTokenMutation,
-  useUploadPictureMutation,
+  useDeleteAvatarMutation,
 } = apiSlice;

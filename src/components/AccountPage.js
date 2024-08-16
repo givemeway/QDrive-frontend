@@ -5,17 +5,20 @@ import { AccountGeneral } from "./AccountGeneral.js";
 import { AccountSecurity } from "./AccountSecurity.js";
 import "./AccountPage.css";
 import {
+  useDeleteAvatarMutation,
   useUpdateNameMutation,
   useUpdatePasswordMutation,
-  useUploadPictureMutation,
+  useVerifySessionMutation,
 } from "../features/api/apiSlice";
 import { ChangeName } from "./ChangeName.js";
 import SnackBar from "./Snackbar/SnackBar.js";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import {
+  setAvatarURL,
   setEmail,
   setFirstName,
   setFullName,
+  setHasAvatar,
   setInitial,
   setLastName,
 } from "../features/avatar/avatarSlice";
@@ -41,7 +44,8 @@ const AccountPage = () => {
   const dispatch = useDispatch();
   const [nameChangeQuery, nameChangeStatus] = useUpdateNameMutation();
   const [updatePasswordQuery, updatePassword] = useUpdatePasswordMutation();
-  const [uploadPictureQuery, uploadPictureStatus] = useUploadPictureMutation();
+  const [deleteAvatarQuery, deleteAvatarStatus] = useDeleteAvatarMutation();
+  const [session, sessionStatus] = useVerifySessionMutation();
 
   const { error, isSuccess, isLoading, isError, data } = nameChangeStatus;
   const handleName = () => {
@@ -141,6 +145,68 @@ const AccountPage = () => {
     updatePassword.isSuccess,
   ]);
 
+  useEffect(() => {
+    if (deleteAvatarStatus.data && deleteAvatarStatus.isSuccess) {
+      session();
+      dispatch(
+        setNotify({
+          show: true,
+          severity: "success",
+          msg: deleteAvatarStatus.data?.msg,
+        })
+      );
+    }
+    if (deleteAvatarStatus.error && deleteAvatarStatus.error?.status === 404) {
+      dispatch(
+        setNotify({
+          show: true,
+          severity: "warning",
+          msg: deleteAvatarStatus.error.data?.msg,
+        })
+      );
+    }
+    if (
+      deleteAvatarStatus.error &&
+      (deleteAvatarStatus.error?.originalStatus === 500 ||
+        deleteAvatarStatus.error?.originalStatus === 404 ||
+        deleteAvatarStatus.error?.status === 500)
+    ) {
+      dispatch(
+        setNotify({
+          show: true,
+          severity: "error",
+          msg: "something went wrong",
+        })
+      );
+    }
+  }, [
+    deleteAvatarStatus.isLoading,
+    deleteAvatarStatus.isError,
+    deleteAvatarStatus.error,
+    deleteAvatarStatus.data,
+    deleteAvatarStatus.isSuccess,
+  ]);
+
+  useEffect(() => {
+    if (sessionStatus.isSuccess && sessionStatus.data) {
+      const { first, last, email, initials, avatar_url, hasAvatar } =
+        sessionStatus?.data;
+      dispatch(setFirstName(first));
+      dispatch(setLastName(last));
+      dispatch(setFullName(first + " " + last));
+      dispatch(setInitial(initials));
+      dispatch(setEmail(email));
+      dispatch(setHasAvatar(hasAvatar));
+      dispatch(setAvatarURL(avatar_url));
+    }
+  }, [
+    sessionStatus.isLoading,
+    sessionStatus.isError,
+    sessionStatus.error,
+    sessionStatus.data,
+    sessionStatus.isSuccess,
+  ]);
+
   return (
     <div className="accountpage-container">
       <h2 className="accountpage-heading">Personal Account</h2>
@@ -166,7 +232,7 @@ const AccountPage = () => {
       {edit?.type === "AVATARDELETE" && edit.isEdit && (
         <DeleteAvatar
           onClose={() => setEdit({ type: undefined, isEdit: false })}
-          query={() => {}}
+          query={deleteAvatarQuery}
         />
       )}
       {edit?.type === "PASSWORD" && edit.isEdit && (
@@ -178,8 +244,6 @@ const AccountPage = () => {
       {edit?.type === "AVATAR" && edit.isEdit && (
         <ChangeAvatar
           onClose={() => setEdit({ type: undefined, isEdit: false })}
-          query={uploadPictureQuery}
-          params={{ ...uploadPictureStatus }}
         />
       )}
       {notify.show && <SnackBar msg={notify.msg} severity={notify.severity} />}

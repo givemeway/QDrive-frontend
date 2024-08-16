@@ -64,7 +64,6 @@ export const ChangeAvatar = ({ onClose }) => {
     }
   }, [data, isSuccess]);
 
-  console.log(isValidPicture);
   return (
     <div className="modal">
       <div className="change-your-name-box" ref={ref} style={{ gap: 0 }}>
