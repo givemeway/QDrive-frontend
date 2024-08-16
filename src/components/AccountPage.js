@@ -22,6 +22,7 @@ import {
 import { ChangePassword } from "./ChangePassword.js";
 import { setNotify } from "../features/notification/notifySlice.js";
 import { ChangeAvatar } from "./ChangeAvatar.js";
+import { DeleteAvatar } from "./DeleteAvatar.js";
 
 const Loading = () => {
   return (
@@ -46,8 +47,12 @@ const AccountPage = () => {
   const handleName = () => {
     setEdit({ type: "NAME", isEdit: true });
   };
-  const handleAvatar = () => {
+  const handleAvatarAdd = () => {
     setEdit({ type: "AVATAR", isEdit: true });
+  };
+
+  const handleAvatarDelete = () => {
+    setEdit({ type: "AVATARDELETE", isEdit: true });
   };
   const handleEmail = () => {
     setEdit({ type: "EMAIL", isEdit: true });
@@ -143,9 +148,10 @@ const AccountPage = () => {
       {(isLoading || updatePassword.isLoading) && <Loading />}
       {!isLoading && tabs.General && (
         <AccountGeneral
-          handleAvatar={handleAvatar}
+          handleAvatarAdd={handleAvatarAdd}
           handleEmail={handleEmail}
           handleName={handleName}
+          handleAvatarDelete={handleAvatarDelete}
         />
       )}
       {!updatePassword.isLoading && tabs.Security && (
@@ -155,6 +161,12 @@ const AccountPage = () => {
         <ChangeName
           onClose={() => setEdit({ type: undefined, isEdit: false })}
           query={nameChangeQuery}
+        />
+      )}
+      {edit?.type === "AVATARDELETE" && edit.isEdit && (
+        <DeleteAvatar
+          onClose={() => setEdit({ type: undefined, isEdit: false })}
+          query={() => {}}
         />
       )}
       {edit?.type === "PASSWORD" && edit.isEdit && (

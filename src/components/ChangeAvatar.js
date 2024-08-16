@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Image } from "./Image";
 import useOutSideClick from "./hooks/useOutsideClick";
 import CloseIcon from "@mui/icons-material/Close";
@@ -6,6 +6,8 @@ import "./ChangeAvatar.css";
 import { useProfilePicture } from "./hooks/useProfilePicture";
 import { Skeleton } from "@mui/material";
 import SpinnerGIF from "./icons/SpinnerGIF";
+import { useDispatch } from "react-redux";
+import { setAvatarURL, setHasAvatar } from "../features/avatar/avatarSlice";
 
 const PreviewAvatar = ({ src, handleChange, handleDone }) => {
   return (
@@ -34,6 +36,7 @@ export const ChangeAvatar = ({ onClose }) => {
   const ref = useRef(null);
   const [addPhoto, setAddPhoto] = useState(true);
   const [isValidPicture, setIsValidPicture] = useState(true);
+  const dispatch = useDispatch();
   const form = useRef(new FormData());
   const [uploadQuery, uploadStatus] = useProfilePicture();
   const { isError, isLoading, isSuccess, data, status, error } = uploadStatus;
@@ -53,6 +56,13 @@ export const ChangeAvatar = ({ onClose }) => {
   const handleChangePhoto = () => {
     setAddPhoto(true);
   };
+
+  useEffect(() => {
+    if (isSuccess && data) {
+      dispatch(setAvatarURL(data?.original));
+      dispatch(setHasAvatar(true));
+    }
+  }, [data, isSuccess]);
 
   console.log(isValidPicture);
   return (

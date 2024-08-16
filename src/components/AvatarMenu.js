@@ -1,25 +1,52 @@
 import { useEffect, useState, useRef } from "react";
 import ContextMenuContainer from "./Modal/ContextMenuModal";
+import { Skeleton } from "@mui/material";
 import { ContextButton } from "./Buttons/ContextButton";
 import { useDispatch, useSelector } from "react-redux";
 import { useVerifySessionMutation } from "../features/api/apiSlice";
+import { Image } from "./Image";
 
 import { setOperation } from "../features/operation/operationSlice";
 import { LOGOUT } from "../config";
 import { useNavigate } from "react-router-dom";
 import {
+  setAvatarURL,
   setEmail,
   setFirstName,
   setFullName,
+  setHasAvatar,
   setInitial,
   setLastName,
 } from "../features/avatar/avatarSlice";
+import "./ChangeAvatar.css";
 
-export const Avatar = ({ initial }) => {
+export const Avatar = () => {
+  const { has_avatar, avatar_url, initials } = useSelector(
+    (state) => state.avatar
+  );
   return (
-    <div className="rounded-full bg-[#FFAFA5] w-[40px] h-[40px] flex justify-center items-center">
-      <span className="text-[#982062] font-semibold">{initial}</span>
-    </div>
+    <>
+      {!has_avatar && (
+        <div className="rounded-full bg-[#FFAFA5] w-[40px] h-[40px] flex justify-center items-center">
+          <span className="text-[#982062] font-semibold">{initials}</span>
+        </div>
+      )}
+      {has_avatar && (
+        <div className="rounded-full w-[40px] h-[40px]">
+          <Image
+            src={avatar_url}
+            className={"avatar-thumbnail"}
+            ShowLoading={() => (
+              <Skeleton
+                animation="wave"
+                className="avatar-thumbnail-skeleton"
+              />
+            )}
+            ErrorIcon={() => <>Error</>}
+          />
+        </div>
+      )}
+    </>
   );
 };
 
@@ -51,19 +78,18 @@ export default function AvatarMenu() {
   }, [CSRFToken, session]);
 
   useEffect(() => {
+    console.log(data);
     if (isSuccess && data) {
-      const { first, last, email } = data;
-      const firstNameInitial = first.split("")[0].toUpperCase();
-      const lastNameInitial = last.split("")[0].toUpperCase();
-      const initial = firstNameInitial + lastNameInitial;
+      const { first, last, email, initials, avatar_url, hasAvatar } = data;
       dispatch(setFirstName(first));
       dispatch(setLastName(last));
       dispatch(setFullName(first + " " + last));
-      dispatch(setInitial(initial));
+      dispatch(setInitial(initials));
       dispatch(setEmail(email));
+      dispatch(setHasAvatar(hasAvatar));
+      dispatch(setAvatarURL(avatar_url));
     }
   }, [isSuccess, data, dispatch]);
-
   const handleLogout = () => {
     dispatch(
       setOperation({ type: LOGOUT, status: "initialized", open: false })
@@ -79,7 +105,7 @@ export default function AvatarMenu() {
         }`}
         ref={buttonRef}
       >
-        <Avatar initial={initials} />
+        <Avatar />
       </button>
 
       <ContextMenuContainer
@@ -90,7 +116,7 @@ export default function AvatarMenu() {
       >
         <span>
           <div className="flex flex-row justify-start items-center pl-3 pr-3 pt-1 h-[80px]">
-            <Avatar initial={initials} />
+            <Avatar />
             <div className="flex flex-col justify-center items-start grow h-[25px] pl-3">
               <span className="w-full text-left text-[#1A1918] text-lg font-semibold float-left font-sans capitalize">
                 {fullName}

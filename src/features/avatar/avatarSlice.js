@@ -8,6 +8,8 @@ const avatarSlice = createSlice({
     firstName: "",
     lastName: "",
     email: "",
+    has_avatar: false,
+    avatar_url: "",
   },
   reducers: {
     setFirstName: (state, actions) => {
@@ -28,6 +30,12 @@ const avatarSlice = createSlice({
     setUserData: (state, actions) => {
       return { ...state, ...actions.payload };
     },
+    setHasAvatar: (state, actions) => {
+      state.has_avatar = actions.payload;
+    },
+    setAvatarURL: (state, actions) => {
+      state.avatar_url = actions.payload;
+    },
   },
 });
 
@@ -38,6 +46,8 @@ export const {
   setFullName,
   setEmail,
   setUserData,
+  setHasAvatar,
+  setAvatarURL,
 } = avatarSlice.actions;
 
 export default avatarSlice.reducer;

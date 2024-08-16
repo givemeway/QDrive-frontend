@@ -1,18 +1,28 @@
 import { useSelector } from "react-redux";
 import { Avatar } from "./AvatarMenu";
 
-export const AccountGeneral = ({ handleAvatar, handleName, handleEmail }) => {
-  const { fullName, email, initials } = useSelector((state) => state.avatar);
+export const AccountGeneral = ({
+  handleAvatarAdd,
+  handleName,
+  handleEmail,
+  handleAvatarDelete,
+}) => {
+  const { fullName, email, has_avatar } = useSelector((state) => state.avatar);
   return (
     <div className="accountpage-profile-container">
       <h2 className="accountpage-profile-heading ">Basics</h2>
       <div className="accountpage-profile-row">
         <span className="accountpage-profile-row-label">Photo</span>
         <div className="accountpage-profile-edit-container">
-          <Avatar initial={initials} />
-          <button className="button-underLine" onClick={handleAvatar}>
+          <Avatar />
+          <button className="button-underLine" onClick={handleAvatarAdd}>
             Edit
           </button>
+          {has_avatar && (
+            <button className="button-underLine" onClick={handleAvatarDelete}>
+              Delete
+            </button>
+          )}
         </div>
       </div>
       <div className="accountpage-profile-row">
