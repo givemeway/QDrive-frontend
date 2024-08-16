@@ -2,7 +2,6 @@ export const HamburgerIcon = ({ style, onClick }) => {
   return (
     <svg
       viewBox="0 0 24 24"
-      class="dig-UIIcon dig-UIIcon--standard"
       {...style}
       role="presentation"
       focusable="false"

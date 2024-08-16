@@ -78,7 +78,6 @@ export default function AvatarMenu() {
   }, [CSRFToken, session]);
 
   useEffect(() => {
-    console.log(data);
     if (isSuccess && data) {
       const { first, last, email, initials, avatar_url, hasAvatar } = data;
       dispatch(setFirstName(first));
