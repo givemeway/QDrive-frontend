@@ -195,7 +195,7 @@
   line-height: 1.75rem; /* 28px */
   text-align: center;
   height: 60px;
-  font-weight: 600;
+  font-weight: 400;
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
@@ -220,7 +220,6 @@
   height: auto;
   background: var(--color-light-blue-secondary);
 }
-
 .avatar-upload:hover::before {
   cursor: pointer;
   background: var(--color-light-blue);

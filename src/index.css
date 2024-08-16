@@ -18,7 +18,9 @@
   --color-green: #267b5e;
   --color-greyed: #bbb5ae;
   --color-red: #b50032;
+  --color-red-secondary: #f5e5eb;
   --color-brown-dark: #fbf4ea;
+  --color-black: #393633;
 }
 
 body {
