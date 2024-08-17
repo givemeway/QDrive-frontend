@@ -524,7 +524,7 @@ export default function Signup() {
                   Join QDrive Today!
                 </span>
               </div>
-              <div className="flex  justify-start items-center gap-2">
+              <div className="flex justify-start items-center gap-2">
                 <TextField
                   label={"First Name"}
                   value={formInput.firstname.value}
@@ -581,10 +581,10 @@ export default function Signup() {
                   errorText={formInput.phone.helperText}
                 />
               </div>
-              <div className="w-full flex flex-col justify-start items-center">
-                <span className="text-[#716B61] text-sm w-full text-left font-thin h-[20px]">
+              <div className="w-full flex flex-col justify-start items-center h-auto">
+                <label className="text-[#716B61] text-sm w-full text-left font-thin h-[20px]">
                   Password
-                </span>
+                </label>
                 <PasswordValidator setFormInput={setFormInput} />
               </div>
               <div className="col-span-2 flex justify-start items-center h-[75px] gap-1">

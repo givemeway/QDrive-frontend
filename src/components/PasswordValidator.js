@@ -2,7 +2,7 @@ import "./PasswordValidator.css";
 import "./ForgotPassword.css";
 import { CorrectIcon } from "./icons/correctIcon.js";
 import { CrossIcon } from "./icons/crossIcon.js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PasswordFieldWithMask } from "./PasswordFieldWithMask.js";
 
 const verifyPassLen = (pass) => {
@@ -145,6 +145,10 @@ export const PasswordValidator = ({ setFormInput }) => {
     }));
   };
 
+  useEffect(() => {
+    setPassNotify((prev) => ({ ...prev, isPasswordValid: true }));
+  }, []);
+
   return (
     <div className="password-container">
       <PasswordFieldWithMask
@@ -152,7 +156,7 @@ export const PasswordValidator = ({ setFormInput }) => {
         onBlur={handleBlur}
         onFocus={handleFocus}
         value={password}
-        className={`${!passNotify.isPasswordValid ? "error" : " "}`}
+        className={`${!passNotify.isPasswordValid ? "error" : ""}`}
       />
       <PassErrorNotification passNotify={passNotify} />
       <PassValidNotification isPassFocus={isFocus} validator={validator} />

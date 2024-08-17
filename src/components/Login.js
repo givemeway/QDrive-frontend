@@ -6,6 +6,8 @@ import { CustomBlueButton } from "./Buttons/BlueButton";
 import { GreyButton } from "./Buttons/GreyButton";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { useDispatch, useSelector } from "react-redux";
+import "./PasswordFieldWithMask.css";
+
 import {
   useGetCSRFTokenQuery,
   useLoginMutation,
@@ -155,8 +157,8 @@ const Login = () => {
                 onChange={handleChange}
                 type="email"
                 name="username"
-                className="w-full h-[50px] rounded-none border border-[#C9C5BD] focus:border-black
-                 hover:border-black outline-[#428BFF] outline-offset-2 "
+                className="password-input"
+                style={{ height: 50 }}
               />
             </div>
 
@@ -168,6 +170,7 @@ const Login = () => {
               <PasswordFieldWithMask
                 value={loginForm.password}
                 onChange={handleChange}
+                style={{ height: 50 }}
               />
             </div>
             <div className="w-full h-[20px] flex justify-between items-center">
