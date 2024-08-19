@@ -19,6 +19,7 @@ import {
   setLastName,
 } from "../features/avatar/avatarSlice";
 import "./ChangeAvatar.css";
+import SpinnerGIF from "./icons/SpinnerGIF";
 
 export const Avatar = () => {
   const { has_avatar, avatar_url, initials } = useSelector(
@@ -36,12 +37,7 @@ export const Avatar = () => {
           <Image
             src={avatar_url}
             className={"avatar-thumbnail"}
-            ShowLoading={() => (
-              <Skeleton
-                animation="wave"
-                className="avatar-thumbnail-skeleton"
-              />
-            )}
+            ShowLoading={() => <SpinnerGIF style={{ height: 25, width: 25 }} />}
             ErrorIcon={() => <>Error</>}
           />
         </div>

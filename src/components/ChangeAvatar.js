@@ -15,9 +15,7 @@ const PreviewAvatar = ({ src, handleChange, handleDone }) => {
       <Image
         src={src}
         className={"avatar-image"}
-        ShowLoading={() => (
-          <Skeleton animation="wave" className="avatar-image" />
-        )}
+        ShowLoading={() => <SpinnerGIF style={{ height: 50, width: 50 }} />}
         ErrorIcon={() => <>Error</>}
       />
       <div className="avatar-preview-editor">

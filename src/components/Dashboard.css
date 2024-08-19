@@ -4,7 +4,7 @@
   inset: 60px 0px 0px 0px;
   height: auto;
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   border: none;
   align-items: center;
   background: transparent;
