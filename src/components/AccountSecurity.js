@@ -1,6 +1,6 @@
 import { Switch } from "@mui/material";
 
-export const AccountSecurity = ({ handlePassword }) => {
+export const AccountSecurity = ({ handlePassword, handleChange, checked }) => {
   return (
     <div className="accountpage-profile-container">
       <div className="accountpage-profile-row">
@@ -26,7 +26,7 @@ export const AccountSecurity = ({ handlePassword }) => {
           Two-step verification
         </span>
         <div className="accountpage-profile-edit-container">
-          <Switch disabled={true} />
+          <Switch onChange={handleChange} checked={checked} />
         </div>
       </div>
     </div>

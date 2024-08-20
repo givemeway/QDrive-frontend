@@ -26,6 +26,7 @@ import { ChangePassword } from "./ChangePassword.js";
 import { setNotify } from "../features/notification/notifySlice.js";
 import { ChangeAvatar } from "./ChangeAvatar.js";
 import { DeleteAvatar } from "./DeleteAvatar.js";
+import { TwoFA } from "./2fa.js";
 
 const Loading = () => {
   return (
@@ -41,6 +42,7 @@ const AccountPage = () => {
     Security: false,
     Privacy: false,
   });
+  const [checked, setChecked] = useState(true);
   const dispatch = useDispatch();
   const [nameChangeQuery, nameChangeStatus] = useUpdateNameMutation();
   const [updatePasswordQuery, updatePassword] = useUpdatePasswordMutation();
@@ -66,9 +68,13 @@ const AccountPage = () => {
     setEdit({ type: "PASSWORD", isEdit: true });
   };
 
+  const handleSwitchChange = () => {
+    setChecked((prev) => !prev);
+    setEdit({ type: "2FA", isEdit: true });
+  };
+
   const [edit, setEdit] = useState({ type: undefined, isEdit: false });
   const notify = useSelector((state) => state.notification);
-
   useEffect(() => {
     if (isSuccess && data) {
       const { updated } = data;
@@ -221,7 +227,11 @@ const AccountPage = () => {
         />
       )}
       {!updatePassword.isLoading && tabs.Security && (
-        <AccountSecurity handlePassword={handlePassword} />
+        <AccountSecurity
+          handlePassword={handlePassword}
+          handleChange={handleSwitchChange}
+          checked={checked}
+        />
       )}
       {edit?.type === "NAME" && edit.isEdit && (
         <ChangeName
@@ -244,6 +254,14 @@ const AccountPage = () => {
       {edit?.type === "AVATAR" && edit.isEdit && (
         <ChangeAvatar
           onClose={() => setEdit({ type: undefined, isEdit: false })}
+        />
+      )}
+      {edit?.type === "2FA" && edit.isEdit && (
+        <TwoFA
+          onClose={() => {
+            setEdit({ type: undefined, isEdit: false });
+            setChecked(false);
+          }}
         />
       )}
       {notify.show && <SnackBar msg={notify.msg} severity={notify.severity} />}
