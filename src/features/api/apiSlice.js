@@ -345,6 +345,27 @@ export const apiSlice = createApi({
         credentials: "include",
       }),
     }),
+    confirmPassword: builder.mutation({
+      query: (data) => ({
+        url: `/user/verifyPassword?password=${data.password}`,
+        method: "GET",
+        credentials: "include",
+      }),
+    }),
+    enableOTP: builder.mutation({
+      query: (data) => ({
+        url: `/user/login/enableOTP?isTOTP=${data.totp}&isSMS=${data.sms}&isEmail=${data.email}`,
+        method: "POST",
+        credentials: "include",
+      }),
+    }),
+    verifyOTP: builder.mutation({
+      query: (data) => ({
+        url: `/user/login/verifyOTP?token=${data.token}&mfa=${data.mfa}&is2FAConfig=${data.is2FAConfig}`,
+        method: "GET",
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
@@ -383,4 +404,7 @@ export const {
   useForgotPassMutation,
   useVerifyPassTokenMutation,
   useDeleteAvatarMutation,
+  useConfirmPasswordMutation,
+  useEnableOTPMutation,
+  useVerifyOTPMutation,
 } = apiSlice;

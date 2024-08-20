@@ -19,12 +19,12 @@ export const PasswordFieldWithMask = ({
   };
 
   return (
-    <div className="flex-relative">
+    <div className={`flex-relative  ${className ? className : ""}`}>
       <input
         type={`${!showPass ? "password" : "text"}`}
         onChange={onChange}
         value={value}
-        className={`password-input ${className ? className : ""}`}
+        className={`password-input`}
         onFocus={onFocus}
         onBlur={onBlur}
         name={name ? name : "password"}
