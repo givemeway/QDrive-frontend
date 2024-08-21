@@ -62,9 +62,9 @@ const TwoFA_Step_Four = ({ onClose, url, setNext }) => {
         without needing to receive text messages.
       </p>
       <h2 className="step-one-p">To configure your authenticator app:</h2>
-      <ul>
-        <li>Add a new time-based token.</li>
-        <li>Use your app to scan the barcode below</li>
+      <ul className="step-four-ul">
+        <li className="step-four-li">Add a new time-based token.</li>
+        <li className="step-four-li">Use your app to scan the barcode below</li>
       </ul>
       <img src={url} style={{ height: 150, width: 150 }} />
       <div className="step-four-button-container">

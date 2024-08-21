@@ -12,7 +12,7 @@ export default function CustomizedBreadcrumbs({ queue, layout, link, k }) {
         flexDirection: "row",
         justifyContent: "flex-start",
         alignItems: "center",
-        gap: 2,
+        gap: 1,
         height: "100%",
         margin: 0,
         padding: 0,

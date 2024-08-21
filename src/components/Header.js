@@ -18,7 +18,7 @@ const Header = ({ search }) => {
     }
   }, [search]);
   return (
-    <div className="h-[50px] w-full flex flex-row">
+    <div className="h-[50px] w-full">
       <BreadCrumb queue={queue} layout={"dashboard"} link={"/dashboard/home"} />
     </div>
   );

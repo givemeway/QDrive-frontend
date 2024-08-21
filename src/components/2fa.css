@@ -185,7 +185,7 @@ label {
   background: var(--color-light-blue-third);
 }
 
-ul {
+.step-four-ul {
   width: 100%;
   padding-left: 3rem;
   padding-right: 1.5rem;
@@ -194,7 +194,7 @@ ul {
   list-style-type: disc;
   line-height: 1.5rem;
 }
-li {
+.step-four-li {
   width: 100%;
   text-align: left;
 }
