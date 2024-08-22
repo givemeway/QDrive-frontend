@@ -501,7 +501,7 @@ export default function Signup() {
   return (
     <div className="w-screen h-screen flex flex-col justify-start items-center">
       <div className="w-full h-[60px]">
-        <Header />
+        <Header isLogin={true} isSignup={false} />
       </div>
       {CSRFToken.isLoading && (
         <div className="flex justify-center items-center">

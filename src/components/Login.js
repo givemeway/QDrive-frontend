@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Header from "./HomePageHeader";
+import { Header } from "./Header.jsx";
 import { Link, useNavigate } from "react-router-dom";
 import MessageSnackBar from "./Snackbar/SnackBar";
 import { CustomBlueButton } from "./Buttons/BlueButton";
@@ -82,14 +82,17 @@ const Login = () => {
         })
       );
       navigate("/dashboard/home");
+    } else if (loginStatus?.error?.status === 403) {
+      navigate("/verify_code");
     } else if (
+      loginStatus?.error?.status === 404 ||
       loginStatus?.error?.status === 401 ||
-      loginStatus?.error?.status === 403
+      loginStatus?.error?.status === 422
     ) {
       dispatch(
         setNotify({
           show: true,
-          msg: "Username or password incorrect!",
+          msg: loginStatus?.error?.data?.msg,
           severity: "warning",
         })
       );
@@ -127,7 +130,7 @@ const Login = () => {
   return (
     <div className="w-screen h-screen flex flex-col">
       <div className="w-full">
-        <Header />
+        <Header isLogin={false} isSignup={true} />
       </div>
       {(CSRF.isLoading || verifySessionStatus.isLoading) && (
         <div className="w-full grow flex justify-center items-center">

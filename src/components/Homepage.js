@@ -1,4 +1,4 @@
-import Header from "./HomePageHeader";
+import { Header } from "./Header.jsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -205,16 +205,14 @@ const VideoBody = () => {
 
 const HomePage = () => {
   return (
-    <>
-      <div className="w-screen h-screen flex flex-col justify-start items-center absolute">
-        <Header />
-        <div className="flex flex-col justify-start items-center bg-black w-full h-full pl-4 pr-4 overflow-auto">
-          <MainBody />
-          <VideoBody />
-          <Features />
-        </div>
+    <div className="w-screen h-screen flex flex-col justify-start items-center absolute">
+      <Header isLogin={true} isSignup={true} />
+      <div className="flex flex-col justify-start items-center bg-black w-full h-full pl-4 pr-4 overflow-auto">
+        <MainBody />
+        <VideoBody />
+        <Features />
       </div>
-    </>
+    </div>
   );
 };
 

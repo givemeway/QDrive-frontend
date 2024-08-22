@@ -56,7 +56,7 @@ const AlertGif = () => {
   );
 };
 
-export const Header = () => {
+export const Header = ({ isLogin, isSignup }) => {
   const [wakeupThumbnailServer, setwakeupThumbnailServer] = useState(undefined);
   const [wakeupImageServer, setwakeupImageServer] = useState(undefined);
   const [wakeupBackendServer, setWakeUpBackendServer] = useState(undefined);
@@ -144,16 +144,20 @@ export const Header = () => {
         </div>
       )}
       <div className="flex gap-2 h-full items-center pl-2 pr-2">
-        <CustomBlueButton
-          text={"Login"}
-          style={{ width: 75, height: "60%" }}
-          onClick={() => navigate("/login")}
-        />
-        <GreyButton
-          text={"Signup"}
-          style={{ width: 75, height: "60%" }}
-          onClick={() => navigate("/signup")}
-        />
+        {isLogin && (
+          <CustomBlueButton
+            text={"Login"}
+            style={{ width: 75, height: "60%" }}
+            onClick={() => navigate("/login")}
+          />
+        )}
+        {isSignup && (
+          <GreyButton
+            text={"Signup"}
+            style={{ width: 75, height: "60%" }}
+            onClick={() => navigate("/signup")}
+          />
+        )}
       </div>
     </div>
   );

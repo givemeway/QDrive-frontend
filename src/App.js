@@ -9,6 +9,7 @@ import Transfer from "./components/TransferItemsPage.js";
 import Signup from "./components/SignupForm.js";
 import { ForgotPassword } from "./components/ForgotPassword.js";
 import { PasswordReset } from "./components/PasswordReset.js";
+import { TwoFAVerification } from "./components/2FA_verification.js";
 
 enableMapSet();
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot/*" element={<ForgotPassword />} />
         <Route path="/forgot_finish/*" element={<PasswordReset />} />
+        <Route path="/verify_code" element={<TwoFAVerification />} />
       </Routes>
     </div>
   );
