@@ -11,6 +11,7 @@ import {
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { PasswordFieldWithMask } from "./PasswordFieldWithMask";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const TwoFA_Step_One = ({ onClose, setNext }) => {
   const handleClick = () => {
@@ -415,7 +416,7 @@ const Disable2FA = ({ onClose, set2FASwitch }) => {
 
 export const Enable2FA = ({ onClose, set2FASwitch }) => {
   const ref = useRef(null);
-
+  const { email } = useSelector((state) => state.avatar);
   const [url, setURL] = useState("");
   const [next, setNext] = useState({
     step_1_active: true,
@@ -439,11 +440,7 @@ export const Enable2FA = ({ onClose, set2FASwitch }) => {
         <TwoFA_Step_One onClose={onClose} setNext={setNext} />
       )}
       {next.step_2_active && (
-        <TwoFA_Step_Two
-          onClose={onClose}
-          email={"sand.kumar.gr@gmail.com"}
-          setNext={setNext}
-        />
+        <TwoFA_Step_Two onClose={onClose} email={email} setNext={setNext} />
       )}
       {next.step_3_active && (
         <TwoFA_Step_Three

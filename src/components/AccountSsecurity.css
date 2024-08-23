@@ -1,0 +1,27 @@
+.twofa-info-box {
+  background: var(--color-brown-dark);
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-grey-third);
+}
+
+.border-bottom-none {
+  border-bottom: none;
+}
+
+.padding-right {
+  padding-right: 0.5rem;
+}
+
+.twofa-info-p {
+  font-size: 0.75rem;
+  text-align: left;
+}
+
+.two-info-action-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+  gap: 0.5rem;
+}
