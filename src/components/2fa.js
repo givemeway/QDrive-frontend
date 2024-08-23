@@ -4,13 +4,13 @@ import useOutSideClick from "./hooks/useOutsideClick";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   useConfirmPasswordMutation,
+  useDisableOTPMutation,
   useEnableOTPMutation,
   useVerifyOTPMutation,
 } from "../features/api/apiSlice";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { PasswordFieldWithMask } from "./PasswordFieldWithMask";
 import { Link } from "react-router-dom";
-import { Image } from "./Image";
 
 const TwoFA_Step_One = ({ onClose, setNext }) => {
   const handleClick = () => {
@@ -308,7 +308,11 @@ const TwoFA_Step_Two = ({ onClose, email, setNext }) => {
   );
 };
 
-const TwoFA_Step_Six = ({ onClose, setNext }) => {
+const TwoFA_Step_Six = ({ onClose, set2FASwitch }) => {
+  const handleClick = () => {
+    set2FASwitch(true);
+    onClose();
+  };
   return (
     <div className="step-one">
       <h2 className="step-one-title">Enable two-step verification</h2>
@@ -317,15 +321,101 @@ const TwoFA_Step_Six = ({ onClose, setNext }) => {
         From now on, when you sign in to the Qdrive website or link a new
         device, you’ll need to enter a security code from your phone.
       </p>
-      <button className="step-one-button" onClick={onClose}>
+      <button className="step-one-button" onClick={handleClick}>
         Next
       </button>
     </div>
   );
 };
 
-export const TwoFA = ({ onClose }) => {
+const TwoFA_disable_step_one = ({ onClose, setNext }) => {
+  const handleClick = () => {
+    setNext((prev) => enableActiveWindow(prev, "step_2_active"));
+  };
+  return (
+    <div className="step-one">
+      <h2 className="step-one-title">Disable two-step verification</h2>
+      <CloseIcon className="step-one-close" onClick={onClose} />
+      <p className="step-one-p">
+        If you disable two-step verification, you’ll only need your email and
+        password when you sign in to the Dropbox website or link a new device.
+      </p>
+      <button className="step-one-button" onClick={handleClick}>
+        Next
+      </button>
+    </div>
+  );
+};
+
+const TwoFA_disable_step_three = ({ onClose, set2FASwitch }) => {
+  const [query, queryStatus] = useDisableOTPMutation();
+  const { isError, isLoading, error, data, isSuccess } = queryStatus;
+  const handleClick = () => {
+    query();
+  };
+
+  useEffect(() => {
+    if (data && isSuccess) {
+      set2FASwitch(false);
+      onClose();
+    } else if (isError || error) {
+      console.log(error);
+    }
+  }, [isError, error, isSuccess]);
+
+  return (
+    <div className="step-one">
+      <h2 className="step-one-title">Disable two-step verification</h2>
+      <CloseIcon className="step-one-close" onClick={onClose} />
+      <p className="step-one-p">
+        From now on, when you sign in to the Qdrive website or link a new
+        device, you’ll need to enter a security code from your phone.
+      </p>
+      <button className="step-one-button" onClick={handleClick}>
+        {!isLoading && <>Next</>}
+        {isLoading && <SpinnerGIF style={{ width: 25, height: 25 }} />}
+      </button>
+    </div>
+  );
+};
+
+const Disable2FA = ({ onClose, set2FASwitch }) => {
   const ref = useRef(null);
+  const [next, setNext] = useState({
+    step_1_active: true,
+    step_2_active: false,
+    step_3_active: false,
+    step_4_active: false,
+    step_5_active: false,
+    step_6_active: false,
+  });
+  useOutSideClick(ref, onClose);
+
+  return (
+    <div
+      className={`twofa-box`}
+      ref={ref}
+      style={{ height: `${next.step_4_active ? "auto" : ""}` }}
+    >
+      {next.step_1_active && (
+        <TwoFA_disable_step_one onClose={onClose} setNext={setNext} />
+      )}
+      {next.step_2_active && (
+        <TwoFA_Step_Two onClose={onClose} setNext={setNext} />
+      )}
+      {next.step_3_active && (
+        <TwoFA_disable_step_three
+          onClose={onClose}
+          set2FASwitch={set2FASwitch}
+        />
+      )}
+    </div>
+  );
+};
+
+export const Enable2FA = ({ onClose, set2FASwitch }) => {
+  const ref = useRef(null);
+
   const [url, setURL] = useState("");
   const [next, setNext] = useState({
     step_1_active: true,
@@ -339,42 +429,52 @@ export const TwoFA = ({ onClose }) => {
   const [mode, setMode] = useState({ email: true, totp: false });
 
   useOutSideClick(ref, onClose);
+  return (
+    <div
+      className={`twofa-box`}
+      ref={ref}
+      style={{ height: `${next.step_4_active ? "auto" : ""}` }}
+    >
+      {next.step_1_active && (
+        <TwoFA_Step_One onClose={onClose} setNext={setNext} />
+      )}
+      {next.step_2_active && (
+        <TwoFA_Step_Two
+          onClose={onClose}
+          email={"sand.kumar.gr@gmail.com"}
+          setNext={setNext}
+        />
+      )}
+      {next.step_3_active && (
+        <TwoFA_Step_Three
+          onClose={onClose}
+          setNext={setNext}
+          setURL={setURL}
+          setMode={setMode}
+        />
+      )}
+      {next.step_4_active && mode.totp && (
+        <TwoFA_Step_Four onClose={onClose} setNext={setNext} url={url} />
+      )}
+      {next.step_5_active && (mode.email || mode.totp) && (
+        <TwoFA_Step_Five onClose={onClose} setNext={setNext} mode={mode} />
+      )}
+      {next.step_6_active && (mode.email || mode.totp) && (
+        <TwoFA_Step_Six onClose={onClose} set2FASwitch={set2FASwitch} />
+      )}
+    </div>
+  );
+};
 
+export const TwoFA = ({ onClose, set2FASwitch, _2FASwitch }) => {
   return (
     <div className="modal">
-      <div
-        className={`twofa-box`}
-        ref={ref}
-        style={{ height: `${next.step_4_active ? "auto" : ""}` }}
-      >
-        {next.step_1_active && (
-          <TwoFA_Step_One onClose={onClose} setNext={setNext} />
-        )}
-        {next.step_2_active && (
-          <TwoFA_Step_Two
-            onClose={onClose}
-            email={"sand.kumar.gr@gmail.com"}
-            setNext={setNext}
-          />
-        )}
-        {next.step_3_active && (
-          <TwoFA_Step_Three
-            onClose={onClose}
-            setNext={setNext}
-            setURL={setURL}
-            setMode={setMode}
-          />
-        )}
-        {next.step_4_active && mode.totp && (
-          <TwoFA_Step_Four onClose={onClose} setNext={setNext} url={url} />
-        )}
-        {next.step_5_active && (mode.email || mode.totp) && (
-          <TwoFA_Step_Five onClose={onClose} setNext={setNext} mode={mode} />
-        )}
-        {next.step_6_active && (mode.email || mode.totp) && (
-          <TwoFA_Step_Six onClose={onClose} />
-        )}
-      </div>
+      {!_2FASwitch && (
+        <Enable2FA set2FASwitch={set2FASwitch} onClose={onClose} />
+      )}
+      {_2FASwitch && (
+        <Disable2FA onClose={onClose} set2FASwitch={set2FASwitch} />
+      )}
     </div>
   );
 };

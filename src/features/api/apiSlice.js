@@ -366,6 +366,13 @@ export const apiSlice = createApi({
         credentials: "include",
       }),
     }),
+    disableOTP: builder.mutation({
+      query: (data) => ({
+        url: `/user/login/disableOTP`,
+        method: "POST",
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
@@ -407,4 +414,5 @@ export const {
   useConfirmPasswordMutation,
   useEnableOTPMutation,
   useVerifyOTPMutation,
+  useDisableOTPMutation,
 } = apiSlice;

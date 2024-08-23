@@ -1,6 +1,11 @@
 import { Switch } from "@mui/material";
 
-export const AccountSecurity = ({ handlePassword, handleChange, checked }) => {
+export const AccountSecurity = ({
+  handlePassword,
+  handleChange,
+  _2FA_switch,
+  _2FA_status,
+}) => {
   return (
     <div className="accountpage-profile-container">
       <div className="accountpage-profile-row">
@@ -26,7 +31,8 @@ export const AccountSecurity = ({ handlePassword, handleChange, checked }) => {
           Two-step verification
         </span>
         <div className="accountpage-profile-edit-container">
-          <Switch onChange={handleChange} checked={checked} />
+          <span>{_2FA_status}</span>
+          <Switch onChange={handleChange} checked={_2FA_switch} />
         </div>
       </div>
     </div>

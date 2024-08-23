@@ -4,13 +4,14 @@ import "./2FA_verification.css";
 import { useSelector } from "react-redux";
 import { useVerifyOTPMutation } from "../features/api/apiSlice.js";
 import { useNavigate } from "react-router-dom";
+import SpinnerGIF from "./icons/SpinnerGIF.js";
 export const TwoFAVerification = () => {
   const [code, setCode] = useState("");
   const navigate = useNavigate();
   const { isSMS, isEmail, isTOTP } = useSelector((state) => state.avatar);
   const [query, queryStatus] = useVerifyOTPMutation();
   console.log(queryStatus);
-  const { error, isError, isSuccess, status } = queryStatus;
+  const { error, isError, isSuccess, isLoading } = queryStatus;
   const handleChange = (e) => {
     setCode(e.currentTarget.value);
   };
@@ -70,7 +71,8 @@ export const TwoFAVerification = () => {
                 disabled={code.length === 0 ? true : false}
                 onClick={handleSubmit}
               >
-                Enter
+                {!isLoading && <>Enter</>}
+                {isLoading && <SpinnerGIF style={{ width: 25, height: 25 }} />}
               </button>
             </div>
           </div>

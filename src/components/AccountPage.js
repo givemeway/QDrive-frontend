@@ -20,6 +20,10 @@ import {
   setFullName,
   setHasAvatar,
   setInitial,
+  setIs2FA,
+  setIsEmail,
+  setIsSMS,
+  setIsTOTP,
   setLastName,
 } from "../features/avatar/avatarSlice";
 import { ChangePassword } from "./ChangePassword.js";
@@ -42,12 +46,14 @@ const AccountPage = () => {
     Security: false,
     Privacy: false,
   });
-  const [checked, setChecked] = useState(true);
+  const [_2FASwitch, set2FASwitch] = useState(true);
   const dispatch = useDispatch();
   const [nameChangeQuery, nameChangeStatus] = useUpdateNameMutation();
   const [updatePasswordQuery, updatePassword] = useUpdatePasswordMutation();
   const [deleteAvatarQuery, deleteAvatarStatus] = useDeleteAvatarMutation();
   const [session, sessionStatus] = useVerifySessionMutation();
+  const [edit, setEdit] = useState({ type: undefined, isEdit: false });
+  const notify = useSelector((state) => state.notification);
 
   const { error, isSuccess, isLoading, isError, data } = nameChangeStatus;
   const handleName = () => {
@@ -69,12 +75,10 @@ const AccountPage = () => {
   };
 
   const handleSwitchChange = () => {
-    setChecked((prev) => !prev);
+    // set2FASwitch((prev) => !prev);
     setEdit({ type: "2FA", isEdit: true });
   };
 
-  const [edit, setEdit] = useState({ type: undefined, isEdit: false });
-  const notify = useSelector((state) => state.notification);
   useEffect(() => {
     if (isSuccess && data) {
       const { updated } = data;
@@ -195,8 +199,18 @@ const AccountPage = () => {
 
   useEffect(() => {
     if (sessionStatus.isSuccess && sessionStatus.data) {
-      const { first, last, email, initials, avatar_url, hasAvatar } =
-        sessionStatus?.data;
+      const {
+        first,
+        last,
+        email,
+        initials,
+        avatar_url,
+        hasAvatar,
+        is2FA,
+        isSMS,
+        isTOTP,
+        isEmail,
+      } = sessionStatus?.data;
       dispatch(setFirstName(first));
       dispatch(setLastName(last));
       dispatch(setFullName(first + " " + last));
@@ -204,6 +218,11 @@ const AccountPage = () => {
       dispatch(setEmail(email));
       dispatch(setHasAvatar(hasAvatar));
       dispatch(setAvatarURL(avatar_url));
+      dispatch(setIs2FA(is2FA));
+      dispatch(setIsSMS(isSMS));
+      dispatch(setIsTOTP(isTOTP));
+      dispatch(setIsEmail(isEmail));
+      set2FASwitch(is2FA);
     }
   }, [
     sessionStatus.isLoading,
@@ -213,12 +232,18 @@ const AccountPage = () => {
     sessionStatus.isSuccess,
   ]);
 
+  useEffect(() => {
+    session();
+  }, []);
+
   return (
     <div className="accountpage-container">
       <h2 className="accountpage-heading">Personal Account</h2>
       <Tabs tabs={tabs} setActiveTab={setActiveTabs} />
-      {(isLoading || updatePassword.isLoading) && <Loading />}
-      {!isLoading && tabs.General && (
+      {(isLoading || updatePassword.isLoading || sessionStatus.isLoading) && (
+        <Loading />
+      )}
+      {(!isLoading || !sessionStatus.isLoading) && tabs.General && (
         <AccountGeneral
           handleAvatarAdd={handleAvatarAdd}
           handleEmail={handleEmail}
@@ -226,13 +251,16 @@ const AccountPage = () => {
           handleAvatarDelete={handleAvatarDelete}
         />
       )}
-      {!updatePassword.isLoading && tabs.Security && (
-        <AccountSecurity
-          handlePassword={handlePassword}
-          handleChange={handleSwitchChange}
-          checked={checked}
-        />
-      )}
+      {(!updatePassword.isLoading || !sessionStatus.isLoading) &&
+        tabs.Security && (
+          <AccountSecurity
+            handlePassword={handlePassword}
+            handleChange={handleSwitchChange}
+            _2FA_switch={_2FASwitch}
+            _2FA_status={sessionStatus?.data?.is2FA ? "On" : "Off"}
+            set2FASwitch={set2FASwitch}
+          />
+        )}
       {edit?.type === "NAME" && edit.isEdit && (
         <ChangeName
           onClose={() => setEdit({ type: undefined, isEdit: false })}
@@ -260,8 +288,10 @@ const AccountPage = () => {
         <TwoFA
           onClose={() => {
             setEdit({ type: undefined, isEdit: false });
-            setChecked(false);
+            session();
           }}
+          set2FASwitch={set2FASwitch}
+          _2FASwitch={_2FASwitch}
         />
       )}
       {notify.show && <SnackBar msg={notify.msg} severity={notify.severity} />}

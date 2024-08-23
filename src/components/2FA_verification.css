@@ -125,6 +125,9 @@
   background: var(--color-blue);
   font-weight: 500;
   position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   bottom: 0%;
   left: 0%;
   color: whitesmoke;
