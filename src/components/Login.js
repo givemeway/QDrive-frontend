@@ -18,6 +18,19 @@ import { HorizontalLineDividedByText } from "./HorizontalLine";
 import "./Login.css";
 import { setNotify } from "../features/notification/notifySlice";
 import { PasswordFieldWithMask } from "./PasswordFieldWithMask";
+import {
+  setAvatarURL,
+  setEmail,
+  setFirstName,
+  setFullName,
+  setHasAvatar,
+  setInitial,
+  setIs2FA,
+  setIsEmail,
+  setIsSMS,
+  setIsTOTP,
+  setLastName,
+} from "../features/avatar/avatarSlice.js";
 
 const validateLoginForm = (loginform) => {
   if (loginform.username.length > 0 && loginform.password.length > 0) {
@@ -54,22 +67,8 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (
-      CSRF.data?.CSRFToken &&
-      CSRF.isSuccess &&
-      (session.isLoggedIn === false && session.isLoggedOut === false
-        ? true
-        : session.isLoggedOut)
-    ) {
-      verifySessionQuery({ CSRFToken: CSRF.data?.CSRFToken });
-    }
-  }, [
-    CSRF.data,
-    CSRF.isSuccess,
-    session.isLoggedIn,
-    session.isLoggedOut,
-    verifySessionQuery,
-  ]);
+    verifySessionQuery();
+  }, []);
 
   useEffect(() => {
     if (data?.success) {
@@ -82,7 +81,34 @@ const Login = () => {
         })
       );
       navigate("/dashboard/home");
-    } else if (loginStatus?.error?.status === 403) {
+    } else if (
+      loginStatus?.error?.status === 403 &&
+      loginStatus?.error?.data?.error === "2FA_REQUIRED"
+    ) {
+      console.log(loginStatus.error.data);
+      const {
+        first,
+        last,
+        email,
+        initials,
+        avatar_url,
+        hasAvatar,
+        is2FA,
+        isSMS,
+        isTOTP,
+        isEmail,
+      } = loginStatus.error.data;
+      dispatch(setFirstName(first));
+      dispatch(setLastName(last));
+      dispatch(setFullName(first + " " + last));
+      dispatch(setInitial(initials));
+      dispatch(setEmail(email));
+      dispatch(setHasAvatar(hasAvatar));
+      dispatch(setAvatarURL(avatar_url));
+      dispatch(setIs2FA(is2FA));
+      dispatch(setIsEmail(isEmail));
+      dispatch(setIsTOTP(isTOTP));
+      dispatch(setIsSMS(isSMS));
       navigate("/verify_code");
     } else if (
       loginStatus?.error?.status === 404 ||
@@ -112,14 +138,45 @@ const Login = () => {
     data,
     loginStatus?.error?.status,
     loginStatus?.error?.originalStatus,
-    dispatch,
-    navigate,
   ]);
 
   useEffect(() => {
     if (verifySessionStatus.isSuccess && verifySessionStatus.data?.success) {
       dispatch(setSession({ isLoggedIn: true, isLoggedOut: false }));
+      if (verifySessionStatus.isSuccess && verifySessionStatus.data) {
+        const {
+          first,
+          last,
+          email,
+          initials,
+          avatar_url,
+          hasAvatar,
+          is2FA,
+          isSMS,
+          isTOTP,
+          isEmail,
+        } = verifySessionStatus.data;
+        dispatch(setFirstName(first));
+        dispatch(setLastName(last));
+        dispatch(setFullName(first + " " + last));
+        dispatch(setInitial(initials));
+        dispatch(setEmail(email));
+        dispatch(setHasAvatar(hasAvatar));
+        dispatch(setAvatarURL(avatar_url));
+        dispatch(setIs2FA(is2FA));
+        dispatch(setIsEmail(isEmail));
+        dispatch(setIsTOTP(isTOTP));
+        dispatch(setIsSMS(isSMS));
+      }
       navigate("/dashboard/home");
+    }
+    console.log(verifySessionStatus);
+    if (
+      verifySessionStatus.isError &&
+      verifySessionStatus.error &&
+      verifySessionStatus.error?.data?.error === "2FA_REQUIRED"
+    ) {
+      navigate("/login");
     }
   }, [
     verifySessionStatus.isError,

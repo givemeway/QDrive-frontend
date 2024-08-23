@@ -34,6 +34,9 @@ const avatarSlice = createSlice({
     setUserData: (state, actions) => {
       return { ...state, ...actions.payload };
     },
+    setAvatarURL: (state, actions) => {
+      state.avatar_url = actions.payload;
+    },
     setHasAvatar: (state, actions) => {
       state.has_avatar = actions.payload;
     },
