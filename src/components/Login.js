@@ -18,19 +18,7 @@ import { HorizontalLineDividedByText } from "./HorizontalLine";
 import "./Login.css";
 import { setNotify } from "../features/notification/notifySlice";
 import { PasswordFieldWithMask } from "./PasswordFieldWithMask";
-import {
-  setAvatarURL,
-  setEmail,
-  setFirstName,
-  setFullName,
-  setHasAvatar,
-  setInitial,
-  setIs2FA,
-  setIsEmail,
-  setIsSMS,
-  setIsTOTP,
-  setLastName,
-} from "../features/avatar/avatarSlice.js";
+import { setUserData } from "../features/avatar/avatarSlice.js";
 
 const validateLoginForm = (loginform) => {
   if (loginform.username.length > 0 && loginform.password.length > 0) {
@@ -52,7 +40,7 @@ const Login = () => {
 
   const [loginQuery, loginStatus] = useLoginMutation();
 
-  const { isLoading, isError, isSuccess, data } = loginStatus;
+  const { isLoading, isError, isSuccess, data, error } = loginStatus;
 
   const handleChange = (event) => {
     setLoginForm((prev) => {
@@ -81,48 +69,22 @@ const Login = () => {
         })
       );
       navigate("/dashboard/home");
-    } else if (
-      loginStatus?.error?.status === 403 &&
-      loginStatus?.error?.data?.error === "2FA_REQUIRED"
-    ) {
-      console.log(loginStatus.error.data);
-      const {
-        first,
-        last,
-        email,
-        initials,
-        avatar_url,
-        hasAvatar,
-        is2FA,
-        isSMS,
-        isTOTP,
-        isEmail,
-      } = loginStatus.error.data;
-      dispatch(setFirstName(first));
-      dispatch(setLastName(last));
-      dispatch(setFullName(first + " " + last));
-      dispatch(setInitial(initials));
-      dispatch(setEmail(email));
-      dispatch(setHasAvatar(hasAvatar));
-      dispatch(setAvatarURL(avatar_url));
-      dispatch(setIs2FA(is2FA));
-      dispatch(setIsEmail(isEmail));
-      dispatch(setIsTOTP(isTOTP));
-      dispatch(setIsSMS(isSMS));
+    } else if (error?.status === 403 && error?.data?.error === "2FA_REQUIRED") {
+      dispatch(setUserData({ ...error?.data }));
       navigate("/verify_code");
     } else if (
-      loginStatus?.error?.status === 404 ||
-      loginStatus?.error?.status === 401 ||
-      loginStatus?.error?.status === 422
+      error?.status === 404 ||
+      error?.status === 401 ||
+      error?.status === 422
     ) {
       dispatch(
         setNotify({
           show: true,
-          msg: loginStatus?.error?.data?.msg,
+          msg: error?.data?.msg,
           severity: "warning",
         })
       );
-    } else if (loginStatus?.error?.originalStatus === 500) {
+    } else if (error?.originalStatus === 500) {
       dispatch(
         setNotify({
           show: true,
@@ -131,46 +93,16 @@ const Login = () => {
         })
       );
     }
-  }, [
-    isLoading,
-    isError,
-    isSuccess,
-    data,
-    loginStatus?.error?.status,
-    loginStatus?.error?.originalStatus,
-  ]);
+  }, [isLoading, isError, isSuccess, data, error]);
 
   useEffect(() => {
     if (verifySessionStatus.isSuccess && verifySessionStatus.data?.success) {
       dispatch(setSession({ isLoggedIn: true, isLoggedOut: false }));
       if (verifySessionStatus.isSuccess && verifySessionStatus.data) {
-        const {
-          first,
-          last,
-          email,
-          initials,
-          avatar_url,
-          hasAvatar,
-          is2FA,
-          isSMS,
-          isTOTP,
-          isEmail,
-        } = verifySessionStatus.data;
-        dispatch(setFirstName(first));
-        dispatch(setLastName(last));
-        dispatch(setFullName(first + " " + last));
-        dispatch(setInitial(initials));
-        dispatch(setEmail(email));
-        dispatch(setHasAvatar(hasAvatar));
-        dispatch(setAvatarURL(avatar_url));
-        dispatch(setIs2FA(is2FA));
-        dispatch(setIsEmail(isEmail));
-        dispatch(setIsTOTP(isTOTP));
-        dispatch(setIsSMS(isSMS));
+        dispatch(setUserData({ ...verifySessionStatus?.data }));
       }
       navigate("/dashboard/home");
     }
-    console.log(verifySessionStatus);
     if (
       verifySessionStatus.isError &&
       verifySessionStatus.error &&

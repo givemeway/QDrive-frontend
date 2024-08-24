@@ -18,10 +18,33 @@
   text-align: left;
 }
 
-.two-info-action-container {
+.twofa-info-action-container {
   display: flex;
   flex-direction: row;
   justify-content: left;
   align-items: center;
   gap: 0.5rem;
+}
+
+.twofa-info-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.twofa-info-row {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 75px;
+  justify-content: space-between;
+  padding-left: 0.5rem;
+}
+
+.twofa-info-row-border-bottom {
+  border-bottom: 1px solid var(--border-grey);
 }

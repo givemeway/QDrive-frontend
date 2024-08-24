@@ -304,6 +304,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  flex-grow: 1;
 }
 
 .accountpage-security-row-label-container {

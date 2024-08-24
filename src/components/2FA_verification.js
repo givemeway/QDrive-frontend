@@ -10,7 +10,6 @@ export const TwoFAVerification = () => {
   const navigate = useNavigate();
   const { isSMS, isEmail, isTOTP } = useSelector((state) => state.avatar);
   const [query, queryStatus] = useVerifyOTPMutation();
-  console.log(queryStatus);
   const { error, isError, isSuccess, isLoading } = queryStatus;
   const handleChange = (e) => {
     setCode(e.currentTarget.value);

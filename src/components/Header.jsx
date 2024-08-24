@@ -75,11 +75,9 @@ export const Header = ({ isLogin, isSignup }) => {
     fetch(image_server_url)
       .then((res) => res.json())
       .then((result) => {
-        console.log(result);
         setwakeupImageServer("success");
       })
       .catch((err) => {
-        console.log(err);
         setwakeupImageServer("fail");
       });
 

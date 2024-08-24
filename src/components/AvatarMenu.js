@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import ContextMenuContainer from "./Modal/ContextMenuModal";
-import { Skeleton } from "@mui/material";
 import { ContextButton } from "./Buttons/ContextButton";
 import { useDispatch, useSelector } from "react-redux";
 import { useVerifySessionMutation } from "../features/api/apiSlice";
@@ -9,19 +8,7 @@ import { Image } from "./Image";
 import { setOperation } from "../features/operation/operationSlice";
 import { LOGOUT } from "../config";
 import { useNavigate } from "react-router-dom";
-import {
-  setAvatarURL,
-  setEmail,
-  setFirstName,
-  setFullName,
-  setHasAvatar,
-  setInitial,
-  setIs2FA,
-  setIsEmail,
-  setIsSMS,
-  setIsTOTP,
-  setLastName,
-} from "../features/avatar/avatarSlice";
+import { setUserData } from "../features/avatar/avatarSlice";
 import "./ChangeAvatar.css";
 import SpinnerGIF from "./icons/SpinnerGIF";
 
@@ -79,29 +66,7 @@ export default function AvatarMenu() {
 
   useEffect(() => {
     if (isSuccess && data) {
-      const {
-        first,
-        last,
-        email,
-        initials,
-        avatar_url,
-        hasAvatar,
-        is2FA,
-        isSMS,
-        isTOTP,
-        isEmail,
-      } = data;
-      dispatch(setFirstName(first));
-      dispatch(setLastName(last));
-      dispatch(setFullName(first + " " + last));
-      dispatch(setInitial(initials));
-      dispatch(setEmail(email));
-      dispatch(setHasAvatar(hasAvatar));
-      dispatch(setAvatarURL(avatar_url));
-      dispatch(setIs2FA(is2FA));
-      dispatch(setIsEmail(isEmail));
-      dispatch(setIsTOTP(isTOTP));
-      dispatch(setIsSMS(isSMS));
+      dispatch(setUserData({ ...data }));
     }
   }, [isSuccess, data, dispatch]);
   const handleLogout = () => {

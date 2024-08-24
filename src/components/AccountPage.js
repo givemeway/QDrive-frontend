@@ -14,23 +14,18 @@ import { ChangeName } from "./ChangeName.js";
 import SnackBar from "./Snackbar/SnackBar.js";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import {
-  setAvatarURL,
   setEmail,
   setFirstName,
   setFullName,
-  setHasAvatar,
   setInitial,
-  setIs2FA,
-  setIsEmail,
-  setIsSMS,
-  setIsTOTP,
   setLastName,
+  setUserData,
 } from "../features/avatar/avatarSlice";
 import { ChangePassword } from "./ChangePassword.js";
 import { setNotify } from "../features/notification/notifySlice.js";
 import { ChangeAvatar } from "./ChangeAvatar.js";
 import { DeleteAvatar } from "./DeleteAvatar.js";
-import { TwoFA } from "./2fa.js";
+import { Edit2FA, TwoFA } from "./2fa.js";
 
 const Loading = () => {
   return (
@@ -72,6 +67,10 @@ const AccountPage = () => {
 
   const handlePassword = () => {
     setEdit({ type: "PASSWORD", isEdit: true });
+  };
+
+  const handle2FAEdit = () => {
+    setEdit({ type: "2FA_EDIT", isEdit: true });
   };
 
   const handleSwitchChange = () => {
@@ -199,30 +198,12 @@ const AccountPage = () => {
 
   useEffect(() => {
     if (sessionStatus.isSuccess && sessionStatus.data) {
-      const {
-        first,
-        last,
-        email,
-        initials,
-        avatar_url,
-        hasAvatar,
-        is2FA,
-        isSMS,
-        isTOTP,
-        isEmail,
-      } = sessionStatus?.data;
-      dispatch(setFirstName(first));
-      dispatch(setLastName(last));
-      dispatch(setFullName(first + " " + last));
-      dispatch(setInitial(initials));
-      dispatch(setEmail(email));
-      dispatch(setHasAvatar(hasAvatar));
-      dispatch(setAvatarURL(avatar_url));
-      dispatch(setIs2FA(is2FA));
-      dispatch(setIsSMS(isSMS));
-      dispatch(setIsTOTP(isTOTP));
-      dispatch(setIsEmail(isEmail));
-      set2FASwitch(is2FA);
+      dispatch(
+        setUserData({
+          ...sessionStatus?.data,
+        })
+      );
+      set2FASwitch(sessionStatus?.data?.is2FA);
     }
   }, [
     sessionStatus.isLoading,
@@ -243,7 +224,7 @@ const AccountPage = () => {
       {(isLoading || updatePassword.isLoading || sessionStatus.isLoading) && (
         <Loading />
       )}
-      {(!isLoading || !sessionStatus.isLoading) && tabs.General && (
+      {!isLoading && !sessionStatus.isLoading && tabs.General && (
         <AccountGeneral
           handleAvatarAdd={handleAvatarAdd}
           handleEmail={handleEmail}
@@ -251,7 +232,8 @@ const AccountPage = () => {
           handleAvatarDelete={handleAvatarDelete}
         />
       )}
-      {(!updatePassword.isLoading || !sessionStatus.isLoading) &&
+      {!updatePassword.isLoading &&
+        !sessionStatus.isLoading &&
         tabs.Security && (
           <AccountSecurity
             handlePassword={handlePassword}
@@ -259,6 +241,7 @@ const AccountPage = () => {
             _2FA_switch={_2FASwitch}
             _2FA_status={sessionStatus?.data?.is2FA ? "On" : "Off"}
             set2FASwitch={set2FASwitch}
+            handle2FAEdit={handle2FAEdit}
           />
         )}
       {edit?.type === "NAME" && edit.isEdit && (
@@ -292,6 +275,15 @@ const AccountPage = () => {
           }}
           set2FASwitch={set2FASwitch}
           _2FASwitch={_2FASwitch}
+        />
+      )}
+      {edit?.type === "2FA_EDIT" && edit.isEdit && (
+        <Edit2FA
+          onClose={() => {
+            setEdit({ type: undefined, isEdit: false });
+            session();
+          }}
+          set2FASwitch={set2FASwitch}
         />
       )}
       {notify.show && <SnackBar msg={notify.msg} severity={notify.severity} />}
