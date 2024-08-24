@@ -7,28 +7,24 @@ const TwoFA_Info = ({ handle2FAEdit }) => {
 
   return (
     <div className="twofa-info-box">
-      <div className="accountpage-profile-row padding-right">
-        <div className="accountpage-profile-row-label">
-          <span>Preferred Method</span>
+      <div className="twofa-info-row twofa-info-row-border-bottom ">
+        <div className="twofa-info-row-context-container">
+          <span className="twofa-info-label">Preferred Method</span>
           <p className="twofa-info-p">Choose how to get your security codes.</p>
         </div>
         <div className="twofa-info-action-container">
           {isTOTP && (
-            <span className="accountpage-profile-row-label">
-              Authenticator app
-            </span>
+            <span className="twofa-info-label">Authenticator app</span>
           )}
-          {isEmail && (
-            <span className="accountpage-profile-row-label">Email</span>
-          )}
+          {isEmail && <span className="twofa-info-label">Email</span>}
           <button className="button-underLine " onClick={handle2FAEdit}>
             Edit
           </button>
         </div>
       </div>
-      <div className="accountpage-profile-row padding-right">
-        <div className="accountpage-profile-row-label">
-          <span>Backup Method</span>
+      <div className="twofa-info-row twofa-info-row-border-bottom ">
+        <div className="twofa-info-row-context-container">
+          <span className="twofa-info-label">Backup Method</span>
           <p className="twofa-info-p">
             Add a backup phone number for security codes.
           </p>
@@ -37,16 +33,15 @@ const TwoFA_Info = ({ handle2FAEdit }) => {
           <button className="button-underLine">Add</button>
         </div>
       </div>
-      <div className="accountpage-profile-row border-bottom-none padding-right">
-        <div className="accountpage-profile-row-label">
-          <span>Trusted Devices</span>
+      <div className="twofa-info-row  ">
+        <div className="twofa-info-row-context-container">
+          <span className="twofa-info-label">Trusted Devices</span>
           <p className="twofa-info-p">
             Revoke trusted status from your devices that skip two-step
             verification.
           </p>
         </div>
         <div className="twofa-info-action-container">
-          <span></span>
           <button className="button-underLine"> Revoke All</button>
         </div>
       </div>
@@ -67,12 +62,7 @@ export const AccountSecurity = ({
     <div className="accountpage-profile-container">
       <div className="accountpage-profile-row">
         <div className="accountpage-security-row-label-container">
-          <span
-            className="accountpage-profile-row-label"
-            style={{ width: "100%" }}
-          >
-            Password
-          </span>
+          <span className="accountpage-profile-row-label">Password</span>
           <p className="accountpage-security-row-p">
             Set a unique password to protect your personal Dropbox account.
           </p>
@@ -89,9 +79,14 @@ export const AccountSecurity = ({
             !_2FA_switch ? "twofa-info-row-border-bottom" : ""
           }`}
         >
-          <span className="accountpage-profile-row-label">
-            Two-step verification
-          </span>
+          <div className="accountpage-security-row-label-container">
+            <span className="accountpage-profile-row-label">
+              Two-step verification
+            </span>
+            <p className="accountpage-security-row-p">
+              Require a security key or code in addition to your password.
+            </p>
+          </div>
           <div className="accountpage-profile-edit-container">
             <span>{_2FA_status}</span>
             <Switch onChange={handleChange} checked={_2FA_switch} />

@@ -282,6 +282,7 @@
   width: auto;
   font-weight: 400;
   text-align: left;
+  width: 100%;
 }
 
 .accountpage-profile-row-fullname {
