@@ -65,7 +65,6 @@ export const Header = ({ isLogin, isSignup }) => {
     fetch(thumbnail_server_url)
       .then((res) => res.json())
       .then((result) => {
-        console.log(result);
         setwakeupThumbnailServer("success");
       })
       .catch((err) => {
@@ -84,7 +83,6 @@ export const Header = ({ isLogin, isSignup }) => {
     fetch(backendServerURL)
       .then((res) => res.json())
       .then((result) => {
-        console.log(result);
         setWakeUpBackendServer("success");
       })
       .catch((err) => {

@@ -2,7 +2,7 @@ import { Switch } from "@mui/material";
 import "./AccountSsecurity.css";
 import { useSelector } from "react-redux";
 
-const TwoFA_Info = ({ handle2FAEdit }) => {
+const TwoFAInfo = ({ handle2FAEdit }) => {
   const { isTOTP, isEmail } = useSelector((state) => state.avatar);
 
   return (
@@ -62,9 +62,14 @@ export const AccountSecurity = ({
     <div className="accountpage-profile-container">
       <div className="accountpage-profile-row">
         <div className="accountpage-security-row-label-container">
-          <span className="accountpage-profile-row-label">Password</span>
+          <span
+            className="accountpage-profile-row-label"
+            style={{ width: "100%" }}
+          >
+            Password
+          </span>
           <p className="accountpage-security-row-p">
-            Set a unique password to protect your personal Dropbox account.
+            Set a unique password to protect your personal QDrive account.
           </p>
         </div>
         <div className="accountpage-profile-edit-container">
@@ -80,7 +85,10 @@ export const AccountSecurity = ({
           }`}
         >
           <div className="accountpage-security-row-label-container">
-            <span className="accountpage-profile-row-label">
+            <span
+              className="accountpage-profile-row-label"
+              style={{ width: "100%" }}
+            >
               Two-step verification
             </span>
             <p className="accountpage-security-row-p">
@@ -93,7 +101,7 @@ export const AccountSecurity = ({
           </div>
         </div>
 
-        {_2FA_switch && <TwoFA_Info handle2FAEdit={handle2FAEdit} />}
+        {_2FA_switch && <TwoFAInfo handle2FAEdit={handle2FAEdit} />}
       </div>
     </div>
   );

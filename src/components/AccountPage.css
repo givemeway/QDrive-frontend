@@ -274,15 +274,14 @@
   height: 75px;
   justify-content: space-between;
   padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 .accountpage-profile-row-label {
   color: var(--font-color-primary);
   font-size: 1rem;
-  width: auto;
   font-weight: 400;
   text-align: left;
-  width: 100%;
 }
 
 .accountpage-profile-row-fullname {
@@ -295,7 +294,8 @@
   display: flex;
   height: 100%;
   align-items: center;
-  gap: 1rem;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .loading-container {
@@ -313,7 +313,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: auto;
+  width: 80%;
   height: 100%;
 }
 
