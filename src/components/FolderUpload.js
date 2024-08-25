@@ -17,7 +17,6 @@ function FolderUpload() {
   const [pwd, setPWD] = useState("/");
   const [device, setDevice] = useState("/");
   const [filesToUpload, setFilesToUpload] = useState([]);
-  const [CSRFToken, setCSRFToken] = useState("");
   const [trackFilesProgress, setTrackFilesProgress] = useState([]);
   const [uploadCompleted, setUploadCompleted] = useState(false);
   const [socketID, setSocketID] = useState(undefined);
@@ -57,14 +56,13 @@ function FolderUpload() {
         const { mode } = data;
         if (mode === "filesToUpload") {
           const {
-            CSRFToken,
             trackFilesProgress,
             totalSize,
             total,
             toBeUploaded,
             metadata,
           } = data;
-          setCSRFToken(CSRFToken);
+
           setTrackFilesProgress(() => trackFilesProgress);
           setFilesStatus((prev) => ({
             ...prev,
@@ -211,7 +209,6 @@ function FolderUpload() {
         metadata: filesMetaData.current,
         pwd,
         device,
-        CSRFToken,
         filesStatus,
       });
 

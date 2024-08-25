@@ -6,9 +6,7 @@ import { hashFileChunked } from "./hashFile.js";
 // eslint-disable-next-line no-restricted-globals
 self.window = self;
 
-// importScripts(new URL("../dist/forge.js", import.meta.url));
-
-const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
+const uploadFile = (socket_main_id, file, cwd, modified, device) => {
   return new Promise(async (resolve, reject) => {
     let filePath;
     postMessage({
@@ -70,6 +68,7 @@ const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
         socket_main_id,
         name: file.name,
         idx: file.idx,
+        type: file.type,
         id:
           file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
       };
@@ -79,7 +78,6 @@ const uploadFile = (socket_main_id, file, cwd, modified, device, CSRFToken) => {
         dir: dir,
         devicename: device,
         "Content-Disposition": `attachment; filename="${file.name}"`,
-        "X-CSRF-Token": CSRFToken,
       };
 
       if (!file.hash) {

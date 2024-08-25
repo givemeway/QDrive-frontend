@@ -6,11 +6,10 @@ import UploadProgressDrawer from "./UploadProgressDrawer.js";
 import { useState, useEffect, useRef } from "react";
 import { socket } from "./Socket.js";
 import { formatBytes, formatSeconds } from "../util.js";
-import { Button, Snackbar, Box, Typography } from "@mui/material";
+import { Snackbar, Box, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setRefresh } from "../features/table/updateTableSlice.js";
-import { CustomBlueButton } from "./Buttons/BlueButton.jsx";
 import "./Buttons/BlueButton.css";
 
 const ETA = (starttime, total, uploaded) => {
@@ -22,25 +21,6 @@ const ETA = (starttime, total, uploaded) => {
   return { eta, speed };
 };
 
-function CustomButton({ children }) {
-  return (
-    <Button
-      variant="outlined"
-      disableRipple
-      sx={{
-        border: "none",
-        boxSizing: "border-box",
-        "&:hover": {
-          backgroundColor: "#EFF3FA",
-          border: "none",
-        },
-      }}
-    >
-      {children}
-    </Button>
-  );
-}
-
 function FilesUpload() {
   const [files, setFiles] = useState([]);
   const filesMetaData = useRef({});
@@ -51,7 +31,6 @@ function FilesUpload() {
   const [pwd, setPWD] = useState("/");
   const [device, setDevice] = useState("/");
   const [filesToUpload, setFilesToUpload] = useState([]);
-  const [CSRFToken, setCSRFToken] = useState("");
   const [trackFilesProgress, setTrackFilesProgress] = useState([]);
   const [uploadCompleted, setUploadCompleted] = useState(false);
   const [filesStatus, setFilesStatus] = useState({
@@ -79,14 +58,13 @@ function FilesUpload() {
         const { mode } = data;
         if (mode === "filesToUpload") {
           const {
-            CSRFToken,
             trackFilesProgress,
             totalSize,
             total,
             toBeUploaded,
             metadata,
           } = data;
-          setCSRFToken(CSRFToken);
+
           setTrackFilesProgress(() => trackFilesProgress);
           setFilesStatus((prev) => ({
             ...prev,
@@ -209,7 +187,6 @@ function FilesUpload() {
         metadata: filesMetaData.current,
         pwd,
         device,
-        CSRFToken,
         filesStatus,
       });
 

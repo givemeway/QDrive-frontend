@@ -1,10 +1,10 @@
-import { fetchFilesURL, username } from "./config.js";
+import { fetchFilesURL } from "./config.js";
 import { hashFile } from "./hashFile.js";
 
-const getfilesCurDir = async (cwd, device, CSRFToken, backupType) => {
+const getfilesCurDir = async (cwd, device, backupType) => {
   console.log("get files request made");
   const headers = {
-    "X-CSRF-Token": CSRFToken,
+    // "X-CSRF-Token": CSRFToken,
     devicename: device,
     currentdirectory: cwd,
     backuptype: backupType,

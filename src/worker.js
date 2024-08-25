@@ -1,11 +1,23 @@
 import { getfilesCurDir, compareFiles } from "./filesInfo.js";
 import { uploadFile } from "./transferFile.js";
-import { csrftokenURL, concurrency } from "./config.js";
+import { concurrency } from "./config.js";
 import { formatBytes } from "./util.js";
-// import { eachOfLimit } from "async-es";
 
 const FILE = "file";
 const FOLDER = "folder";
+
+const get_image_dims = (file) => {
+  return new Promise(async (resolve, reject) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      resolve({ height: img.height, width: img.width });
+    };
+    img.onerror = (e) => {
+      resolve({ height: null, width: null });
+    };
+  });
+};
 
 const findFilesToUpload = async (cwd, filesList, device) => {
   try {
@@ -27,14 +39,10 @@ const findFilesToUpload = async (cwd, filesList, device) => {
     } else {
       backupType = FOLDER;
     }
-    const response = await fetch(csrftokenURL);
-    const { CSRFToken } = await response.json();
-    console.log("CSRFToken in worker--", CSRFToken);
 
     const DbFiles = await getfilesCurDir(
       uploadingDirPath,
       tempDeviceName !== undefined ? tempDeviceName : device,
-      CSRFToken,
       backupType
     );
     let files = await compareFiles(filesList, DbFiles, cwd, device);
@@ -68,13 +76,13 @@ const findFilesToUpload = async (cwd, filesList, device) => {
       metadata[file.webkitRelativePath]["hash"] = file.hash;
       metadata[file.webkitRelativePath]["id"] = file.id;
       metadata[file.webkitRelativePath]["uuid"] = file.uuid;
+      metadata[file.webkitRelativePath]["type"] = file.type;
       metadata[file.webkitRelativePath]["progress"] = file.progress;
       metadata[file.webkitRelativePath]["version"] = file.version;
     });
 
     postMessage({
       mode: "filesToUpload",
-      CSRFToken,
       trackFilesProgress,
       totalSize,
       toBeUploaded: files,
@@ -92,7 +100,6 @@ const uploadFiles = async (
   files,
   cwd,
   device,
-  CSRFToken,
   filesStatus,
   metadata
 ) => {
@@ -116,19 +123,7 @@ const uploadFiles = async (
       total: files.length,
       processed: 0,
     });
-    // const results = [];
-    // for (let i = 0; i < newFiles.length; i += concurrency) {
-    //   const batch = newFiles.slice(i, i + concurrency);
-    //   const batchPromises = batch.map((file) =>
-    //     uploadFile(socket_main_id, file, cwd, file.modified, device, CSRFToken)
-    //   );
-    //   try {
-    //     const batchResults = await Promise.all(batchPromises);
-    //     results.push(batchResults);
-    //   } catch (err) {
-    //     console.log(err);
-    //   }
-    // }
+
     const tasksInParallel = async (arr, concurrency, fn) => {
       let index = 0;
       let activePromises = 0;
@@ -170,28 +165,14 @@ const uploadFiles = async (
           file,
           cwd,
           file.modified,
-          device,
-          CSRFToken
+          device
+          // CSRFToken
         );
       } catch (err) {
         console.log(err);
       }
     });
 
-    // await eachOfLimit(newFiles, concurrency, async (file) => {
-    //   try {
-    //     await uploadFile(
-    //       socket_main_id,
-    //       file,
-    //       cwd,
-    //       file.modified,
-    //       device,
-    //       CSRFToken
-    //     );
-    //   } catch (err) {
-    //     console.log(err);
-    //   }
-    // });
     console.log("<-----file upload complete--->");
     postMessage({ mode: "finish" });
   } catch (err) {
@@ -210,7 +191,7 @@ onmessage = ({ data }) => {
       filesToUpload,
       pwd,
       device,
-      CSRFToken,
+      // CSRFToken,
       filesStatus,
       metadata,
     } = data;
@@ -219,7 +200,7 @@ onmessage = ({ data }) => {
       filesToUpload,
       pwd,
       device,
-      CSRFToken,
+      // CSRFToken,
       filesStatus,
       metadata
     );
