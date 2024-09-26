@@ -174,7 +174,7 @@ const Row = React.memo(({ index, data, style }) => {
           onClick={handleRowClick}
         >
           <div
-            className={`h-full col-span-2 flex flex-row justify-start items-center text-left ${
+            className={`h-full col-span-2 flex flex-row justify-start items-center text-left truncate  ${
               showAllCheckBoxes || isHovered ? "" : "pl-[50px]"
             }`}
           >

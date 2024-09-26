@@ -12,15 +12,12 @@ import AccountPage from "./AccountPage.js";
 
 import { StatusNotification } from "./StatusNotification.js";
 import SpinnerGIF from "./icons/SpinnerGIF.js";
-import {
-  useGetCSRFTokenQuery,
-  useVerifySessionMutation,
-} from "../features/api/apiSlice.js";
+import { useVerifySessionMutation } from "../features/api/apiSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setCSRFToken } from "../features/csrftoken/csrfTokenSlice.jsx";
 import { setSession } from "../features/session/sessionSlice.js";
 import "./Dashboard.css";
+import { setUserData } from "../features/avatar/avatarSlice.js";
 
 const Dashboard = () => {
   const [searchValue, setSearchValue] = useState("");
@@ -30,40 +27,42 @@ const Dashboard = () => {
   const subpath = params["*"];
   const [mode, setMode] = useState("");
   const dispatch = useDispatch();
-  const CSRFTokenStatus = useGetCSRFTokenQuery();
+  // const CSRFTokenStatus = useGetCSRFTokenQuery();
   const [userSession, userSessionStatus] = useVerifySessionMutation();
   const session = useSelector((state) => state.session);
   const navigate = useNavigate();
   const { open } = useSelector((state) => state.navigatePanel);
-  const { isLoading, isSuccess, isError, data } = CSRFTokenStatus;
+  const { isLoading, isSuccess, isError, data } = userSessionStatus;
   const searchRef = useRef();
   const containerRef = useRef();
 
   console.log("Dashboard rendered");
 
-  useEffect(() => {
-    if (
-      isSuccess &&
-      data &&
-      (session.isLoggedIn === false && session.isLoggedOut === false
-        ? true
-        : session.isLoggedOut)
-    ) {
-      userSession({ CSRFToken: data?.CSRFToken });
-    }
-  }, [isSuccess, data]);
+  // useEffect(() => {
+  //   if (
+  //     isSuccess &&
+  //     data &&
+  //     (session.isLoggedIn === false && session.isLoggedOut === false
+  //       ? true
+  //       : session.isLoggedOut)
+  //   ) {
+  //     userSession({ CSRFToken: data?.CSRFToken });
+  //   }
+  // }, [isSuccess, data]);
 
   useEffect(() => {
-    if (userSessionStatus.isSuccess && userSessionStatus.data?.success) {
+    userSession();
+  }, []);
+
+  useEffect(() => {
+    if (isSuccess && data) {
+      console.log({ ...data });
+      dispatch(setUserData({ ...data }));
       dispatch(setSession({ isLoggedIn: true, isLoggedOut: true }));
-    } else if (userSessionStatus.isError) {
+    } else if (isError) {
       navigate("/login");
     }
-  }, [
-    userSessionStatus.isSuccess,
-    userSessionStatus.data,
-    userSessionStatus.isError,
-  ]);
+  }, [isSuccess, data, isError]);
 
   useEffect(() => {
     setIsSearch(false);
@@ -85,11 +84,11 @@ const Dashboard = () => {
     }
   }, [subpath]);
 
-  useEffect(() => {
-    if (isSuccess) {
-      dispatch(setCSRFToken(data.CSRFToken));
-    }
-  }, [isSuccess, data]);
+  // useEffect(() => {
+  //   if (isSuccess) {
+  //     dispatch(setCSRFToken(data.CSRFToken));
+  //   }
+  // }, [isSuccess, data]);
 
   return (
     <>

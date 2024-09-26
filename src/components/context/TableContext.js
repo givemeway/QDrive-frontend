@@ -108,7 +108,7 @@ const TableContextMenu = ({ style, open, onClose, buttonRef }) => {
     if (fileIds.length === 0 && directories.length === 1) {
       return (
         <div className="flex border-b justify-center items-center p-2 w-full h-40px">
-          <p className="w-full  text-md text-left font-sans font-semibold text-ellipsis">
+          <p className="w-full  text-md text-left font-sans font-semibold truncate">
             {directories[0].folder}
           </p>
         </div>
@@ -116,7 +116,7 @@ const TableContextMenu = ({ style, open, onClose, buttonRef }) => {
     } else {
       return (
         <div className="flex border-b justify-center items-center p-2 w-full h-40px">
-          <p className="w-full  text-md text-left font-sans font-semibold">
+          <p className="w-full  text-md text-left font-sans font-semibold truncate">
             {total} selected
           </p>
         </div>

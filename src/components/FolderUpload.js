@@ -12,6 +12,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { setRefresh } from "../features/table/updateTableSlice.js";
 import "./Buttons/BlueButton.css";
 
+export const ImageDimensions = (file) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.width, height: img.height });
+    };
+    img.onerror = () => {
+      reject("Error->Not a valid image");
+    };
+    img.src = URL.createObjectURL(file);
+  });
 function FolderUpload() {
   const [files, setFiles] = useState([]);
   const [pwd, setPWD] = useState("/");
@@ -20,6 +31,7 @@ function FolderUpload() {
   const [trackFilesProgress, setTrackFilesProgress] = useState([]);
   const [uploadCompleted, setUploadCompleted] = useState(false);
   const [socketID, setSocketID] = useState(undefined);
+  const [updatedFiles, setUpdatedFiles] = useState([]);
   const [filesStatus, setFilesStatus] = useState({
     processed: 0,
     startTime: 0,
@@ -207,6 +219,7 @@ function FolderUpload() {
         socket_main_id: socketID,
         filesToUpload,
         metadata: filesMetaData.current,
+        updatedFiles,
         pwd,
         device,
         filesStatus,
@@ -267,14 +280,27 @@ function FolderUpload() {
     setSocketID(socketID);
   };
 
-  const handleFolderSelection = (e) => {
+  const handleFolderSelection = async (e) => {
     setPreparingFiles(true);
-    setFiles(
-      Array.from(e.target.files).map((file) => {
-        file.modified = false;
-        return file;
-      })
-    );
+    let files = [];
+    let updatedFiles = {};
+    for (let file of e.target.files) {
+      file.modified = false;
+      updatedFiles[file.webkitRelativePath] = { ...file };
+      try {
+        if (file.type.split("/")[0] === "image") {
+          const { height, width } = await ImageDimensions(file);
+          file.height = height;
+          file.width = width;
+          updatedFiles[file.webkitRelativePath] = { ...file };
+        }
+      } catch (err) {
+        console.log(err);
+      }
+      files.push(file);
+    }
+    setUpdatedFiles(updatedFiles);
+    setFiles(Array.from(files).map((file) => file));
 
     const subpart = subpath.split("/").slice(1);
 

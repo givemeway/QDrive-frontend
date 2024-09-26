@@ -10,6 +10,7 @@ import { Snackbar, Box, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setRefresh } from "../features/table/updateTableSlice.js";
+import { ImageDimensions } from "./FolderUpload.js";
 import "./Buttons/BlueButton.css";
 
 const ETA = (starttime, total, uploaded) => {
@@ -247,17 +248,24 @@ function FilesUpload() {
     setSocketID(socketID);
   };
 
-  const handleFileSelection = (e) => {
-    console.log("triggered before set preparing files");
+  const handleFileSelection = async (e) => {
     setPreparingFiles(true);
-    setFiles(
-      Array.from(e.target.files).map((file) => {
-        file.modified = false;
-        return file;
-      })
-    );
+    let files = [];
+    for (let file of e.target.files) {
+      file.modified = false;
+      try {
+        if (file.type.split("/")[0] === "image") {
+          const { height, width } = await ImageDimensions(file);
+          file.height = height;
+          file.width = width;
+        }
+      } catch (err) {
+        console.log(err);
+      }
+      files.push(file);
+    }
+    setFiles(Array.from(files).map((file) => file));
 
-    console.log("inside folder upload component");
     const subpart = subpath.split("/").slice(1);
     if (subpart.length === 0) {
       setDevice("/");

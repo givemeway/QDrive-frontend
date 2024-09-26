@@ -298,17 +298,15 @@ export default React.memo(function MainPanel({ mode }) {
       {isPreview &&
         photos.length > 0 &&
         (mode === "SEARCH" || mode === "BROWSE") && (
-          <Modal style={{ background: "white", opacity: 1 }}>
-            <PhotoPreview
-              onClose={() => {
-                setIsPreview(false);
-                navigate(subpath);
-              }}
-              photos={photos}
-              initialName={photoName}
-              layout={"dashboard"}
-            />
-          </Modal>
+          <PhotoPreview
+            onClose={() => {
+              setIsPreview(false);
+              navigate(subpath);
+            }}
+            photos={photos}
+            initialName={photoName}
+            layout={"dashboard"}
+          />
         )}
       {mode === "DELETED" && (
         <DeletedTable

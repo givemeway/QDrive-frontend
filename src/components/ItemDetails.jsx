@@ -105,7 +105,7 @@ const ItemDetails = () => {
   return (
     <div className="itemdetails">
       <div className="grid grid-cols-2 px-3 w-full h-[50px] items-center border-b">
-        <h2 className="col-span-1 text-left font-semibold text-md text-[#808080]">
+        <h2 className="col-span-1 text-left font-semibold text-md text-[#808080] truncate">
           {fileDetails.file?.name ? fileDetails.file?.name : "File"} Info
         </h2>
         <div className="col-span-1">
@@ -131,7 +131,7 @@ const ItemDetails = () => {
 
       <Divider orientation="horizontal" />
       {isLoading && (
-        <div className="flex flex-row justify-center items-center w-full h-full">
+        <div className="flex flex-row justify-center items-center w-full grow">
           <div className="flex flex-col justify-center">
             <SpinnerGIF
               style={{ width: "50px", height: "50px", float: "center" }}

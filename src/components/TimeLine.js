@@ -591,13 +591,11 @@ export const TimeLine = () => {
         </div>
       )}
       {isPreview && (
-        <Modal style={{ background: "white", opacity: 1 }}>
-          <PhotoPreview
-            photos={photos}
-            onClose={onClose}
-            initialName={initialName}
-          />
-        </Modal>
+        <PhotoPreview
+          photos={photos}
+          onClose={onClose}
+          initialName={initialName}
+        />
       )}
       {gallery.length === 0 && (
         <div className={`w-full h-full flex justify-center items-center`}>

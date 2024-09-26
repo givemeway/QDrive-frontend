@@ -289,7 +289,7 @@ export function StatusNotification() {
   };
 
   useEffect(() => {
-    if (operation.status === "initialized" && CSRFToken.length > 0) {
+    if (operation.status === "initialized") {
       setOpen(true);
       switch (operation.type) {
         case COPYSHARE:
@@ -343,7 +343,8 @@ export function StatusNotification() {
           init_operation[0]({ items: operation.data, CSRFToken });
           break;
         case LOGOUT:
-          init_operation[0]({ CSRFToken });
+          console.log("logging out...");
+          init_operation[0]();
           break;
       }
     }

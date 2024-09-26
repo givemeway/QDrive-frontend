@@ -19,6 +19,7 @@ import { SHARE, file } from "../config.js";
 import { getShareItemDetails } from "./ModifiedCell.jsx";
 import { setOperation } from "../features/operation/operationSlice.jsx";
 import { ErrorIcon } from "./icons/ErrorIcon.js";
+import { Modal } from "./Modal/Modal.jsx";
 
 const generateLink = (arr, idx) => {
   const path = arr.slice(0, idx + 1).join("/");
@@ -207,9 +208,9 @@ export default function PhotoPreview({ onClose, photos, initialName, layout }) {
   };
 
   return (
-    <>
+    <Modal>
       <div className="w-full h-full flex flex-col bg-[#F7F5F2]">
-        <div className="flex flex-row justify-start items-center w-full h-20">
+        <div className="flex flex-row justify-start items-center w-full h-[10%]">
           <header
             className="w-full h-full flex flex-row justify-start items-center
                                  bg-white p-2 border-[#DBDBDB] border-b "
@@ -259,6 +260,6 @@ export default function PhotoPreview({ onClose, photos, initialName, layout }) {
           {isError && <div> Something Went Wrong</div>}
         </div>
       </div>
-    </>
+    </Modal>
   );
 }

@@ -25,10 +25,13 @@ const File = ({ path, row, params }) => {
   const ext = getFileExtension(row.name);
   const picture = isPicture(row.name);
   return (
-    <div className="flex flex-row justify-start items-center m-0 gap-2">
-      <div className="w-10 h-full flex flex-row justify-center items-center">
+    <div className="flex flex-row justify-start items-center m-0 gap-2 ">
+      <div className="w-10 h-full flex flex-row justify-center items-center ">
         {picture && (
-          <Link to={generateLink(path, params, row, 1)}>
+          <Link
+            to={generateLink(path, params, row, 1)}
+            className="border-[#bbb5ae] border"
+          >
             <Image
               src={row?.thumbURL}
               showLoading={<Icon ext={ext} />}

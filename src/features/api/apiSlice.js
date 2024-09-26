@@ -243,9 +243,6 @@ export const apiSlice = createApi({
         url: "/user/verifySession",
         method: "GET",
         credentials: "include",
-        // headers: {
-        //   "X-CSRF-Token": data.CSRFToken,
-        // },
       }),
     }),
     logout: builder.mutation({

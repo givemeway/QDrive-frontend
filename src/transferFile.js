@@ -72,6 +72,10 @@ const uploadFile = (socket_main_id, file, cwd, modified, device) => {
         id:
           file.webkitRelativePath === "" ? file.name : file.webkitRelativePath,
       };
+      if (file.type.split("/")[0] === "image") {
+        fileStat["height"] = file.height;
+        fileStat["width"] = file.width;
+      }
 
       let headers = {
         filename: file.name,
@@ -93,11 +97,8 @@ const uploadFile = (socket_main_id, file, cwd, modified, device) => {
         fileStat.uuid = file.uuid;
         fileStat.version = file.version;
       }
-
       headers.filestat = JSON.stringify(fileStat);
-
       const formData = new FormData();
-
       formData.append("file", file);
       let xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
@@ -138,7 +139,6 @@ const uploadFile = (socket_main_id, file, cwd, modified, device) => {
         reject(e);
       };
     } catch (err) {
-      // updateFileState("failed", err);
       postFileStatus("failed", err);
       reject(err);
     }

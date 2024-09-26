@@ -6,19 +6,6 @@ import { formatBytes } from "./util.js";
 const FILE = "file";
 const FOLDER = "folder";
 
-const get_image_dims = (file) => {
-  return new Promise(async (resolve, reject) => {
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-      resolve({ height: img.height, width: img.width });
-    };
-    img.onerror = (e) => {
-      resolve({ height: null, width: null });
-    };
-  });
-};
-
 const findFilesToUpload = async (cwd, filesList, device) => {
   try {
     let tempDeviceName;
@@ -101,7 +88,8 @@ const uploadFiles = async (
   cwd,
   device,
   filesStatus,
-  metadata
+  metadata,
+  updatedFiles
 ) => {
   let newFiles = [];
   for (let file of files) {
@@ -112,6 +100,8 @@ const uploadFiles = async (
       file.id = metadata[file.webkitRelativePath]["id"];
       file.uuid = metadata[file.webkitRelativePath]["uuid"];
       file.version = metadata[file.webkitRelativePath]["version"];
+      file.height = updatedFiles[file.webkitRelativePath]["height"];
+      file.width = updatedFiles[file.webkitRelativePath]["width"];
       newFiles.push(file);
     }
   }
@@ -160,14 +150,7 @@ const uploadFiles = async (
 
     await tasksInParallel(newFiles, concurrency, async (file) => {
       try {
-        await uploadFile(
-          socket_main_id,
-          file,
-          cwd,
-          file.modified,
-          device
-          // CSRFToken
-        );
+        await uploadFile(socket_main_id, file, cwd, file.modified, device);
       } catch (err) {
         console.log(err);
       }
@@ -191,18 +174,18 @@ onmessage = ({ data }) => {
       filesToUpload,
       pwd,
       device,
-      // CSRFToken,
       filesStatus,
       metadata,
+      updatedFiles,
     } = data;
     uploadFiles(
       socket_main_id,
       filesToUpload,
       pwd,
       device,
-      // CSRFToken,
       filesStatus,
-      metadata
+      metadata,
+      updatedFiles
     );
   }
 };
