@@ -256,6 +256,7 @@ export default React.memo(function MainPanel({ mode }) {
   useEffect(() => {
     if (containerRef.current) {
       const { height } = containerRef.current.getBoundingClientRect();
+      console.log(height);
       setHeight(height);
     }
   }, [containerRef.current]);
@@ -271,7 +272,8 @@ export default React.memo(function MainPanel({ mode }) {
     <>
       {!isPreview && (mode === "SEARCH" || mode === "BROWSE") && (
         <div
-          className="w-full flex flex-row justify-start items-center flex-grow"
+          className="w-full flex flex-row justify-start items-center"
+          style={{ height: "calc(100% - 200px" }}
           ref={containerRef}
         >
           <Table

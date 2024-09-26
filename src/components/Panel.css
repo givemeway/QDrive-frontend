@@ -6,7 +6,7 @@
   background: var(--color-smoke-white);
   box-sizing: border-box;
   width: 240px;
-  height: auto;
+  height: 100%;
 }
 
 @media screen and (max-width: 767px) {
