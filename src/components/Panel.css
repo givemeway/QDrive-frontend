@@ -6,11 +6,28 @@
   background: var(--color-smoke-white);
   box-sizing: border-box;
   width: 240px;
-  height: 100%;
+  height: auto;
 }
 
 @media screen and (max-width: 767px) {
   .panel {
     width: 190px;
+    transform: translateX(-100%);
+    transition: transform 300ms ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border-right: 1px solid var(--border-grey);
+    background: var(--color-smoke-white);
+    box-sizing: border-box;
+    height: 100%;
+  }
+
+  .panel.panel-grow {
+    transform: translateX(0%);
+  }
+
+  .panel.panel-hide {
+    transform: translateX(-100%);
   }
 }

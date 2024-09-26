@@ -271,7 +271,7 @@ export default React.memo(function MainPanel({ mode }) {
     <>
       {!isPreview && (mode === "SEARCH" || mode === "BROWSE") && (
         <div
-          className="w-full h-full flex flex-row justify-start items-center"
+          className="w-full flex flex-row justify-start items-center flex-grow"
           ref={containerRef}
         >
           <Table

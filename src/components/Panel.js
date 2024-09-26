@@ -43,6 +43,7 @@ const TabButton = ({ active, children, onClick }) => {
 
 const Panel = () => {
   const [openExplorer, setOpenExplorer] = useState(false);
+  const { open } = useSelector((state) => state.navigatePanel);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const params = useParams();
@@ -138,7 +139,7 @@ const Panel = () => {
 
   return (
     <div
-      className={`panel`}
+      className={`panel ${open ? "panel-grow" : "panel-hide"}`}
       ref={panelRef}
       onClick={(e) => e.stopPropagation()}
     >

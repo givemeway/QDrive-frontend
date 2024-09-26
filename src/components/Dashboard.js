@@ -33,6 +33,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { open } = useSelector((state) => state.navigatePanel);
   const { isLoading, isSuccess, isError, data } = userSessionStatus;
+  const [isClosing, setIsClosing] = useState(false);
   const searchRef = useRef();
   const containerRef = useRef();
 
@@ -63,6 +64,16 @@ const Dashboard = () => {
       navigate("/login");
     }
   }, [isSuccess, data, isError]);
+
+  useEffect(() => {
+    if (!open) {
+      setIsClosing(true);
+
+      setTimeout(() => {
+        setIsClosing(false);
+      }, 300);
+    }
+  }, [open]);
 
   useEffect(() => {
     setIsSearch(false);
@@ -131,7 +142,11 @@ const Dashboard = () => {
                 mode === "DELETED") && <MainPanel mode={mode} />}
             {isError && <div className="w-full">Something Went Wrong</div>}
           </div>
-          <div className={`panel-container-mobile ${open ? "open" : ""}`}>
+          <div
+            className={`panel-container-mobile ${
+              open ? "panel-grow" : isClosing ? "delay-close" : "panel-hide"
+            }`}
+          >
             <NavigatePanel />
           </div>
         </div>
