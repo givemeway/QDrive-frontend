@@ -297,9 +297,9 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: `/createFolder?subpath=${data.subpath}&folder=${data.folder}`,
         method: "POST",
-        headers: {
-          "X-CSRF-Token": data.CSRFToken,
-        },
+        // headers: {
+        //   "X-CSRF-Token": data.CSRFToken,
+        // },
         credentials: "include",
       }),
     }),

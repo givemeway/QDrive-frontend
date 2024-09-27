@@ -62,7 +62,7 @@ export default function CreateFolderModal({ open, setOpen }) {
   const dispatch = useDispatch();
 
   const [createFolderQuery, createFolderStatus] = useCreateFolderMutation();
-  const { CSRFToken } = useSelector((state) => state.csrfToken);
+  // const { CSRFToken } = useSelector((state) => state.csrfToken);
   const { isLoading, isSuccess, isError, error } = createFolderStatus;
 
   const handleChange = (e) => {
@@ -74,8 +74,8 @@ export default function CreateFolderModal({ open, setOpen }) {
   };
 
   const handleCreate = () => {
-    if (text !== "" && CSRFToken) {
-      const data = { CSRFToken, subpath, folder: text };
+    if (text !== "") {
+      const data = { subpath, folder: text };
       createFolderQuery(data);
     }
   };

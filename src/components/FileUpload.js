@@ -43,6 +43,8 @@ function FilesUpload() {
     uploaded: 0,
   });
   const [preparingFiles, setPreparingFiles] = useState(false);
+  const [updatedFiles, setUpdatedFiles] = useState([]);
+
   const [open, setOpen] = useState(null);
   const timer = useRef(null);
   const atLeastOneUploaded = useRef(false);
@@ -186,6 +188,7 @@ function FilesUpload() {
         socket_main_id: socketID,
         filesToUpload,
         metadata: filesMetaData.current,
+        updatedFiles,
         pwd,
         device,
         filesStatus,
@@ -251,19 +254,23 @@ function FilesUpload() {
   const handleFileSelection = async (e) => {
     setPreparingFiles(true);
     let files = [];
+    let updatedFiles = {};
     for (let file of e.target.files) {
       file.modified = false;
+      updatedFiles[file.webkitRelativePath] = { ...file };
       try {
         if (file.type.split("/")[0] === "image") {
           const { height, width } = await ImageDimensions(file);
           file.height = height;
           file.width = width;
+          updatedFiles[file.webkitRelativePath] = { ...file };
         }
       } catch (err) {
         console.log(err);
       }
       files.push(file);
     }
+    setUpdatedFiles(updatedFiles);
     setFiles(Array.from(files).map((file) => file));
 
     const subpart = subpath.split("/").slice(1);
