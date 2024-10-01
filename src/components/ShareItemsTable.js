@@ -225,7 +225,7 @@ const SharedTable = ({
               >
                 {({ onItemsRendered, ref }) => (
                   <List
-                    height={isFetching ? height - 150 : height - 100}
+                    height={isFetching ? height - 100 : height}
                     width={"100%"}
                     itemCount={itemCount}
                     itemData={items}

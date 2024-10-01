@@ -59,7 +59,7 @@ export const DownloadHeader = () => {
     );
   };
   return (
-    <div className="w-full h-[100px] flex flex-row justify-start items-center  gap-2 mt-5">
+    <div className="w-full h-[100px] flex flex-row justify-start items-center  gap-2 mt-2">
       <DownloadBox onClick={handleDownload} />
       <ShareBox />
       <div className="grow"></div>

@@ -64,7 +64,7 @@ export default function Shared() {
 
   const pagination = useRef({ start: 0, page: pageSize });
   const tableContainerRef = useRef(null);
-  const [height, setHeight] = useState(0);
+  const [height, setHeight] = useState(300);
 
   const validate = {
     isLoading: validateShareStatus.isLoading,
@@ -218,7 +218,6 @@ export default function Shared() {
   useEffect(() => {
     if (browseShare.data?.success) {
       const { files, directories, home, path, total } = browseShare.data;
-      console.log(total);
       const subTotal = files.length + directories.length + state.items.length;
       const subTotal_newDir = files.length + directories.length;
       if (!navigatedToNewDir.current && subTotal < total) {
@@ -337,8 +336,11 @@ export default function Shared() {
           </div>
         )}
         {isShareValid && (
-          <div className="w-full md:w-2/3 h-5/6 flex flex-col justify-between items-center grow">
-            <div className="w-full flex flex-col justify-around items-center">
+          <div
+            className="w-full md:w-2/3 flex flex-col justify-between items-center pr-2 pl-2"
+            style={{ height: "calc(100% - 50px)" }}
+          >
+            <div className="w-full flex flex-col justify-around items-center h-[200px]">
               <ShareBanner
                 owner={sharedby.owner}
                 item={type === "fi" ? "file" : "folder"}
@@ -347,7 +349,7 @@ export default function Shared() {
               <DownloadHeader />
             </div>
             {type === "fo" && (
-              <div className="w-full flex flex-row justify-start items-center">
+              <div className="w-full flex flex-row justify-start items-center h-[50px]">
                 <BreadCrumb
                   queue={breadCrumbMap}
                   link={`/sh/fo/${shareId}`}
@@ -359,6 +361,11 @@ export default function Shared() {
             )}
             <div
               className="w-full grow flex justify-start items-center"
+              style={{
+                height: `${
+                  type === "fo" ? "calc(100% - 250px)" : "calc(100% - 200px)"
+                }`,
+              }}
               ref={tableContainerRef}
             >
               <Table
