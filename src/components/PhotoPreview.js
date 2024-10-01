@@ -95,11 +95,15 @@ const PhotoPath = ({ layout }) => {
           <span className="text-[#938e88]">/</span>
         </div>
       )}
-      <div className="flex md:w-full flex-row justify-start items-center gap-2 truncate">
-        <span className="text-black font-bold w-[80%] truncate">
+      <div
+        className={`${
+          layout === "dashboard" ? "" : "w-full"
+        } flex md:w-full flex-row justify-start items-center gap-2 truncate`}
+      >
+        <span className="text-black font-bold max-w-96 truncate text-left">
           {photo.name}
         </span>
-        <span className="text-[#938e88] w-[20%]">{photo.ext}</span>
+        <span className="text-[#938e88] max-w-16 text-left">{photo.ext}</span>
       </div>
     </div>
   );
@@ -119,7 +123,7 @@ const PhotoNavigation = () => {
     }
   };
   return (
-    <div className="flex flex-row justify-start items-center gap-1 border-r border-l w-24 truncate">
+    <div className="flex flex-row justify-start items-center gap-1 border-r border-l max-w-32 truncate">
       <button onClick={handleLeft} className=" hover:bg-[#f5efe5]">
         <Left fill={"#080341"} height={20} width={20} />
       </button>
