@@ -27,6 +27,7 @@ import {
   setTrashBulkBatchRestoreOpen,
 } from "../features/trash/selectedTrashBatch.jsx";
 import TrashModal from "./Modal/TrashModal.js";
+import { Info } from "@mui/icons-material";
 
 const restoreButtonStyle = {
   textTransform: "none",
@@ -300,10 +301,49 @@ const SharedTable = ({
         {(isFetching || isSuccess || reLoad) && items?.length > 0 && height && (
           <div
             className={`${
-              showRestoreButton ? "w-[70%]" : "w-full"
+              showRestoreButton ? "w-full md:w-[70%]" : "w-full"
             } flex flex-col md:flex-row h-full`}
           >
             <div className={`h-full flex flex-col w-[100%]`}>
+              <div className="w-full h-auto">
+                <div className="w-full flex justify-between items-start md:items-center">
+                  <h3 className="text-2xl grow text-left">Deleted Files</h3>
+                  {showRestoreButton && (
+                    <div className="md:hidden flex flex-col justify-start items-center p-l-4">
+                      <Typography align="center">
+                        {
+                          Object.entries(rowSelection).filter(([k, v]) => v)
+                            .length
+                        }{" "}
+                        item selected
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        sx={restoreButtonStyle}
+                        disableElevation
+                        onClick={() =>
+                          dispatch(setTrashBulkBatchRestoreOpen(true))
+                        }
+                      >
+                        Restore
+                      </Button>
+                      <Button
+                        variant="text"
+                        sx={deleteButtonStyle}
+                        startIcon={<DeleteForeverIcon />}
+                        onClick={() =>
+                          dispatch(setTrashBulkBatchDeleteOpen(true))
+                        }
+                      >
+                        Permanently delete
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <h5 className="text-md w-full text-left ">
+                  You can restore any file deleted in the last 30 days.
+                </h5>
+              </div>
               <div className="w-full h-[50px] grid grid-cols-2 md:grid-cols-3 content-center border-b border-[#DBDBDB]">
                 <div className="col-span-2 flex justify-start items-center">
                   <div className="w-[50px] h-full flex justify-center items-center"></div>
@@ -313,6 +353,7 @@ const SharedTable = ({
                   Deleted
                 </h4>
               </div>
+
               <InfiniteLoader
                 isItemLoaded={isItemLoaded}
                 itemCount={10000000}
@@ -322,7 +363,8 @@ const SharedTable = ({
               >
                 {({ onItemsRendered, ref }) => (
                   <List
-                    height={isFetching ? height - 150 : height - 100}
+                    // height={isFetching ? height - 150 : height - 100}
+                    height={height - 150}
                     width={"100%"}
                     itemCount={itemCount}
                     itemData={items}
@@ -338,7 +380,7 @@ const SharedTable = ({
           </div>
         )}
         {showRestoreButton && (
-          <div className="w-[30%] flex flex-col justify-start items-center h-full p-l-4">
+          <div className="hidden md:w-[30%]  md:flex md:flex-col md:justify-start md:items-center h-full p-l-4">
             <Typography align="center">
               {Object.entries(rowSelection).filter(([k, v]) => v).length} item
               selected
