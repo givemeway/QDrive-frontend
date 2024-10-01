@@ -88,19 +88,19 @@ const PhotoPath = ({ layout }) => {
   const photo = useSelector((state) => state.photoNav);
 
   return (
-    <div className="flex flex-row justify-start items-center gap-1">
+    <div className="flex flex-row justify-start items-center gap-1 w-full">
       {layout === "dashboard" && (
         <div className="justify-start items-center hidden md:flex gap-1">
           <DropDown path={photo.path} />
           <span className="text-[#938e88]">/</span>
         </div>
       )}
-      <span>
-        <div className="flex flex-row justify-start items-center gap-2">
-          <span className="text-black font-bold">{photo.name}</span>
-          <span className="text-[#938e88]">{photo.ext}</span>
-        </div>
-      </span>
+      <div className="flex md:w-full flex-row justify-start items-center gap-2 truncate">
+        <span className="text-black font-bold w-[80%] truncate">
+          {photo.name}
+        </span>
+        <span className="text-[#938e88] w-[20%]">{photo.ext}</span>
+      </div>
     </div>
   );
 };
@@ -119,11 +119,11 @@ const PhotoNavigation = () => {
     }
   };
   return (
-    <div className="flex flex-row justify-start items-center gap-1 border-r border-l ">
+    <div className="flex flex-row justify-start items-center gap-1 border-r border-l w-24 truncate">
       <button onClick={handleLeft} className=" hover:bg-[#f5efe5]">
         <Left fill={"#080341"} height={20} width={20} />
       </button>
-      <span className="tracking-tighter text-[#938e88]">
+      <span className="tracking-tighter text-[#938e88] truncate">
         {photo.pos} of {photo.total}
       </span>
 
@@ -218,10 +218,10 @@ export default function PhotoPreview({ onClose, photos, initialName, layout }) {
             <div className="w-10 flex justify-center items-center h-full">
               <CloseIcon onClose={onClose} style={{ width: 25, height: 25 }} />
             </div>
-            <div className="grow">
+            <div className="grow" style={{ width: "calc(100% - 185px)" }}>
               <PhotoPath layout={layout} />
             </div>
-            <div className="flex flex-row gap-1 items-center ">
+            <div className="flex flex-row gap-1 items-center w-56 justify-end">
               <PhotoNavigation />
 
               <button className="hover:bg-[#f5efe5]" onClick={handleDownload}>
