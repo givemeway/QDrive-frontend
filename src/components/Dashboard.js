@@ -27,7 +27,6 @@ const Dashboard = () => {
   const subpath = params["*"];
   const [mode, setMode] = useState("");
   const dispatch = useDispatch();
-  // const CSRFTokenStatus = useGetCSRFTokenQuery();
   const [userSession, userSessionStatus] = useVerifySessionMutation();
   const session = useSelector((state) => state.session);
   const navigate = useNavigate();
@@ -38,18 +37,6 @@ const Dashboard = () => {
   const containerRef = useRef();
 
   console.log("Dashboard rendered");
-
-  // useEffect(() => {
-  //   if (
-  //     isSuccess &&
-  //     data &&
-  //     (session.isLoggedIn === false && session.isLoggedOut === false
-  //       ? true
-  //       : session.isLoggedOut)
-  //   ) {
-  //     userSession({ CSRFToken: data?.CSRFToken });
-  //   }
-  // }, [isSuccess, data]);
 
   useEffect(() => {
     userSession();

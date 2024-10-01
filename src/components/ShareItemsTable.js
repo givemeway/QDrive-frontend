@@ -7,7 +7,7 @@ import InfiniteLoader from "react-window-infinite-loader";
 import { useDispatch, useSelector } from "react-redux";
 import { pageSize } from "../config.js";
 import RenderNameCell from "./NameCell.jsx";
-import TableContext from "./context/TableContext.js";
+import TableContext from "./context/ShareContext.js";
 import ItemDetails from "./ItemDetails.jsx";
 import {
   setLayout,
@@ -15,6 +15,11 @@ import {
   setNav,
 } from "../features/browseItems/browseItemsSlice.js";
 import { setDims } from "../features/table/checkboxSlice.js";
+import {
+  setFilesSelected,
+  setFoldersSelected,
+} from "../features/selectedRows/selectedRowsSlice.js";
+import { extract_items_from_ids } from "../util.js";
 
 const Row = React.memo(({ index, data, style }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -23,9 +28,15 @@ const Row = React.memo(({ index, data, style }) => {
   const { layout, urlPath, nav } = useSelector((state) => state.browseItems);
   const { dims } = useSelector((state) => state.checkbox);
   const buttonRef = useRef();
+  const dispatch = useDispatch();
 
   const handleClick = (e) => {
     e.stopPropagation();
+    const id = e.currentTarget.closest("[id]").getAttribute("id");
+    const { files, folders } = extract_items_from_ids({ [id]: true });
+    dispatch(setFoldersSelected(folders));
+    dispatch(setFilesSelected(files));
+
     setShowContext((prev) => !prev);
     const topOffset = e.currentTarget.offsetHeight + e.currentTarget.offsetTop;
     const leftOffset = e.currentTarget.offsetLeft;
@@ -49,81 +60,79 @@ const Row = React.memo(({ index, data, style }) => {
   if (data[index]) {
     const { id, name, thumbURL, path, item, url } = data[index];
     return (
-      <>
-        <div
-          className={`grid grid-cols-2 md:grid-cols-5 
+      <div
+        className={`grid grid-cols-2 md:grid-cols-5 
                     content-center shared-table-row hover:bg-[#E8E8E8]`}
-          id={`${data[index]["id"]}`}
-          style={{
-            ...style,
-            borderBottom: "1px solid #DBDBDB",
-          }}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+        id={`${data[index]["id"]}`}
+        style={{
+          ...style,
+          borderBottom: "1px solid #DBDBDB",
+        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div
+          className={`h-full col-span-2 flex flex-row justify-start items-center text-left`}
         >
-          <div
-            className={`h-full col-span-2 flex flex-row justify-start items-center text-left`}
-          >
-            <RenderNameCell
-              rowID={id}
-              rowPath={path}
-              rowName={name}
-              item={item}
-              layout={layout}
-              thumbURL={thumbURL}
-              path={urlPath}
-              url={url}
-              nav={nav}
-            />
-          </div>
-          <div className="h-full col-span-1 text-left  content-center hidden md:block">
-            <span className="grow text-[#736C64] font-sans text-md">
-              {data[index]["size"]}
-            </span>
-          </div>
-          <div className="h-full col-span-1 text-left content-center hidden md:block">
-            <span className="grow text-[#736C64] font-sans text-md">
-              {data[index]["versions"]}
-            </span>
-          </div>
-          <div className="h-full col-span-1 text-left content-center hidden md:block">
-            <span className="grow text-[#736C64] font-sans text-md">
-              {new Date(data[index]["last_modified"]).toLocaleString(
-                "en-in",
-                timeOpts
-              )}
-            </span>
-          </div>
-          {isHovered && (
-            <div
-              className={`z-[100] absolute h-full right-5 flex justify-center items-center`}
-            >
-              <button
-                className={` hover:bg-[#F5EFE5] ${
-                  showContext ? "bg-[#F5EFE5]" : ""
-                }`}
-                onClick={handleClick}
-                ref={buttonRef}
-              >
-                <ContextIcon style={{ width: 24, height: 24 }} />
-              </button>
-              {showContext && (
-                <TableContext
-                  style={{
-                    width: 150,
-                    top: cords.top,
-                    left: cords.left,
-                    height: 250,
-                  }}
-                  open={showContext}
-                  onClose={() => setShowContext(false)}
-                  buttonRef={buttonRef}
-                ></TableContext>
-              )}
-            </div>
-          )}
+          <RenderNameCell
+            rowID={id}
+            rowPath={path}
+            rowName={name}
+            item={item}
+            layout={layout}
+            thumbURL={thumbURL}
+            path={urlPath}
+            url={url}
+            nav={nav}
+          />
         </div>
-      </>
+        <div className="h-full col-span-1 text-left  content-center hidden md:block">
+          <span className="grow text-[#736C64] font-sans text-md">
+            {data[index]["size"]}
+          </span>
+        </div>
+        <div className="h-full col-span-1 text-left content-center hidden md:block">
+          <span className="grow text-[#736C64] font-sans text-md">
+            {data[index]["versions"]}
+          </span>
+        </div>
+        <div className="h-full col-span-1 text-left content-center hidden md:block">
+          <span className="grow text-[#736C64] font-sans text-md">
+            {new Date(data[index]["last_modified"]).toLocaleString(
+              "en-in",
+              timeOpts
+            )}
+          </span>
+        </div>
+        {isHovered && (
+          <div
+            className={`z-[100] absolute h-full right-5 flex justify-center items-center`}
+          >
+            <button
+              className={` hover:bg-[#F5EFE5] ${
+                showContext ? "bg-[#F5EFE5]" : ""
+              }`}
+              onClick={handleClick}
+              ref={buttonRef}
+            >
+              <ContextIcon style={{ width: 24, height: 24 }} />
+            </button>
+            {showContext && (
+              <TableContext
+                style={{
+                  width: 150,
+                  top: cords.top,
+                  left: cords.left,
+                  // height: 100,
+                }}
+                open={showContext}
+                onClose={() => setShowContext(false)}
+                buttonRef={buttonRef}
+              ></TableContext>
+            )}
+          </div>
+        )}
+      </div>
     );
   }
 });
