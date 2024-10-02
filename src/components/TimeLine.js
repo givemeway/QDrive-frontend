@@ -507,7 +507,6 @@ export const TimeLine = () => {
       if (params.get("preview")) {
         setIsPreview(true);
         setInitialName(params.get("preview"));
-        console.log(params.get("preview"));
       }
     }
   }, [location.search]);
@@ -522,33 +521,31 @@ export const TimeLine = () => {
         {Array.isArray(data[index]?.value) ? (
           data[index].value.map((photo) => {
             return (
-              <>
-                <Link
-                  to={`/dashboard/photos?preview=${photo.filename}`}
+              <Link
+                to={`/dashboard/photos?preview=${photo.filename}`}
+                style={{
+                  height: state.renderSize - 4,
+                  width: state.renderSize,
+                }}
+              >
+                <Image
+                  src={photo.value}
                   style={{
-                    height: state.renderSize - 4,
                     width: state.renderSize,
+                    height: state.renderSize,
+                    // className: "gallery-image",
                   }}
-                >
-                  <Image
-                    src={photo.value}
-                    style={{
-                      width: state.renderSize,
-                      height: state.renderSize,
-                      // className: "gallery-image",
-                    }}
-                    className={"gallery-image"}
-                    ShowLoading={() => (
-                      <Skeleton
-                        height={state.renderSize}
-                        width={state.renderSize}
-                        animation="wave"
-                      />
-                    )}
-                    ErrorIcon={() => <>Error</>}
-                  />
-                </Link>
-              </>
+                  className={"gallery-image"}
+                  ShowLoading={() => (
+                    <Skeleton
+                      height={state.renderSize}
+                      width={state.renderSize}
+                      animation="wave"
+                    />
+                  )}
+                  ErrorIcon={() => <>Error</>}
+                />
+              </Link>
             );
           })
         ) : (
@@ -560,7 +557,7 @@ export const TimeLine = () => {
 
   console.log("gallery re-rendered");
   return (
-    <div className="w-full h-full flex flex-col" ref={elementRef}>
+    <div className="w-full h-[90%] flex flex-col" ref={elementRef}>
       <div className="w-full h-[100px]" ref={filterRef}>
         <TimeLineFilter></TimeLineFilter>
       </div>

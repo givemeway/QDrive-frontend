@@ -41,7 +41,7 @@ const File = ({ path, row, params }) => {
         )}
         {!picture && <Icon ext={ext} />}
       </div>
-      <div className="w-auto">
+      <div className="max-w-[200px] md:max-w-[400px] truncate">
         {picture && (
           <Link to={generateLink(path, params, row, 1)} className="grow">
             {row.name}
@@ -71,7 +71,7 @@ const Folder = ({ path, params, row }) => {
       <div className="w-10 h-full">
         <FolderIcon style={svgIconStyle} />
       </div>
-      <div className="w-auto">
+      <div className="max-w-[200px] md:max-w-[400px] truncate">
         <Link
           to={generateLink(path, params, row)}
           onClick={(e) => e.stopPropagation()}

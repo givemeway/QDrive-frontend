@@ -155,14 +155,9 @@ const Row = React.memo(({ index, data, style }) => {
     return (
       <>
         <div
-          className={`grid grid-cols-2 md:grid-cols-5 
-                    content-center shared-table-row
-                    ${
-                      rowSelection[data[index].id]
-                        ? "bg-[#DEEBFF]"
-                        : "hover:bg-[#E8E8E8]"
-                    } 
-                `}
+          className={`table-row-container ${
+            rowSelection[data[index].id] ? "checkbox-selected" : ""
+          }`}
           id={`${data[index]["id"]}`}
           style={{
             ...style,
@@ -174,7 +169,7 @@ const Row = React.memo(({ index, data, style }) => {
           onClick={handleRowClick}
         >
           <div
-            className={`h-full col-span-2 flex flex-row justify-start items-center text-left truncate  ${
+            className={`h-full  flex flex-row justify-start items-center text-left ${
               showAllCheckBoxes || isHovered ? "" : "pl-[50px]"
             }`}
           >
@@ -212,18 +207,18 @@ const Row = React.memo(({ index, data, style }) => {
               />
             )}
           </div>
-          <div className="h-full col-span-1 text-left  content-center hidden md:block">
+          <div className="h-full text-left  content-center hidden md:block truncate">
             <span className="grow text-[#736C64] font-sans text-md">
               {data[index]["size"]}
             </span>
           </div>
-          <div className="h-full col-span-1 text-left content-center hidden md:block">
+          <div className="h-full  text-left content-center hidden md:block truncate">
             <span className="grow text-[#736C64] font-sans text-md">
               {data[index]["versions"]}
             </span>
           </div>
-          <div className="h-full col-span-1 text-left content-center hidden md:block">
-            <span className="grow text-[#736C64] font-sans text-md">
+          <div className="h-full text-left content-center hidden md:block truncate">
+            <span className=" text-[#736C64] font-sans text-md ">
               {new Date(data[index]["last_modified"]).toLocaleString(
                 "en-in",
                 timeOpts
@@ -566,10 +561,9 @@ const SharedTable = ({
                 </div>
               </div>
 
-              <div className="w-full h-[50px] grid grid-cols-2 md:grid-cols-5 content-center border-b border-[#DBDBDB]">
-                <div className="col-span-2 flex justify-start items-center">
-                  <div className="w-[50px] h-full flex justify-center items-center"></div>
-                  <h4 className="text-left pl-2 font-bold">Name</h4>
+              <div className="table-row-container w-full h-[50px] content-center border-b border-[#DBDBDB]">
+                <div className=" flex justify-start items-center">
+                  <h4 className="text-left font-bold pl-14">Name</h4>
                   {sort === "ASC" && (
                     <UpArrowIcon
                       className={`uparrow-icon ${keyDown ? "clicked" : ""}`}
@@ -592,13 +586,11 @@ const SharedTable = ({
                     />
                   )}
                 </div>
-                <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
-                  Size
-                </h4>
-                <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
+                <h4 className=" text-left  font-bold hidden md:block">Size</h4>
+                <h4 className=" text-left  font-bold hidden md:block">
                   Versions
                 </h4>
-                <h4 className="col-span-1 text-left pl-2 font-bold hidden md:block">
+                <h4 className=" text-left  font-bold hidden md:block">
                   Modified
                 </h4>
               </div>
