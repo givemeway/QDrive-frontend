@@ -207,12 +207,12 @@ const Row = React.memo(({ index, data, style }) => {
               />
             )}
           </div>
-          <div className="h-full text-left  content-center hidden md:block truncate">
+          <div className="h-full text-left  content-center hidden md:block truncate hide-column">
             <span className="grow text-[#736C64] font-sans text-md">
               {data[index]["size"]}
             </span>
           </div>
-          <div className="h-full  text-left content-center hidden md:block truncate">
+          <div className="h-full  text-left content-center hidden md:block truncate hide-column">
             <span className="grow text-[#736C64] font-sans text-md">
               {data[index]["versions"]}
             </span>
@@ -586,8 +586,10 @@ const SharedTable = ({
                     />
                   )}
                 </div>
-                <h4 className=" text-left  font-bold hidden md:block">Size</h4>
-                <h4 className=" text-left  font-bold hidden md:block">
+                <h4 className=" text-left  font-bold hidden md:block hide-column">
+                  Size
+                </h4>
+                <h4 className=" text-left  font-bold hidden md:block hide-column">
                   Versions
                 </h4>
                 <h4 className=" text-left  font-bold hidden md:block">

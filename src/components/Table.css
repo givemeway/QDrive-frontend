@@ -11,7 +11,7 @@
 
 .table-row-container {
   display: grid;
-  grid-template-columns: auto 100px 100px 150px;
+  grid-template-columns: auto 100px 100px 150px 50px;
   grid-template-rows: auto;
   width: 100%;
 }
@@ -27,5 +27,20 @@
   .table-row-container {
     grid-template-columns: auto;
     grid-template-rows: auto;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .table-row-container {
+    grid-template-columns: 2fr 150px;
+  }
+  .hide-column {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .table-row-container {
+    grid-template-columns: 1fr;
   }
 }

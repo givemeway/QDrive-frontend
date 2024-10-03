@@ -41,7 +41,7 @@ const File = ({ path, row, params }) => {
         )}
         {!picture && <Icon ext={ext} />}
       </div>
-      <div className="max-w-[200px] md:max-w-[400px] truncate">
+      <div className="max-w-[200px] md:max-w-[250px] lg:max-w-[350px] xl:max-w-full truncate">
         {picture && (
           <Link to={generateLink(path, params, row, 1)} className="grow">
             {row.name}
@@ -71,13 +71,13 @@ const Folder = ({ path, params, row }) => {
       <div className="w-10 h-full">
         <FolderIcon style={svgIconStyle} />
       </div>
-      <div className="max-w-[200px] md:max-w-[400px] truncate">
+      <div className="max-w-[200px] md:max-w-[250px] lg:max-w-[350px] xl:max-w-full">
         <Link
           to={generateLink(path, params, row)}
           onClick={(e) => e.stopPropagation()}
         >
           <h3
-            className="text-left capitalize text-[#808080] tracking-wider font-medium"
+            className="text-left capitalize text-[#808080] tracking-wider font-medium w-full truncate"
             id={`${row.id.split(";")[1]}`}
           >
             {row.name}
