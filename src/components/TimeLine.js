@@ -235,7 +235,6 @@ const TimeLineFilter = () => {
   }, [idx]);
 
   const handleItemSelection = (e) => {
-    console.log("clicked");
     e.preventDefault();
     e.stopPropagation();
     setShowItemsContext((prev) => !prev);
@@ -244,7 +243,6 @@ const TimeLineFilter = () => {
     setCords({ top, left });
   };
   const handleTimelineSelection = (e) => {
-    console.log("clicked");
     e.preventDefault();
     e.stopPropagation();
     setTimelineContext((prev) => !prev);
@@ -413,7 +411,8 @@ export const TimeLine = () => {
   const filterRef = useRef(null);
   const [gallery, setGallery] = useState([]);
   const { isLoading, isError, data, isSuccess } = photosStatus;
-  const [rowHeights, setRowHeights] = useState([]);
+  // const [rowHeights, setRowHeights] = useState([]);
+  const rowHeights = useRef([]);
   const state = useSelector((state) => state.timeline);
   const resizeObserver = useRef(null);
   const urlParams = useParams();
@@ -463,12 +462,12 @@ export const TimeLine = () => {
       setPhotos(photos);
       const grouped = applyGroupFilter(data, state.timeline);
       let gallery = [];
-      let rowHeights = [];
+      let rows = [];
       Object.entries(grouped).forEach(([k, v]) => {
         const timelineTag = `${k} ${v.length} items`;
         const item = { value: timelineTag };
         gallery.push(item);
-        rowHeights.push(state.tagHeight);
+        rows.push(state.tagHeight);
         let row = [];
         let filledWidth = 0;
         v.forEach((file) => {
@@ -479,17 +478,18 @@ export const TimeLine = () => {
             filledWidth += state.renderSize;
           } else {
             gallery.push({ value: row });
-            rowHeights.push(state.itemSize);
+            rows.push(state.itemSize);
             row = [];
             filledWidth = 0;
           }
         });
         if (row.length > 0) {
           gallery.push({ value: row });
-          rowHeights.push(state.itemSize);
+          rows.push(state.itemSize);
         }
       });
-      setRowHeights(() => [...rowHeights]);
+      // setRowHeights(() => [...rowHeights]);
+      rowHeights.current = [...rows];
       setGallery(() => [...gallery]);
     }
   }, [
@@ -533,7 +533,6 @@ export const TimeLine = () => {
                   style={{
                     width: state.renderSize,
                     height: state.renderSize,
-                    // className: "gallery-image",
                   }}
                   className={"gallery-image"}
                   ShowLoading={() => (
@@ -555,7 +554,13 @@ export const TimeLine = () => {
     );
   };
 
-  console.log("gallery re-rendered");
+  const getItemSize = useCallback(
+    (index) => {
+      return rowHeights.current[index];
+    },
+    [rowHeights.current]
+  );
+
   return (
     <div className="w-full h-[90%] flex flex-col" ref={elementRef}>
       <div className="w-full h-[100px]" ref={filterRef}>
@@ -565,13 +570,13 @@ export const TimeLine = () => {
         gallery &&
         dim.height &&
         dim.width &&
-        rowHeights.length > 0 && (
+        rowHeights.current.length > 0 && (
           <List
             width={dim.width}
             height={dim.height}
             itemCount={gallery.length}
             itemData={gallery}
-            itemSize={(index) => rowHeights[index]}
+            itemSize={getItemSize}
           >
             {Row}
           </List>

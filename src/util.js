@@ -143,7 +143,7 @@ export const buildCellValueForSingleFile_trash = (file) => {
   };
 };
 
-const extract_info_from_id = (id) => {
+export const extract_info_from_id = (id) => {
   let file;
   let folder;
   const item = id.split(";");

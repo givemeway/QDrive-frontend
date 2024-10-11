@@ -161,6 +161,13 @@ export const apiSlice = createApi({
         },
       }),
     }),
+    getFolderDetails: builder.mutation({
+      query: (data) => ({
+        url: `/details/folderDetails?directory=${data.directory}&device=${data.device}`,
+        method: "GET",
+        credentials: "include",
+      }),
+    }),
     searchItems: builder.mutation({
       query: (data) => ({
         url: "/search?param=" + data.param,
@@ -412,4 +419,5 @@ export const {
   useEnableOTPMutation,
   useVerifyOTPMutation,
   useDisableOTPMutation,
+  useGetFolderDetailsMutation,
 } = apiSlice;

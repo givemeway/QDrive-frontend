@@ -16,10 +16,12 @@ import { useRecoilValue } from "recoil";
 import { itemsSelectedAtom } from "../../Recoil/Store/atoms";
 import { useEffect, useState } from "react";
 import { setFileDetails } from "../../features/itemdetails/fileDetails.Slice";
-import { get_url } from "../../util";
+import { extract_info_from_id, get_url } from "../../util";
+import { setFolderDetails } from "../../features/itemdetails/folderDetailsSlice";
 
 const TableContextMenu = ({ style, open, onClose, buttonRef }) => {
   const { fileIds, directories } = useRecoilValue(itemsSelectedAtom);
+  const { rowSelection } = useSelector((state) => state.browseItems);
   const [selectionType, setSelectionType] = useState({
     file: undefined,
     folder: undefined,
@@ -94,6 +96,26 @@ const TableContextMenu = ({ style, open, onClose, buttonRef }) => {
     dispatch(setFileDetails({ open: true, file: fileIds[0] }));
     onClose();
   };
+  const handleFolderDetails = () => {
+    const arr = Object.entries(rowSelection);
+    const filteredArr = arr.filter(([k, v]) => v);
+    if (filteredArr.length === 1) {
+      const { path, folder, device } = extract_info_from_id(
+        filteredArr[0][0]
+      ).folder;
+      const dirPart = path.split("/").slice(2).join("/");
+      const directory = dirPart === "" ? "/" : dirPart;
+      dispatch(
+        setFolderDetails({
+          open: true,
+          name: folder,
+          device,
+          directory,
+        })
+      );
+    }
+    onClose();
+  };
   const ItemSelected = () => {
     const total = fileIds.length + directories.length;
     if (fileIds.length === 1 && directories.length === 0) {
@@ -162,6 +184,12 @@ const TableContextMenu = ({ style, open, onClose, buttonRef }) => {
           <ContextButton onClick={handleFileInfo}>
             <InfoIcon />
             File Info
+          </ContextButton>
+        )}
+        {!selectionType.multiple && selectionType.folder && (
+          <ContextButton onClick={handleFolderDetails}>
+            <InfoIcon />
+            Details
           </ContextButton>
         )}
       </ContextModal>

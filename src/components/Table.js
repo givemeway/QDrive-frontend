@@ -41,6 +41,8 @@ import {
   setShowContextMenu,
   setDims,
 } from "../features/table/checkboxSlice.js";
+import FolderDetails from "./folderDetails.jsx";
+import { setFolderDetails } from "../features/itemdetails/folderDetailsSlice.js";
 
 const deselectAllSelectClickedRow = (rows, id) => {
   const selectedRows = Object.entries(rows).filter(([_, v]) => v);
@@ -285,6 +287,7 @@ const SharedTable = ({
   const edit = useSelector((state) => state.rename);
   const operation = useSelector((state) => state.operation);
   const fileDetails = useSelector((state) => state.fileDetails);
+  const folderDetails = useSelector((state) => state.folderDetails);
   const { selectedToEdit, rowSelection, reLoad } = useSelector(
     (state) => state.browseItems
   );
@@ -317,7 +320,6 @@ const SharedTable = ({
   };
 
   const dispatch = useDispatch();
-  console.log("table rendered");
 
   const getBoundingClientRect = useCallback(() => {
     const { bottom, right, left, top } = ref.current.getBoundingClientRect();
@@ -400,7 +402,7 @@ const SharedTable = ({
     const selectedCount = rows.filter(([_, v]) => v);
     setSelected(selectedCount.length);
     dispatch(setRowSelected(rowSelection));
-
+    dispatch(setFolderDetails({ open: false }));
     const { files, folders } = extract_items_from_ids(rowSelection);
 
     setItemsSelection(() => ({
@@ -437,6 +439,13 @@ const SharedTable = ({
       dispatch(setFileDetails({ open: false, file: {} }));
     }
   }, [rowSelection, selected.fileIds, selected.directories]);
+
+  useEffect(() => {
+    const { files, folders } = extract_items_from_ids(rowSelection);
+    if (fileDetails.open && folders.length > 0) {
+      dispatch(setFileDetails({ open: false, file: {} }));
+    }
+  }, [rowSelection, selectedCount]);
 
   useEffect(() => {
     if (edit.editStart && selectedToEdit) {
@@ -619,6 +628,7 @@ const SharedTable = ({
               </InfiniteLoader>
             </div>
             {fileDetails.open && <ItemDetails />}
+            {folderDetails?.open && <FolderDetails />}
           </div>
         )}
 
