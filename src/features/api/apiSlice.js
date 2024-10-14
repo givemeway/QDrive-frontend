@@ -377,6 +377,14 @@ export const apiSlice = createApi({
         credentials: "include",
       }),
     }),
+    cancelUser: builder.mutation({
+      query: (data) => ({
+        url: "/user/cancelUser",
+        method: "PUT",
+        body: { password: data.password },
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
@@ -420,4 +428,5 @@ export const {
   useVerifyOTPMutation,
   useDisableOTPMutation,
   useGetFolderDetailsMutation,
+  useCancelUserMutation,
 } = apiSlice;

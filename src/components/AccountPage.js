@@ -26,6 +26,8 @@ import { setNotify } from "../features/notification/notifySlice.js";
 import { ChangeAvatar } from "./ChangeAvatar.js";
 import { DeleteAvatar } from "./DeleteAvatar.js";
 import { Edit2FA, TwoFA } from "./2fa.js";
+import { AccountPrivacy } from "./AccountPrivacy.js";
+import { CancelAccount } from "./CancelAccount.js";
 
 const Loading = () => {
   return (
@@ -67,6 +69,10 @@ const AccountPage = () => {
 
   const handlePassword = () => {
     setEdit({ type: "PASSWORD", isEdit: true });
+  };
+
+  const handleCancel = () => {
+    setEdit({ type: "CANCEL", isEdit: true });
   };
 
   const handle2FAEdit = () => {
@@ -244,10 +250,19 @@ const AccountPage = () => {
             handle2FAEdit={handle2FAEdit}
           />
         )}
+      {!updatePassword.isLoading &&
+        !sessionStatus.isLoading &&
+        tabs.Privacy && <AccountPrivacy handleCancel={handleCancel} />}
       {edit?.type === "NAME" && edit.isEdit && (
         <ChangeName
           onClose={() => setEdit({ type: undefined, isEdit: false })}
           query={nameChangeQuery}
+        />
+      )}
+      {edit?.type === "CANCEL" && edit.isEdit && (
+        <CancelAccount
+          onClose={() => setEdit({ type: undefined, isEdit: false })}
+          // query={cancelUserQuery}
         />
       )}
       {edit?.type === "AVATARDELETE" && edit.isEdit && (

@@ -44,7 +44,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (isSuccess && data) {
-      console.log({ ...data });
       dispatch(setUserData({ ...data }));
       dispatch(setSession({ isLoggedIn: true, isLoggedOut: true }));
     } else if (isError) {

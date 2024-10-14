@@ -1,0 +1,61 @@
+.caution-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 1rem;
+  background: #ffe6e6;
+  border: 1px solid var(--color-red);
+}
+
+.caution-icon-container {
+  width: 60px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.caution-note-container {
+  width: calc(100%-60px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.caution-title {
+  width: 100%;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.caution-p {
+  width: 100%;
+  text-align: left;
+  font-size: 0.8rem;
+}
+
+.button-cancel-account {
+  position: relative;
+  font-weight: 600;
+  z-index: 1;
+  overflow: hidden;
+  width: 100px;
+  height: 100%;
+  color: whitesmoke;
+  border-radius: 0.75rem;
+  background: red;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button-cancel-account:hover {
+  background: var(--color-red);
+}
