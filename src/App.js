@@ -10,6 +10,7 @@ import Signup from "./components/SignupForm.js";
 import { ForgotPassword } from "./components/ForgotPassword.js";
 import { PasswordReset } from "./components/PasswordReset.js";
 import { TwoFAVerification } from "./components/2FA_verification.js";
+import ReactivatePage from "./components/ReactivatePage.jsx";
 
 enableMapSet();
 function App() {
@@ -18,6 +19,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/reactivate" element={<ReactivatePage />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
         {/* <Route path="/dashboard/" element={<Dashboard />} /> */}
         <Route path="/sh/:type/:shareId/*" element={<Shared />} />

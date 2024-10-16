@@ -385,6 +385,13 @@ export const apiSlice = createApi({
         credentials: "include",
       }),
     }),
+    reactivateUser: builder.mutation({
+      query: (data) => ({
+        url: `/user/reactivateUser`,
+        method: "PUT",
+        body: { username: data.username, password: data.password },
+      }),
+    }),
   }),
 });
 
@@ -429,4 +436,5 @@ export const {
   useDisableOTPMutation,
   useGetFolderDetailsMutation,
   useCancelUserMutation,
+  useReactivateUserMutation,
 } = apiSlice;

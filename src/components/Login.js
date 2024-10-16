@@ -77,13 +77,15 @@ const Login = () => {
       error?.status === 401 ||
       error?.status === 422
     ) {
-      dispatch(
-        setNotify({
-          show: true,
-          msg: error?.data?.msg,
-          severity: "warning",
-        })
-      );
+      if (error?.status.status) {
+        dispatch(
+          setNotify({
+            show: true,
+            msg: error?.data?.msg,
+            severity: "warning",
+          })
+        );
+      }
     } else if (error?.originalStatus === 500) {
       dispatch(
         setNotify({
@@ -138,6 +140,20 @@ const Login = () => {
               <h3 className="text-center font-semibold text-md text-[#716B61]">
                 Sign In to QDrive
               </h3>
+              {error?.status === 401 && !error?.status?.status && (
+                <div className="cancellation-banner">
+                  <p className="cancellation-p">
+                    {error?.data?.msg}.
+                    <span>
+                      {" "}
+                      Click to{" "}
+                      <Link to={"/reactivate"} className="cancellation-link">
+                        reactivate
+                      </Link>
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
             <div className="flex flex-col justify-start items-center">
               <label className="text-[#716B61] text-sm w-full text-left pb-1">

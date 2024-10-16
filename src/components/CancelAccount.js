@@ -19,7 +19,6 @@ export const CancelAccount = ({ onClose, query }) => {
   const [cancelUserQuery, cancelUserStatus] = useCancelUserMutation();
 
   const { isSuccess, isError, data, isLoading, error } = cancelUserStatus;
-  console.log({ isSuccess, isError, data, isLoading, error });
 
   useOutSideClick(ref, onClose);
 
