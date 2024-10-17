@@ -45,6 +45,15 @@ import FolderDetails from "./folderDetails.jsx";
 import { setFolderDetails } from "../features/itemdetails/folderDetailsSlice.js";
 
 const deselectAllSelectClickedRow = (rows, id) => {
+  const selected = Object.entries(rows).map(([k, v]) => {
+    if (k === id) {
+      return [k, true];
+    } else {
+      return [k, false];
+    }
+  });
+  return Object.fromEntries(selected);
+
   const selectedRows = Object.entries(rows).filter(([_, v]) => v);
   const contextRow = selectedRows.filter(([k, _]) => k === id);
   if (selectedRows.length > 1 && contextRow.length > 0) {
@@ -295,6 +304,8 @@ const SharedTable = ({
   const { cord, showContext } = useSelector((state) => state.checkbox);
   const [cords, setCords] = useState({ top: 0, left: 0 });
   const [showContextHeader, setShowContext] = useState(false);
+  const [singleSelection, setSingleSelection] = useState(null);
+  const singleSelectionTemp = useRef(singleSelection);
 
   const [selectionType, setSelectionType] = useState({
     file: undefined,
@@ -394,16 +405,35 @@ const SharedTable = ({
       const arr = items?.map((item) => [item.id, false]);
       const obj = Object.fromEntries(arr);
       dispatch(setRowSelected(obj));
+      dispatch(
+        setFolderDetails({ open: false, name: "", directory: "", device: "" })
+      );
     }
   }, [items, newDir]);
+
+  useEffect(() => {
+    if (singleSelectionTemp.current !== singleSelection) {
+      singleSelectionTemp.current = singleSelection;
+      dispatch(
+        setFolderDetails({ open: false, name: "", directory: "", device: "" })
+      );
+    }
+  }, [singleSelection]);
 
   useEffect(() => {
     const rows = Object.entries(rowSelection);
     const selectedCount = rows.filter(([_, v]) => v);
     setSelected(selectedCount.length);
-    dispatch(setRowSelected(rowSelection));
-    dispatch(setFolderDetails({ open: false }));
+    if (selectedCount.length > 1) {
+      dispatch(
+        setFolderDetails({ open: false, name: "", directory: "", device: "" })
+      );
+    }
     const { files, folders } = extract_items_from_ids(rowSelection);
+
+    if (files.length === 0 && folders.length === 1) {
+      setSingleSelection(folders[0]["id"]);
+    }
 
     setItemsSelection(() => ({
       fileIds: [...files],
