@@ -402,6 +402,7 @@ export const apiSlice = createApi({
       query: (data) => ({
         url: `/user/sso/config`,
         method: "PUT",
+        credentials: "include",
         body: {
           idpIssuer: data.idpIssuer,
           idpCert: data.idpCert,
