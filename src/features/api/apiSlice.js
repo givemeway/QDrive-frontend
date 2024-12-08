@@ -392,6 +392,37 @@ export const apiSlice = createApi({
         body: { username: data.username, password: data.password },
       }),
     }),
+    ssoLogin: builder.mutation({
+      query: (data) => ({
+        url: `/user/sso/login?username=${data.username}`,
+        method: "GET",
+      }),
+    }),
+    ssoConfig: builder.mutation({
+      query: (data) => ({
+        url: `/user/sso/config`,
+        method: "PUT",
+        body: {
+          idpIssuer: data.idpIssuer,
+          idpCert: data.idpCert,
+          entryPoint: data.entryPoint,
+        },
+      }),
+    }),
+    getSSOConfig: builder.mutation({
+      query: () => ({
+        url: "/user/getSSOConfig",
+        method: "GET",
+        credentials: "include",
+      }),
+    }),
+    disableSSO: builder.mutation({
+      query: () => ({
+        url: "/user/disableConfig",
+        method: "PUT",
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
@@ -437,4 +468,8 @@ export const {
   useGetFolderDetailsMutation,
   useCancelUserMutation,
   useReactivateUserMutation,
+  useSsoLoginMutation,
+  useSsoConfigMutation,
+  useGetSSOConfigMutation,
+  useDisableSSOMutation,
 } = apiSlice;

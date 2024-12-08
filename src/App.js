@@ -11,6 +11,7 @@ import { ForgotPassword } from "./components/ForgotPassword.js";
 import { PasswordReset } from "./components/PasswordReset.js";
 import { TwoFAVerification } from "./components/2FA_verification.js";
 import ReactivatePage from "./components/ReactivatePage.jsx";
+import SSO from "./components/SSO_Login.js";
 
 enableMapSet();
 function App() {
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/login/sso" element={<SSO />} />
         <Route path="/reactivate" element={<ReactivatePage />} />
         <Route path="/dashboard/*" element={<Dashboard />} />
         {/* <Route path="/dashboard/" element={<Dashboard />} /> */}

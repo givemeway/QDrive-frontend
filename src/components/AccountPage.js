@@ -6,6 +6,7 @@ import { AccountSecurity } from "./AccountSecurity.js";
 import "./AccountPage.css";
 import {
   useDeleteAvatarMutation,
+  useDisableSSOMutation,
   useUpdateNameMutation,
   useUpdatePasswordMutation,
   useVerifySessionMutation,
@@ -28,6 +29,7 @@ import { DeleteAvatar } from "./DeleteAvatar.js";
 import { Edit2FA, TwoFA } from "./2fa.js";
 import { AccountPrivacy } from "./AccountPrivacy.js";
 import { CancelAccount } from "./CancelAccount.js";
+import { SSOConfig } from "./SSO_config.jsx";
 
 const Loading = () => {
   return (
@@ -43,7 +45,9 @@ const AccountPage = () => {
     Security: false,
     Privacy: false,
   });
-  const [_2FASwitch, set2FASwitch] = useState(true);
+  const { isSSO, is2FA } = useSelector((state) => state.avatar);
+  const [_2FASwitch, set2FASwitch] = useState(is2FA);
+  const [SSOSwitchStatus, setSSOSwitchStatus] = useState(isSSO);
   const dispatch = useDispatch();
   const [nameChangeQuery, nameChangeStatus] = useUpdateNameMutation();
   const [updatePasswordQuery, updatePassword] = useUpdatePasswordMutation();
@@ -77,6 +81,10 @@ const AccountPage = () => {
 
   const handle2FAEdit = () => {
     setEdit({ type: "2FA_EDIT", isEdit: true });
+  };
+
+  const handleSSOConfig = () => {
+    setEdit({ type: "SSOCONFIG", isEdit: true });
   };
 
   const handleSwitchChange = () => {
@@ -210,6 +218,7 @@ const AccountPage = () => {
         })
       );
       set2FASwitch(sessionStatus?.data?.is2FA);
+      setSSOSwitchStatus(sessionStatus?.data.isSSO);
     }
   }, [
     sessionStatus.isLoading,
@@ -248,6 +257,9 @@ const AccountPage = () => {
             _2FA_status={sessionStatus?.data?.is2FA ? "On" : "Off"}
             set2FASwitch={set2FASwitch}
             handle2FAEdit={handle2FAEdit}
+            handleSSOConfig={handleSSOConfig}
+            SSOSwitchStatus={SSOSwitchStatus}
+            setSSOSwitchStatus={setSSOSwitchStatus}
           />
         )}
       {!updatePassword.isLoading &&
@@ -290,6 +302,14 @@ const AccountPage = () => {
           }}
           set2FASwitch={set2FASwitch}
           _2FASwitch={_2FASwitch}
+        />
+      )}
+      {edit?.type === "SSOCONFIG" && edit.isEdit && (
+        <SSOConfig
+          onClose={() => {
+            setEdit({ type: undefined, isEdit: false });
+            session();
+          }}
         />
       )}
       {edit?.type === "2FA_EDIT" && edit.isEdit && (

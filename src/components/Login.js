@@ -19,6 +19,7 @@ import "./Login.css";
 import { setNotify } from "../features/notification/notifySlice";
 import { PasswordFieldWithMask } from "./PasswordFieldWithMask";
 import { setUserData } from "../features/avatar/avatarSlice.js";
+import { GoogleIcon } from "./icons/Google.jsx";
 
 const validateLoginForm = (loginform) => {
   if (loginform.username.length > 0 && loginform.password.length > 0) {
@@ -154,6 +155,20 @@ const Login = () => {
                   </p>
                 </div>
               )}
+              {error?.status === 403 && error?.data?.error === "SSO_USER" && (
+                <div className="cancellation-banner">
+                  <p className="cancellation-p">
+                    {error?.data?.msg}
+                    <span>
+                      {" "}
+                      click to{" "}
+                      <Link to={"/login/sso"} className="cancellation-link">
+                        login
+                      </Link>
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
             <div className="flex flex-col justify-start items-center">
               <label className="text-[#716B61] text-sm w-full text-left pb-1">
@@ -212,6 +227,7 @@ const Login = () => {
             )}
 
             <HorizontalLineDividedByText text={"Or"} />
+            {/* <GoogleIcon /> */}
 
             <div className="w-full flex justify-center items-center">
               <button

@@ -21,6 +21,7 @@ import signup from "../features/signup/signupSlice.js";
 import avatar from "../features/avatar/avatarSlice.js";
 import notification from "../features/notification/notifySlice.js";
 import folderDetails from "../features/itemdetails/folderDetailsSlice.js";
+import sso from "../features/sso/ssoSlice.js";
 
 export const store = configureStore({
   reducer: {
@@ -46,6 +47,7 @@ export const store = configureStore({
     avatar: avatar,
     notification: notification,
     folderDetails: folderDetails,
+    sso: sso,
   },
   middleware: (getDefaultMiddleWare) =>
     getDefaultMiddleWare().concat(apiSlice.middleware),

@@ -14,6 +14,7 @@ const avatarSlice = createSlice({
     isSMS: false,
     isTOTP: false,
     isEmail: false,
+    isSSO: false,
   },
   reducers: {
     setFirstName: (state, actions) => {
@@ -52,6 +53,9 @@ const avatarSlice = createSlice({
     setIsEmail: (state, actions) => {
       state.isEmail = actions.payload;
     },
+    setisSSO: (state, actions) => {
+      state.isSSO = actions.payload;
+    },
   },
 });
 
@@ -68,6 +72,7 @@ export const {
   setIsEmail,
   setIsTOTP,
   setIsSMS,
+  setisSSO,
 } = avatarSlice.actions;
 
 export default avatarSlice.reducer;
