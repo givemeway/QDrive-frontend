@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Header } from "./Header.jsx";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import MessageSnackBar from "./Snackbar/SnackBar";
 import { CustomBlueButton } from "./Buttons/BlueButton";
 import { GreyButton } from "./Buttons/GreyButton";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { useDispatch, useSelector } from "react-redux";
 import "./PasswordFieldWithMask.css";
+import { GoogleLogin } from "@react-oauth/google";
 
 import {
   useGetCSRFTokenQuery,
@@ -20,6 +21,7 @@ import { setNotify } from "../features/notification/notifySlice";
 import { PasswordFieldWithMask } from "./PasswordFieldWithMask";
 import { setUserData } from "../features/avatar/avatarSlice.js";
 import { GoogleIcon } from "./icons/Google.jsx";
+import { googleLoginURL } from "../config.js";
 
 const validateLoginForm = (loginform) => {
   if (loginform.username.length > 0 && loginform.password.length > 0) {
@@ -32,11 +34,12 @@ const validateLoginForm = (loginform) => {
 
 const Login = () => {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
+  const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const CSRF = useGetCSRFTokenQuery();
   const [verifySessionQuery, verifySessionStatus] = useVerifySessionMutation();
-  const session = useSelector((state) => state.session);
+
   const notify = useSelector((state) => state.notification);
 
   const [loginQuery, loginStatus] = useLoginMutation();
@@ -55,9 +58,34 @@ const Login = () => {
     }
   };
 
+  const googleLogin = () => {
+    window.open(googleLoginURL, "_blank", "noopener noreferrer");
+  };
+
+  // useGoogleOneTapLogin({
+  //   onSuccess: (response) => {
+  //     console.log(response);
+  //   },
+  //   onError: (err) => {
+  //     console.error(err);
+  //   },
+  //   googleAccountConfigs: {
+  //     client_id:
+  //       "430330042593-7uvf1muoueu6emfd5jhqvfr5rqi270bm.apps.googleusercontent.com",
+  //   },
+  // });
+
   useEffect(() => {
     verifySessionQuery();
   }, []);
+  useEffect(() => {
+    const key = new URLSearchParams(location.search);
+    if (key.has("error")) {
+      dispatch(
+        setNotify({ show: true, severity: "warning", msg: key.get("error") })
+      );
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (data?.success) {
@@ -227,9 +255,19 @@ const Login = () => {
             )}
 
             <HorizontalLineDividedByText text={"Or"} />
-            {/* <GoogleIcon /> */}
+            <div className="w-full">
+              <GoogleLogin
+                onSuccess={(response) => {
+                  console.log(response);
+                }}
+                onError={(err) => console.log(err)}
+                width={"100%"}
+                logo_alignment="centre"
+                useOneTap
+              />
+            </div>
 
-            <div className="w-full flex justify-center items-center">
+            <div className="w-full flex justify-center items-center mt-3">
               <button
                 className="text-[#1F74FE] text-sm"
                 onClick={() => navigate("/signup")}

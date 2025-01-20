@@ -10,19 +10,22 @@ import theme from "./theme.js";
 import { RecoilRoot } from "recoil";
 import { store } from "./app/store.js";
 import { Provider } from "react-redux";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
-    <RecoilRoot>
-      <BrowserRouter>
-        <ThemeProvider theme={theme}>
-          <SnackbarProvider>
-            <App />
-          </SnackbarProvider>
-        </ThemeProvider>
-      </BrowserRouter>
-    </RecoilRoot>
+    <GoogleOAuthProvider clientId="430330042593-7uvf1muoueu6emfd5jhqvfr5rqi270bm.apps.googleusercontent.com">
+      <RecoilRoot>
+        <BrowserRouter>
+          <ThemeProvider theme={theme}>
+            <SnackbarProvider>
+              <App />
+            </SnackbarProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </RecoilRoot>
+    </GoogleOAuthProvider>
   </Provider>
 );
 

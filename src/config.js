@@ -106,6 +106,10 @@ const getFileVersionURL =
   process.env.REACT_APP_ENV === PRODUCTION
     ? server + "/app/getFileVersion"
     : "/app/getFileVersion";
+const googleLoginURL =
+  process.env.REACT_APP_ENV === PRODUCTION
+    ? server + "/app/user/auth/google"
+    : "http://localhost:3001/app/user/auth/google";
 const concurrency = 5;
 const cwd = "/";
 const devicename = "DESKTOP-10RSGE8";
@@ -187,4 +191,5 @@ export {
   EMPTYTRASH,
   getFileVersionURL,
   LOGOUT,
+  googleLoginURL,
 };

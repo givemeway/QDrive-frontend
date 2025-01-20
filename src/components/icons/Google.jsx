@@ -1,7 +1,8 @@
 import "./Google.css";
-export const GoogleIcon = () => {
+export const GoogleIcon = ({ href, onClick }) => {
+  console.log(href);
   return (
-    <button class="gsi-material-button">
+    <button class="gsi-material-button" onClick={onClick}>
       <div class="gsi-material-button-state"></div>
       <div class="gsi-material-button-content-wrapper">
         <div class="gsi-material-button-icon">

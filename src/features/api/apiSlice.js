@@ -424,6 +424,12 @@ export const apiSlice = createApi({
         credentials: "include",
       }),
     }),
+    googleLogin: builder.mutation({
+      query: () => ({
+        url: "/user/auth/google",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -473,4 +479,5 @@ export const {
   useSsoConfigMutation,
   useGetSSOConfigMutation,
   useDisableSSOMutation,
+  useGoogleLoginMutation,
 } = apiSlice;
