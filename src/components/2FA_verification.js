@@ -9,6 +9,7 @@ export const TwoFAVerification = () => {
   const [code, setCode] = useState("");
   const navigate = useNavigate();
   const { isSMS, isEmail, isTOTP } = useSelector((state) => state.avatar);
+
   const [query, queryStatus] = useVerifyOTPMutation();
   const { error, isError, isSuccess, isLoading } = queryStatus;
   const handleChange = (e) => {
@@ -23,6 +24,7 @@ export const TwoFAVerification = () => {
     } else if (isTOTP) {
       mfa = "totp";
     }
+    console.log({ isSMS, isEmail, isTOTP, mfa });
     query({ token: code, mfa, is2FAConfig: false });
   };
 

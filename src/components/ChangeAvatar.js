@@ -90,7 +90,7 @@ export const ChangeAvatar = ({ onClose }) => {
                     onChange={handleChange}
                   />
                   <div className="inner-container-text">
-                    <spa>Drag and drop or</spa>
+                    <span>Drag and drop or</span>
                     <button
                       className="button-underLine"
                       style={{ pointerEvents: "none", marginLeft: ".5rem" }}

@@ -430,6 +430,13 @@ export const apiSlice = createApi({
         method: "GET",
       }),
     }),
+    googleAuthCallBack: builder.mutation({
+      query: (data) => ({
+        url: "/user/auth/google/callback",
+        method: "POST",
+        body: { data },
+      }),
+    }),
   }),
 });
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Header } from "./Header.jsx";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import MessageSnackBar from "./Snackbar/SnackBar";
@@ -7,7 +7,11 @@ import { GreyButton } from "./Buttons/GreyButton";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { useDispatch, useSelector } from "react-redux";
 import "./PasswordFieldWithMask.css";
-import { GoogleLogin } from "@react-oauth/google";
+import {
+  GoogleLogin,
+  useGoogleLogin,
+  useGoogleOneTapLogin,
+} from "@react-oauth/google";
 
 import {
   useGetCSRFTokenQuery,
@@ -34,11 +38,13 @@ const validateLoginForm = (loginform) => {
 
 const Login = () => {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
+  const [googleButtonWidth, setGoogleButtonWidth] = useState(363);
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const CSRF = useGetCSRFTokenQuery();
   const [verifySessionQuery, verifySessionStatus] = useVerifySessionMutation();
+  const rowWidth = useRef(null);
 
   const notify = useSelector((state) => state.notification);
 
@@ -58,9 +64,9 @@ const Login = () => {
     }
   };
 
-  const googleLogin = () => {
-    window.open(googleLoginURL, "_blank", "noopener noreferrer");
-  };
+  // const googleLogin = () => {
+  //   window.open(googleLoginURL, "_blank", "noopener noreferrer");
+  // };
 
   // useGoogleOneTapLogin({
   //   onSuccess: (response) => {
@@ -77,6 +83,20 @@ const Login = () => {
 
   useEffect(() => {
     verifySessionQuery();
+    const handleResize = () => {
+      if (rowWidth.current) {
+        setGoogleButtonWidth(rowWidth.current.offsetWidth);
+      }
+    };
+
+    // Set the initial width
+    handleResize();
+
+    // Add event listener for window resize to update width
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize); // Cleanup on component unmount
+    };
   }, []);
   useEffect(() => {
     const key = new URLSearchParams(location.search);
@@ -86,6 +106,15 @@ const Login = () => {
       );
     }
   }, [location.search]);
+
+  useEffect(() => {
+    if (rowWidth.current) {
+      console.log(rowWidth.current.offsetWidth);
+      setGoogleButtonWidth(rowWidth.current.offsetWidth);
+    }
+  }, [rowWidth.current]);
+
+  console.log({ googleButtonWidth });
 
   useEffect(() => {
     if (data?.success) {
@@ -139,7 +168,9 @@ const Login = () => {
       verifySessionStatus.error &&
       verifySessionStatus.error?.data?.error === "2FA_REQUIRED"
     ) {
-      navigate("/login");
+      // navigate("/login");
+      dispatch(setUserData({ ...verifySessionStatus?.error?.data }));
+      navigate("/verify_code");
     }
   }, [
     verifySessionStatus.isError,
@@ -164,7 +195,7 @@ const Login = () => {
       )}
       {CSRF.isSuccess && verifySessionStatus.isError && CSRF.data && (
         <div className="w-full grow flex flex-row justify-center items-center">
-          <div className=" flex flex-col gap-2 pr-7 pl-7 pt-5 pb-5 w-full md:w-[480px] sm:w-[480px] custom-shadow h-auto">
+          <div className=" flex flex-col gap-2 pr-7 pl-7 pt-5 pb-5 w-[420px] md:w-[420px] sm:w-[420px] custom-shadow h-auto">
             <div className="w-full">
               <h3 className="text-center font-semibold text-md text-[#716B61]">
                 Sign In to QDrive
@@ -254,16 +285,16 @@ const Login = () => {
               <MessageSnackBar severity={notify.severity} msg={notify.msg} />
             )}
 
-            <HorizontalLineDividedByText text={"Or"} />
-            <div className="w-full">
+            <HorizontalLineDividedByText text={" Or sign in with "} />
+
+            <div className="w-full" ref={rowWidth}>
               <GoogleLogin
                 onSuccess={(response) => {
                   console.log(response);
                 }}
                 onError={(err) => console.log(err)}
-                width={"100%"}
-                logo_alignment="centre"
-                useOneTap
+                width={googleButtonWidth}
+                useOneTap={true}
               />
             </div>
 
