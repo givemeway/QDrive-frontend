@@ -430,11 +430,13 @@ export const apiSlice = createApi({
         method: "GET",
       }),
     }),
-    googleAuthCallBack: builder.mutation({
-      query: (data) => ({
-        url: "/user/auth/google/callback",
-        method: "POST",
-        body: { data },
+    googleOneTap: builder.mutation({
+      query: (token) => ({
+        url: "/user/auth/google/onetap",
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }),
     }),
   }),
@@ -487,4 +489,5 @@ export const {
   useGetSSOConfigMutation,
   useDisableSSOMutation,
   useGoogleLoginMutation,
+  useGoogleOneTapMutation,
 } = apiSlice;

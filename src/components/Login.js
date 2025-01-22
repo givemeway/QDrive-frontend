@@ -7,14 +7,11 @@ import { GreyButton } from "./Buttons/GreyButton";
 import SpinnerGIF from "./icons/SpinnerGIF";
 import { useDispatch, useSelector } from "react-redux";
 import "./PasswordFieldWithMask.css";
-import {
-  GoogleLogin,
-  useGoogleLogin,
-  useGoogleOneTapLogin,
-} from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 
 import {
   useGetCSRFTokenQuery,
+  useGoogleOneTapMutation,
   useLoginMutation,
   useVerifySessionMutation,
 } from "../features/api/apiSlice";
@@ -24,8 +21,6 @@ import "./Login.css";
 import { setNotify } from "../features/notification/notifySlice";
 import { PasswordFieldWithMask } from "./PasswordFieldWithMask";
 import { setUserData } from "../features/avatar/avatarSlice.js";
-import { GoogleIcon } from "./icons/Google.jsx";
-import { googleLoginURL } from "../config.js";
 
 const validateLoginForm = (loginform) => {
   if (loginform.username.length > 0 && loginform.password.length > 0) {
@@ -43,12 +38,13 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const CSRF = useGetCSRFTokenQuery();
-  const [verifySessionQuery, verifySessionStatus] = useVerifySessionMutation();
   const rowWidth = useRef(null);
 
   const notify = useSelector((state) => state.notification);
 
+  const [verifySessionQuery, verifySessionStatus] = useVerifySessionMutation();
   const [loginQuery, loginStatus] = useLoginMutation();
+  const [oneTapQuery, oneTapStatus] = useGoogleOneTapMutation();
 
   const { isLoading, isError, isSuccess, data, error } = loginStatus;
 
@@ -64,22 +60,29 @@ const Login = () => {
     }
   };
 
-  // const googleLogin = () => {
-  //   window.open(googleLoginURL, "_blank", "noopener noreferrer");
-  // };
-
-  // useGoogleOneTapLogin({
-  //   onSuccess: (response) => {
-  //     console.log(response);
-  //   },
-  //   onError: (err) => {
-  //     console.error(err);
-  //   },
-  //   googleAccountConfigs: {
-  //     client_id:
-  //       "430330042593-7uvf1muoueu6emfd5jhqvfr5rqi270bm.apps.googleusercontent.com",
-  //   },
-  // });
+  const oneTapCallBack = (token) => {
+    oneTapQuery(token);
+  };
+  useEffect(() => {
+    if (oneTapStatus.isSuccess) {
+      navigate("/dashboard/home");
+    } else if (oneTapStatus.isError && oneTapStatus.error?.status === 404) {
+      navigate(`/login?error=${oneTapStatus.error?.data?.msg}`);
+    } else if (oneTapStatus.error?.originalStatus === 500) {
+      dispatch(
+        setNotify({
+          show: true,
+          msg: "Something Went wrong. Try again!",
+          severity: "error",
+        })
+      );
+    }
+  }, [
+    oneTapStatus.isError,
+    oneTapStatus.isSuccess,
+    oneTapStatus.data,
+    oneTapStatus.error,
+  ]);
 
   useEffect(() => {
     verifySessionQuery();
@@ -89,13 +92,10 @@ const Login = () => {
       }
     };
 
-    // Set the initial width
     handleResize();
-
-    // Add event listener for window resize to update width
     window.addEventListener("resize", handleResize);
     return () => {
-      window.removeEventListener("resize", handleResize); // Cleanup on component unmount
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
   useEffect(() => {
@@ -109,12 +109,9 @@ const Login = () => {
 
   useEffect(() => {
     if (rowWidth.current) {
-      console.log(rowWidth.current.offsetWidth);
       setGoogleButtonWidth(rowWidth.current.offsetWidth);
     }
   }, [rowWidth.current]);
-
-  console.log({ googleButtonWidth });
 
   useEffect(() => {
     if (data?.success) {
@@ -168,7 +165,6 @@ const Login = () => {
       verifySessionStatus.error &&
       verifySessionStatus.error?.data?.error === "2FA_REQUIRED"
     ) {
-      // navigate("/login");
       dispatch(setUserData({ ...verifySessionStatus?.error?.data }));
       navigate("/verify_code");
     }
@@ -278,7 +274,7 @@ const Login = () => {
               <CustomBlueButton
                 text={"Login"}
                 onClick={handleClick}
-                style={{ width: "100%", height: 50 }}
+                style={{ width: "100%", height: 45, marginBottom: 8 }}
               />
             )}
             {notify.show && (
@@ -286,21 +282,21 @@ const Login = () => {
             )}
 
             <HorizontalLineDividedByText text={" Or sign in with "} />
-
-            <div className="w-full" ref={rowWidth}>
+            <div className="w-full mt-2 mb-6" ref={rowWidth}>
               <GoogleLogin
                 onSuccess={(response) => {
-                  console.log(response);
+                  oneTapCallBack(response.credential);
                 }}
                 onError={(err) => console.log(err)}
                 width={googleButtonWidth}
                 useOneTap={true}
               />
             </div>
+            <HorizontalLineDividedByText text={""} />
 
             <div className="w-full flex justify-center items-center mt-3">
               <button
-                className="text-[#1F74FE] text-sm"
+                className="text-[#1F74FE] text-md font-semibold"
                 onClick={() => navigate("/signup")}
               >
                 Create New Account
