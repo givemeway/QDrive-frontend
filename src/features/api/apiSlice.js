@@ -434,6 +434,7 @@ export const apiSlice = createApi({
       query: (token) => ({
         url: "/user/auth/google/onetap",
         method: "GET",
+        credentials: "include",
         headers: {
           Authorization: `Bearer ${token}`,
         },
