@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
@@ -10,6 +10,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import {
   useCheckUsernameMutation,
   useGetCSRFTokenQuery,
+  useGoogleOneTapMutation,
   useSignupMutation,
 } from "../features/api/apiSlice";
 import { Header } from "./Header.jsx";
@@ -19,6 +20,8 @@ import { useSelector } from "react-redux";
 import "./Login.css";
 import "./PasswordValidator.css";
 import { PasswordValidator } from "./PasswordValidator.js";
+import { HorizontalLineDividedByText } from "./HorizontalLine.js";
+import { GoogleLogin } from "@react-oauth/google";
 
 const label =
   "I agree to the terms of the QDrive service and acknowledge that I can receive emails on product updates from QDrive.";
@@ -316,6 +319,10 @@ const validateEmail = (email, setFormInput) => {
 export default function Signup() {
   const [validForm, setValidForm] = useState(false);
   const { signupEmail } = useSelector((state) => state.signup);
+  const [googleButtonWidth, setGoogleButtonWidth] = useState(363);
+  const rowWidth = useRef(null);
+  const [oneTapQuery, oneTapStatus] = useGoogleOneTapMutation();
+
   const [formInput, setFormInput] = useState({
     email: {
       value: signupEmail ? signupEmail : "",
@@ -403,6 +410,12 @@ export default function Signup() {
       validateCheckBox(value, setFormInput);
     }
   };
+
+  const oneTapCallBack = (token) => {
+    console.log(token);
+    oneTapQuery(token);
+  };
+  console.log({ oneTapStatus });
   const handleSubmit = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -460,6 +473,14 @@ export default function Signup() {
   ]);
 
   useEffect(() => {
+    if (oneTapStatus.isError) {
+      if (oneTapStatus.error.status === 404) {
+        console.log(oneTapStatus.error.data);
+      }
+    }
+  }, [oneTapStatus.isError, oneTapStatus.isSuccess]);
+
+  useEffect(() => {
     if (checkUsername && CSRFToken?.data) {
       checkUsernameQuery({
         CSRFToken: CSRFToken.data.CSRFToken,
@@ -496,6 +517,17 @@ export default function Signup() {
 
   useEffect(() => {
     validateForm(formInput, setValidForm);
+    const handleResize = () => {
+      if (rowWidth.current) {
+        setGoogleButtonWidth(rowWidth.current.offsetWidth);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   return (
@@ -620,6 +652,18 @@ export default function Signup() {
                 >
                   Agree and sign up
                 </LoadingButton>
+              </div>
+              <HorizontalLineDividedByText text={"Or"} />
+              <div className="w-full mt-2 mb-6" ref={rowWidth}>
+                <GoogleLogin
+                  onSuccess={(response) => {
+                    oneTapCallBack(response.credential);
+                  }}
+                  onError={(err) => console.log(err)}
+                  width={googleButtonWidth}
+                  useOneTap={true}
+                  text={"continue_with"}
+                />
               </div>
             </div>
           </form>
