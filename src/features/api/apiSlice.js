@@ -431,12 +431,12 @@ export const apiSlice = createApi({
       }),
     }),
     googleOneTap: builder.mutation({
-      query: (token) => ({
-        url: "/user/auth/google/onetap",
+      query: (data) => ({
+        url: `/user/auth/google/onetap?isSignup=${data.isSignup}`,
         method: "GET",
         credentials: "include",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${data.token}`,
         },
       }),
     }),
