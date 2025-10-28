@@ -15,7 +15,7 @@ import {
 } from "../features/api/apiSlice";
 import { Header } from "./Header.jsx";
 import SpinnerGIF from "./icons/SpinnerGIF";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import "./Login.css";
 import "./PasswordValidator.css";
@@ -33,6 +33,20 @@ const EMAIL = "email";
 const LASTNAME = "lastname";
 const FIRSTNAME = "firstname";
 const TERMS = "terms";
+
+const SocialSignupForm = ({ title, value, name, ref, onChange }) => {
+
+  return <div className="social-signup-container">
+    <h3 className="social-signup-title">{title}
+    </h3>
+
+    <div className="social-signup-textfield-container">
+      <input value={value} ref={ref} onChange={onChange} name={name} className="social-signup-textfield" />
+    </div>
+
+  </div>
+}
+
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -322,7 +336,7 @@ export default function Signup() {
   const [googleButtonWidth, setGoogleButtonWidth] = useState(363);
   const rowWidth = useRef(null);
   const [oneTapQuery, oneTapStatus] = useGoogleOneTapMutation();
-
+  const location = useLocation()
   const [formInput, setFormInput] = useState({
     email: {
       value: signupEmail ? signupEmail : "",
@@ -359,6 +373,8 @@ export default function Signup() {
   const [signupQuery, signupStatus] = useSignupMutation();
   const [checkUsernameQuery, checkUsernameStatus] = useCheckUsernameMutation();
 
+  const [showSocialSignup, setShowSocialSignup] = useState(false)
+  console.log({showSocialSignup})
   const handleBlur = (e) => {
     const name = e.target.name;
     let value = e.target.value;
@@ -412,8 +428,9 @@ export default function Signup() {
   };
 
   const oneTapCallBack = (token) => {
+
     console.log(token);
-    oneTapQuery(token);
+    oneTapQuery({ token, isSignup: true });
   };
   console.log({ oneTapStatus });
   const handleSubmit = (e) => {
@@ -428,6 +445,7 @@ export default function Signup() {
       email: email.value,
       username: username.value,
       phone: phone.value,
+      isSocial: false,
     };
 
     signupQuery({ body, CSRFToken: CSRFToken.data.CSRFToken });
@@ -444,7 +462,16 @@ export default function Signup() {
     formInput.username.error,
     formInput.terms.error,
   ]);
+  useEffect(() => {
+    const search = new URLSearchParams(location.search);
+    if (search.has("loginRedirect")) {
+      const key = search.get("loginRedirect")
+      console.log("key", key, "login using : ", key)
+      setShowSocialSignup(true)
+    }
 
+
+  }, [location.search])
   useEffect(() => {
     if (signupStatus.error) {
       if (signupStatus.error?.status === 409) {
@@ -477,6 +504,9 @@ export default function Signup() {
       if (oneTapStatus.error.status === 404) {
         console.log(oneTapStatus.error.data);
       }
+    }
+    else if (oneTapStatus.isSuccess) {
+      navigate("/dashboard/home")
     }
   }, [oneTapStatus.isError, oneTapStatus.isSuccess]);
 
@@ -549,7 +579,9 @@ export default function Signup() {
       )}
       {CSRFToken.isSuccess && CSRFToken.data && (
         <div className="flex justify-center items-center grow">
-          <form onSubmit={handleSubmit}>
+          {showSocialSignup && <SocialSignupForm value={"sand.kumar.gr@gamil.com"} text={"Continue to Signup with Google"} />}
+
+          {!showSocialSignup && <form onSubmit={handleSubmit}>
             <div className="w-full sm:w-[400px] h-auto flex flex-col p-2 shadow-md custom-shadow">
               <div className="w-full h-[50px] flex justify-center items-center">
                 <span className="text-center font-sans font-semibold text-md text-[#716B61]">
@@ -666,7 +698,7 @@ export default function Signup() {
                 />
               </div>
             </div>
-          </form>
+          </form>}
         </div>
       )}
       {snackBarStatus.show && (

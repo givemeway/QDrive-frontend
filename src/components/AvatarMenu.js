@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { setUserData } from "../features/avatar/avatarSlice";
 import "./ChangeAvatar.css";
 import SpinnerGIF from "./icons/SpinnerGIF";
-
+import "./signupForm.css"
 export const Avatar = () => {
   const { has_avatar, avatar_url, initials } = useSelector(
     (state) => state.avatar
@@ -79,9 +79,8 @@ export default function AvatarMenu() {
     <>
       <button
         onClick={handleClick}
-        className={`w-[45px] h-[45px] hover:bg-[#F5EFE5] flex justify-center items-center ${
-          open ? "bg-[#F5EFE5]" : ""
-        }`}
+        className={`w-[45px] h-[45px] hover:bg-[#F5EFE5] flex justify-center items-center ${open ? "bg-[#F5EFE5]" : ""
+          }`}
         ref={buttonRef}
       >
         <Avatar />

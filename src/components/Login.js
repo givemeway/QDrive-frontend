@@ -61,13 +61,14 @@ const Login = () => {
   };
 
   const oneTapCallBack = (token) => {
-    oneTapQuery(token);
+    oneTapQuery({ token, isSignup: false });
   };
   useEffect(() => {
     if (oneTapStatus.isSuccess) {
       navigate("/dashboard/home");
     } else if (oneTapStatus.isError && oneTapStatus.error?.status === 404) {
-      navigate(`/login?error=${oneTapStatus.error?.data?.msg}`);
+      //      navigate(`/login?error=${oneTapStatus.error?.data?.msg}`);
+      navigate(`/signup?loginRedirect=${oneTapStatus.error?.data?.data.email}`)
     } else if (oneTapStatus.error?.originalStatus === 500) {
       dispatch(
         setNotify({
