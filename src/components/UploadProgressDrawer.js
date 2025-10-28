@@ -92,7 +92,7 @@ const Row = React.memo(({ index, data, style }) => {
             <span className="row-file-status-text">Finalizing..</span>
           )}
           {data[index][1].status === "failed" && (
-            <span className="row-file-status-text">Unknown Error</span>
+            <span className="row-file-status-text">{data[index][1].error}</span>
           )}
           {data[index][1].status === "uploading" && (
             <span className="row-file-status-text">

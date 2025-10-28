@@ -196,6 +196,7 @@ function FolderUpload() {
 
       const onFileError = ({ payload }) => {
         const { name, data, id } = payload;
+        console.log("error payload:->", payload);
         const file = {};
         file.name = name;
         file.id = id;

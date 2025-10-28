@@ -132,7 +132,8 @@ const Login = () => {
       error?.status === 401 ||
       error?.status === 422
     ) {
-      if (error?.status.status) {
+      console.log(error?.status, error?.status?.status);
+      if (error?.status) {
         dispatch(
           setNotify({
             show: true,
