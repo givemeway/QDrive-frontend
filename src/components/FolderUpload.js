@@ -58,6 +58,147 @@ function FolderUpload() {
     return { eta, speed };
   };
 
+  const onFileProgress = ({ payload }) => {
+    const { processed, total, uploaded, name, id } = payload;
+    const file = {};
+    file.name = name;
+    file.progress = processed;
+    file.size = formatBytes(total);
+    file.error = null;
+    file.status = "uploading";
+    file.transferred = uploaded;
+    file.transferred_b = formatBytes(uploaded);
+    file.folder = id.split("/").slice(0, -1).join("/");
+    file.bytes = parseInt(total);
+    file.id = id;
+    const data = trackFilesProgress[id];
+    if (data) {
+      const { transferred, startTime, bytes } = data;
+      file.startTime = startTime;
+      const { eta, speed } = ETA(startTime, bytes, uploaded);
+      file.eta = eta;
+      file.speed = speed;
+      setFilesStatus((prev) => ({
+        ...prev,
+        uploaded: prev.uploaded + uploaded - transferred,
+      }));
+
+      setTrackFilesProgress((prev) => ({
+        ...prev,
+        [id]: file,
+      }));
+    }
+  };
+
+  const onFileUploadedToDestination = ({ payload }) => {
+    const { name, id } = payload;
+    const file = {};
+    file.name = name;
+    file.error = null;
+    file.id = id;
+    file.folder = id.split("/").slice(0, -1).join("/");
+    file.status = "finalizing";
+
+    setTrackFilesProgress((prev) => ({
+      ...prev,
+      [id]: file,
+    }));
+  };
+
+  const onFileUploadDone = ({ payload }) => {
+    const { name, id, path } = payload;
+    const file = {};
+    file.name = name;
+    file.error = null;
+    file.id = id;
+    file.folder = id.split("/").slice(0, -1).join("/");
+    file.status = "uploaded";
+    file.path = path;
+    setTrackFilesProgress((prev) => ({
+      ...prev,
+      [id]: file,
+    }));
+
+    setFilesStatus((prev) => ({
+      ...prev,
+      processed: prev.processed + 1,
+    }));
+    if (!atLeastOneUploaded.current) {
+      console.log("Refresh triggered");
+      dispatch(setRefresh({ toggle: !refresh.toggle, refresh: true }));
+
+      atLeastOneUploaded.current = true;
+    }
+  };
+
+  const onFileError = ({ payload }) => {
+    const { name, data, id } = payload;
+    console.log("error payload:->", payload);
+    const file = {};
+    file.name = name;
+    file.id = id;
+    file.folder = id.split("/").slice(0, -1).join("/");
+    file.status = "failed";
+    file.error = data;
+    console.log("file error: ", file);
+    setTrackFilesProgress((prev) => ({
+      ...prev,
+      [id]: file,
+    }));
+  };
+
+  const onConnection = ({ socketID }) => {
+    console.log("Socket connected with ID: ", socketID);
+    setSocketID(socketID);
+  };
+
+  const handleFolderSelection = async (e) => {
+    setPreparingFiles(true);
+    let files = [];
+    let updatedFiles = {};
+
+    console.log(
+      "folder selection triggered.....and socket is connected?",
+      socket.connected
+    );
+
+    if (socket.connected === false) {
+      console.log("Socket not connected. Connecting...");
+      socket.connect();
+      socket.on("connected", onConnection);
+    }
+
+    for (let file of e.target.files) {
+      file.modified = false;
+      updatedFiles[file.webkitRelativePath] = { ...file };
+      try {
+        if (file.type.split("/")[0] === "image") {
+          const { height, width } = await ImageDimensions(file);
+          file.height = height;
+          file.width = width;
+          updatedFiles[file.webkitRelativePath] = { ...file };
+        }
+      } catch (err) {
+        console.log(err);
+      }
+      files.push(file);
+    }
+    setUpdatedFiles(updatedFiles);
+    setFiles(Array.from(files).map((file) => file));
+
+    const subpart = subpath.split("/").slice(1);
+
+    if (subpart.length === 0) {
+      setDevice("/");
+      setPWD("/");
+    } else {
+      setDevice(subpart.slice(0, 1)[0]);
+      const actualPath = subpart.slice(1).join("/");
+      setPWD(actualPath.length === 0 ? "/" : actualPath);
+    }
+    e.target.value = null;
+  };
+
   useEffect(() => {
     if (files.length > 0) {
       const worker = new Worker(new URL("../worker.js", import.meta.url), {
@@ -96,6 +237,10 @@ function FolderUpload() {
         console.error(e);
         worker.terminate();
       };
+
+      return () => {
+        worker.terminate();
+      };
     }
   }, [device, files, pwd]);
 
@@ -120,101 +265,6 @@ function FolderUpload() {
         type: "module",
       });
 
-      const onFileProgress = ({ payload }) => {
-        const { processed, total, uploaded, name, id } = payload;
-        const file = {};
-        file.name = name;
-        file.progress = processed;
-        file.size = formatBytes(total);
-        file.error = null;
-        file.status = "uploading";
-        file.transferred = uploaded;
-        file.transferred_b = formatBytes(uploaded);
-        file.folder = id.split("/").slice(0, -1).join("/");
-        file.bytes = parseInt(total);
-        file.id = id;
-        const data = trackFilesProgress[id];
-        if (data) {
-          const { transferred, startTime, bytes } = data;
-          file.startTime = startTime;
-          const { eta, speed } = ETA(startTime, bytes, uploaded);
-          file.eta = eta;
-          file.speed = speed;
-          setFilesStatus((prev) => ({
-            ...prev,
-            uploaded: prev.uploaded + uploaded - transferred,
-          }));
-
-          setTrackFilesProgress((prev) => ({
-            ...prev,
-            [id]: file,
-          }));
-        }
-      };
-
-      const onFileUploadedToDestination = ({ payload }) => {
-        const { name, id } = payload;
-        const file = {};
-        file.name = name;
-        file.error = null;
-        file.id = id;
-        file.folder = id.split("/").slice(0, -1).join("/");
-        file.status = "finalizing";
-
-        setTrackFilesProgress((prev) => ({
-          ...prev,
-          [id]: file,
-        }));
-      };
-
-      const onFileUploadDone = ({ payload }) => {
-        const { name, id, path } = payload;
-        const file = {};
-        file.name = name;
-        file.error = null;
-        file.id = id;
-        file.folder = id.split("/").slice(0, -1).join("/");
-        file.status = "uploaded";
-        file.path = path;
-
-        setTrackFilesProgress((prev) => ({
-          ...prev,
-          [id]: file,
-        }));
-
-        setFilesStatus((prev) => ({
-          ...prev,
-          processed: prev.processed + 1,
-        }));
-        if (!atLeastOneUploaded.current) {
-          console.log("fetch triggered");
-          dispatch(setRefresh({ toggle: !refresh.toggle, refresh: true }));
-
-          atLeastOneUploaded.current = true;
-        }
-      };
-
-      const onFileError = ({ payload }) => {
-        const { name, data, id } = payload;
-        console.log("error payload:->", payload);
-        const file = {};
-        file.name = name;
-        file.id = id;
-        file.folder = id.split("/").slice(0, -1).join("/");
-        file.status = "failed";
-        file.error = data;
-
-        setTrackFilesProgress((prev) => ({
-          ...prev,
-          [id]: file,
-        }));
-      };
-
-      socket.on("uploadProgress", onFileProgress);
-      socket.on("finalizing", onFileUploadedToDestination);
-      socket.on("done", onFileUploadDone);
-      socket.on("error", onFileError);
-
       worker.postMessage({
         mode: "upload",
         socket_main_id: socketID,
@@ -232,6 +282,7 @@ function FolderUpload() {
           const { total } = data;
           setFilesStatus((prev) => ({ ...prev, total, processed: 0 }));
         } else if (mode === "finish") {
+          socket.disconnect();
           setFilesToUpload([]);
           setUploadCompleted(true);
           atLeastOneUploaded.current = false;
@@ -244,6 +295,7 @@ function FolderUpload() {
           file.error = error;
           file.status = "failed";
           file.id = id;
+          console.log("file error ----: ", file);
 
           setTrackFilesProgress((prev) => ({
             ...prev,
@@ -268,53 +320,35 @@ function FolderUpload() {
       worker.onerror = (e) => {
         console.error(e);
       };
+
+      socket.on("uploadProgress", onFileProgress);
+      socket.on("finalizing", onFileUploadedToDestination);
+      socket.on("done", onFileUploadDone);
+      socket.on("error", onFileError);
+      socket.on("disconnect", () => {
+        console.log("Socket disconnected");
+      });
+
+      return () => {
+        socket.off("uploadProgress", onFileProgress);
+        socket.off("finalizing", onFileUploadedToDestination);
+        socket.off("done", onFileUploadDone);
+        socket.off("error", onFileError);
+        socket.off("disconnect", () => {
+          console.log("Socket disconnected from cleanup function");
+        });
+        worker.terminate();
+      };
     }
   }, [filesToUpload, socket, socketID]);
 
   useEffect(() => {
     socket.connect();
     socket.on("connected", onConnection);
+
     return () => socket.disconnect();
   }, []);
 
-  const onConnection = ({ socketID }) => {
-    setSocketID(socketID);
-  };
-
-  const handleFolderSelection = async (e) => {
-    setPreparingFiles(true);
-    let files = [];
-    let updatedFiles = {};
-    for (let file of e.target.files) {
-      file.modified = false;
-      updatedFiles[file.webkitRelativePath] = { ...file };
-      try {
-        if (file.type.split("/")[0] === "image") {
-          const { height, width } = await ImageDimensions(file);
-          file.height = height;
-          file.width = width;
-          updatedFiles[file.webkitRelativePath] = { ...file };
-        }
-      } catch (err) {
-        console.log(err);
-      }
-      files.push(file);
-    }
-    setUpdatedFiles(updatedFiles);
-    setFiles(Array.from(files).map((file) => file));
-
-    const subpart = subpath.split("/").slice(1);
-
-    if (subpart.length === 0) {
-      setDevice("/");
-      setPWD("/");
-    } else {
-      setDevice(subpart.slice(0, 1)[0]);
-      const actualPath = subpart.slice(1).join("/");
-      setPWD(actualPath.length === 0 ? "/" : actualPath);
-    }
-    e.target.value = null;
-  };
   return (
     <>
       <button

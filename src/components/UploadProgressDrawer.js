@@ -119,7 +119,9 @@ const Row = React.memo(({ index, data, style }) => {
         </div>
         <div className="row-file-uploading-status">
           {data[index][1].status === "queued" && <ScheduleIcon />}
-          {data[index][1].status === "uploading" && <CircularSpinner />}
+          {data[index][1].status === "uploading" && (
+            <CircularSpinner style={{ height: 28, width: 28 }} />
+          )}
           {data[index][1].status === "preparing" && <CachedIcon />}
           {data[index][1].status === "finalizing" && <CachedIcon />}
           {data[index][1].status === "uploaded" && (
@@ -169,9 +171,9 @@ export default React.memo(function UploadProgressDrawer({
     }
   }, [expandProgress]);
 
-  useEffect(() => {
-    ref.current?.scrollToItem(filesStatus.processed, "center");
-  }, [filesStatus.processed]);
+  // useEffect(() => {
+  //   ref.current?.scrollToItem(filesStatus.processed, "center");
+  // }, [filesStatus.processed]);
 
   return (
     <Draggable>
@@ -182,14 +184,30 @@ export default React.memo(function UploadProgressDrawer({
             onClick={toggleProgressBody}
           >
             {!uploadCompleted && (
-              <span className="drawer-top-text">
-                Uploading {filesStatus.processed} of {filesStatus.total} items,{" "}
-                {filesStatus.eta} left
-              </span>
+              <div className="drawer-top-text-flex">
+                <div className="drawer-top-text">
+                  Uploading{" "}
+                  <span className="drawer-top-number">
+                    {filesStatus.processed}{" "}
+                  </span>{" "}
+                  of{" "}
+                  <span className="drawer-top-number">
+                    {filesStatus.total}{" "}
+                  </span>{" "}
+                  items
+                </div>
+                <div className="drawer-top-text-eta">
+                  <span className="drawer-top-number"></span>
+                  {filesStatus.eta} left
+                </div>
+              </div>
             )}
             {uploadCompleted && (
               <span className="drawer-top-text">
-                {filesStatus.processed} of {filesStatus.total} uploads complete
+                <span className="drawer-top-number"></span>
+                {filesStatus.processed} of{" "}
+                <span className="drawer-top-number"></span>
+                {filesStatus.total} uploads complete
               </span>
             )}
           </div>

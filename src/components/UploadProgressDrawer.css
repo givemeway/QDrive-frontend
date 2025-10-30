@@ -42,19 +42,27 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  height: 50px;
+  height: 65px;
   background: #f5efe5;
   border: 1px solid #bbb5ae;
   padding: 0.5rem;
 }
 
 .drawer-top-text-container {
-  width: 80%;
-  display: flex;
-  justify-content: left;
   align-items: center;
+  width: 80%;
   height: 100%;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+}
+.drawer-top-text-flex {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-direction: column;
 }
 
 .drawer-top-text {
@@ -62,6 +70,16 @@
   text-align: left;
   font-weight: 600;
   font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.drawer-top-text-eta {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgb(71, 70, 68);
+  text-align: left;
+  width: 100%;
 }
 
 .drawer-top-icons {
@@ -73,6 +91,12 @@
   height: 100%;
 }
 
+.drawer-top-number {
+  font-family: monospace;
+  display: inline-block;
+  text-align: left;
+  /* width: 4ch; */
+}
 .row-file-status-text {
   font-size: 12px;
   text-align: left;

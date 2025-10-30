@@ -68,7 +68,7 @@ const Login = () => {
       navigate("/dashboard/home");
     } else if (oneTapStatus.isError && oneTapStatus.error?.status === 404) {
       //      navigate(`/login?error=${oneTapStatus.error?.data?.msg}`);
-      navigate(`/signup?loginRedirect=${oneTapStatus.error?.data?.data.email}`)
+      navigate(`/signup?loginRedirect=${oneTapStatus.error?.data?.data.email}`);
     } else if (oneTapStatus.error?.originalStatus === 500) {
       dispatch(
         setNotify({
@@ -133,7 +133,6 @@ const Login = () => {
       error?.status === 401 ||
       error?.status === 422
     ) {
-      console.log(error?.status, error?.status?.status);
       if (error?.status) {
         dispatch(
           setNotify({

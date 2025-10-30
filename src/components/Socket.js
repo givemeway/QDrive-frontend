@@ -4,6 +4,6 @@ import { PRODUCTION } from "../config.js";
 const server =
   process.env.REACT_APP_ENV === PRODUCTION
     ? process.env.REACT_APP_BASE_API_URL
-    : "http://localhost:3001";
+    : "http://localhost:3005";
 console.log("Socket Server-->", server);
 export const socket = io(server, { autoConnect: false });
